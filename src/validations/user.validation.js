@@ -15,8 +15,8 @@ const createUser = {
     region: Joi.string().optional(),
     zip: Joi.string().optional(),
     address: Joi.string().optional(),
-    birthday: Joi.string().required(),
-    tutorType: Joi.string().optional(),
+    birthday: Joi.date().required(),
+    tutorType: Joi.valid('part-time', 'full-time', 'gov').optional(),
     gender: Joi.string().optional(),
     duration: Joi.string().optional(),
     frequency: Joi.string().optional(),
@@ -45,9 +45,21 @@ const updateUser = {
   }),
   body: Joi.object()
     .keys({
-      email: Joi.string().email(),
       password: Joi.string().custom(password),
       name: Joi.string(),
+      phoneNumber: Joi.string(),
+      status: Joi.valid('active', 'inactive', 'blocked'),
+      country: Joi.string(),
+      city: Joi.string(),
+      state: Joi.string(),
+      region: Joi.string(),
+      zip: Joi.string(),
+      address: Joi.string(),
+      birthday: Joi.date(),
+      tutorType: Joi.valid('part-time', 'full-time', 'gov'),
+      gender: Joi.string(),
+      duration: Joi.string(),
+      frequency: Joi.string(),
     })
     .min(1),
 };

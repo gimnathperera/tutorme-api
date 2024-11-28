@@ -1,5 +1,5 @@
 const userStatus = {
-  ACTIVE: 'activate',
+  ACTIVE: 'active',
   INACTIVE: 'inactive',
   BLOCKED: 'blocked',
 };
