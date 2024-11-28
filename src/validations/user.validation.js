@@ -60,6 +60,7 @@ const updateUser = {
       gender: Joi.string(),
       duration: Joi.string(),
       frequency: Joi.string(),
+      grades: Joi.optional(),
     })
     .min(1),
 };

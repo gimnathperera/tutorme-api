@@ -20,6 +20,17 @@ gradeSchema.plugin(toJSON);
 gradeSchema.plugin(paginate);
 
 /**
+ * Check if title is taken
+ * @param {string} title - The grade's title
+ * @param {ObjectId} [excludedGradeId] - The id of the grade to be excluded
+ * @returns {Promise<boolean>}
+ */
+gradeSchema.statics.isTitleTaken = async function (title, excludedGradeId) {
+  const grade = await this.findOne({ title, _id: { $ne: excludedGradeId } });
+  return !!grade;
+};
+
+/**
  * @typedef Grade
  */
 const Grade = mongoose.model('Grade', gradeSchema);
