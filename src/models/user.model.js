@@ -3,6 +3,29 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
+const { userStatus, tutorTypes } = require('../config/users');
+
+const gradeSchema = new mongoose.Schema(
+  {
+    grade: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Grade',
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
+const subjectSchema = new mongoose.Schema(
+  {
+    subject: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Subject',
+      required: true,
+    },
+  },
+  { _id: false }
+);
 
 const userSchema = mongoose.Schema(
   {
@@ -33,12 +56,74 @@ const userSchema = mongoose.Schema(
           throw new Error('Password must contain at least one letter and one number');
         }
       },
-      private: true, // used by the toJSON plugin
+      private: true,
     },
     role: {
       type: String,
       enum: roles,
       default: 'user',
+    },
+    phoneNumber: {
+      type: String,
+      trim: true,
+      validate(value) {
+        if (!validator.isMobilePhone(value)) {
+          throw new Error('Invalid phone number');
+        }
+      },
+    },
+    status: {
+      type: String,
+      enum: [userStatus.ACTIVE, userStatus.INACTIVE, userStatus.BLOCKED],
+      default: userStatus.ACTIVE,
+      required: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    region: {
+      type: String,
+      trim: true,
+    },
+    zip: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    birthday: {
+      type: String,
+      trim: true,
+    },
+    grades: { type: [gradeSchema], default: [] },
+    subjects: { type: [subjectSchema], default: [] },
+    tutorType: {
+      type: String,
+      enum: [tutorTypes.FULL_TIME, tutorTypes.PART_TIME, tutorTypes.GOV],
+      trim: true,
+    },
+    gender: {
+      type: String,
+      trim: true,
+    },
+    duration: {
+      type: String,
+      trim: true,
+    },
+    frequency: {
+      type: String,
+      trim: true,
     },
     isEmailVerified: {
       type: Boolean,
