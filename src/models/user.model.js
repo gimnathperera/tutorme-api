@@ -5,28 +5,6 @@ const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 const { userStatus, tutorTypes } = require('../config/users');
 
-const gradeSchema = new mongoose.Schema(
-  {
-    grade: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Grade',
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
-const subjectSchema = new mongoose.Schema(
-  {
-    subject: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Subject',
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
 const userSchema = mongoose.Schema(
   {
     name: {
@@ -106,8 +84,6 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
-    grades: { type: [gradeSchema], default: [] },
-    subjects: { type: [subjectSchema], default: [] },
     tutorType: {
       type: String,
       enum: [tutorTypes.FULL_TIME, tutorTypes.PART_TIME, tutorTypes.GOV],
@@ -129,6 +105,18 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    grades: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Grade',
+      },
+    ],
+    subjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+      },
+    ],
   },
   {
     timestamps: true,
