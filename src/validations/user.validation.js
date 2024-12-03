@@ -61,6 +61,7 @@ const updateUser = {
       duration: Joi.string(),
       frequency: Joi.string(),
       grades: Joi.optional(),
+      subjects: Joi.optional(),
     })
     .min(1),
 };

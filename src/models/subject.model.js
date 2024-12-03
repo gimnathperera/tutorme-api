@@ -7,7 +7,6 @@ const subjectSchema = mongoose.Schema(
       type: String,
       required: true,
       index: true,
-      unique: true,
     },
   },
   {
