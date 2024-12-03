@@ -11,7 +11,7 @@ const createUser = catchAsync(async (req, res) => {
 
 const getUsers = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'role']);
-  const options = { ...pick(req.query, ['sortBy', 'limit', 'page']), populate: 'grades.grade' };
+  const options = { ...pick(req.query, ['sortBy', 'limit', 'page']), populate: 'grades.grade,subjects.subject' };
 
   const result = await userService.queryUsers(filter, options);
   res.send(result);
