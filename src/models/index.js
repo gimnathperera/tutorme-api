@@ -2,4 +2,6 @@ module.exports.Token = require('./token.model');
 module.exports.User = require('./user.model');
 module.exports.Grade = require('./grade.model');
 module.exports.Subject = require('./subject.model');
-module.exports.Testimonial = require('./testimonial.modal');
+module.exports.Testimonial = require('./testimonial.model');
+module.exports.Faq = require('./faq.model');
+module.exports.Inquiry = require('./inquiry.model');
