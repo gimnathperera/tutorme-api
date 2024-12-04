@@ -4,9 +4,11 @@ const config = require('./config/config');
 const logger = require('./config/logger');
 
 let server;
+const port = config.port || 3000;
+
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
-  server = app.listen(config.port, () => {
+  server = app.listen(port, '0.0.0.0', () => {
     logger.info(`Listening to port ${config.port}`);
   });
 });
