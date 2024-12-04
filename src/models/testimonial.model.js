@@ -44,8 +44,8 @@ testimonialSchema.plugin(toJSON);
 testimonialSchema.plugin(paginate);
 
 /**
- * @typedef Grade
+ * @typedef Testimonial
  */
-const Grade = mongoose.model('Testimonial', testimonialSchema);
+const Testimonial = mongoose.model('Testimonial', testimonialSchema);
 
-module.exports = Grade;
+module.exports = Testimonial;
