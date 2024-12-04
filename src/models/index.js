@@ -3,3 +3,4 @@ module.exports.User = require('./user.model');
 module.exports.Grade = require('./grade.model');
 module.exports.Subject = require('./subject.model');
 module.exports.Testimonial = require('./testimonial.modal');
+module.exports.Faq = require('./faq.model');
