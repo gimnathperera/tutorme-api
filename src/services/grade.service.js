@@ -31,7 +31,7 @@ const queryGrades = async (filter, options) => {
  * @returns {Promise<Grade>}
  */
 const getGradeById = async (id) => {
-  return Grade.findById(id);
+  return Grade.findById(id).populate('subjects');
 };
 
 /**

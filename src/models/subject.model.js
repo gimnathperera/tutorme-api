@@ -8,7 +8,12 @@ const subjectSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
   },
+
   {
     timestamps: true,
   }

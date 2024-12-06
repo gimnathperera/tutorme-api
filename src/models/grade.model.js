@@ -9,6 +9,16 @@ const gradeSchema = mongoose.Schema(
       index: true,
       unique: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
+    subjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+      },
+    ],
   },
   {
     timestamps: true,

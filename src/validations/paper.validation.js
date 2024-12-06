@@ -1,26 +1,31 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
-const createGrade = {
+const createPaper = {
   body: Joi.object().keys({
     title: Joi.string().required(),
     description: Joi.string().required(),
-    subjects: Joi.optional(),
+    subject: Joi.string().required(),
+    grade: Joi.string().required(),
+    year: Joi.string().required(),
+    url: Joi.string().required(),
   }),
 };
 
-const getGrades = {
+const getPapers = {
   query: Joi.object().keys({
     title: Joi.string(),
+    grade: Joi.string(),
+    subject: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
   }),
 };
 
-const getGrade = {
+const getPaper = {
   params: Joi.object().keys({
-    gradeId: Joi.string().custom((value, helpers) => {
+    paperId: Joi.string().custom((value, helpers) => {
       if (!mongoose.Types.ObjectId.isValid(value)) {
         return helpers.message('Invalid ID');
       }
@@ -29,9 +34,9 @@ const getGrade = {
   }),
 };
 
-const updateGrade = {
+const updatePaper = {
   params: Joi.object().keys({
-    gradeId: Joi.string().custom((value, helpers) => {
+    paperId: Joi.string().custom((value, helpers) => {
       if (!mongoose.Types.ObjectId.isValid(value)) {
         return helpers.message('Invalid ID');
       }
@@ -42,14 +47,17 @@ const updateGrade = {
     .keys({
       title: Joi.string(),
       description: Joi.string(),
-      subjects: Joi.optional(),
+      subject: Joi.string(),
+      grade: Joi.string(),
+      year: Joi.string(),
+      url: Joi.string(),
     })
     .min(1),
 };
 
-const deleteGrade = {
+const deletePaper = {
   params: Joi.object().keys({
-    gradeId: Joi.string().custom((value, helpers) => {
+    paperId: Joi.string().custom((value, helpers) => {
       if (!mongoose.Types.ObjectId.isValid(value)) {
         return helpers.message('Invalid ID');
       }
@@ -59,9 +67,9 @@ const deleteGrade = {
 };
 
 module.exports = {
-  createGrade,
-  getGrades,
-  getGrade,
-  updateGrade,
-  deleteGrade,
+  createPaper,
+  getPapers,
+  getPaper,
+  updatePaper,
+  deletePaper,
 };

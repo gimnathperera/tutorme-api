@@ -11,9 +11,8 @@ const createGrade = catchAsync(async (req, res) => {
 
 const getGrades = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['title']);
-  const options = {
-    ...pick(req.query, ['sortBy', 'limit', 'page']),
-  };
+
+  const options = { ...pick(req.query, ['sortBy', 'limit', 'page']), populate: 'subjects.subject' };
 
   const result = await gradeService.queryGrades(filter, options);
   res.send(result);
