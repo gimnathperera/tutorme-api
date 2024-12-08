@@ -20,6 +20,9 @@ const createUser = {
     gender: Joi.string().optional(),
     duration: Joi.string().optional(),
     frequency: Joi.string().optional(),
+    timeZone: Joi.string().optional(),
+    language: Joi.string().optional(),
+    avatar: Joi.string().optional(),
   }),
 };
 
@@ -45,6 +48,7 @@ const updateUser = {
   }),
   body: Joi.object()
     .keys({
+      email: Joi.string().email(),
       password: Joi.string().custom(password),
       name: Joi.string(),
       phoneNumber: Joi.string(),
@@ -62,6 +66,9 @@ const updateUser = {
       frequency: Joi.string(),
       grades: Joi.optional(),
       subjects: Joi.optional(),
+      timeZone: Joi.string(),
+      language: Joi.string(),
+      avatar: Joi.string(),
     })
     .min(1),
 };
@@ -72,10 +79,23 @@ const deleteUser = {
   }),
 };
 
+const changePassword = {
+  params: Joi.object().keys({
+    userId: Joi.required().custom(objectId),
+  }),
+  body: Joi.object()
+    .keys({
+      currentPassword: Joi.string().custom(password),
+      newPassword: Joi.string().custom(password),
+    })
+    .min(1),
+};
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  changePassword,
 };
