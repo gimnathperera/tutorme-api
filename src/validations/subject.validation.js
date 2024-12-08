@@ -4,6 +4,7 @@ const { objectId } = require('./custom.validation');
 const createSubject = {
   body: Joi.object().keys({
     title: Joi.string().required(),
+    description: Joi.string().required(),
   }),
 };
 
@@ -29,6 +30,7 @@ const updateSubject = {
   body: Joi.object()
     .keys({
       title: Joi.string(),
+      description: Joi.string(),
     })
     .min(1),
 };

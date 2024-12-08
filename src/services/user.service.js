@@ -34,7 +34,7 @@ const queryUsers = async (filter, options) => {
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
-  return User.findById(id).populate('grades');
+  return User.findById(id).populate('grades').populate('subjects');
 };
 
 /**
@@ -62,6 +62,7 @@ const updateUserById = async (userId, updateBody) => {
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
+
   Object.assign(user, updateBody);
 
   await user.save();
@@ -82,6 +83,33 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
+/**
+ * Update user by id
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<User>}
+ */
+const changePassword = async (userId, updateBody) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  const payload = {
+    password: updateBody.newPassword,
+  };
+
+  Object.assign(user, payload);
+
+  await user.save();
+  return { message: 'Password updated successfully' };
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -89,4 +117,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  changePassword,
 };

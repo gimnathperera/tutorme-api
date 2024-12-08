@@ -117,6 +117,20 @@ const userSchema = mongoose.Schema(
         ref: 'Subject',
       },
     ],
+    language: {
+      type: String,
+      trim: true,
+      default: 'en',
+    },
+    avatar: {
+      type: String,
+      trim: true,
+    },
+    timeZone: {
+      type: String,
+      trim: true,
+      default: 'UTC+5:30',
+    },
   },
   {
     timestamps: true,
