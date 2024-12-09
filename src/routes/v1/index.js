@@ -8,6 +8,7 @@ const testimonialRoute = require('./testimonial.route');
 const faqRoute = require('./faq.route');
 const inquiryRoute = require('./inquiry.route');
 const paperRoute = require('./paper.route');
+const tutorRoute = require('./tutor.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -44,6 +45,10 @@ const defaultRoutes = [
   {
     path: '/papers',
     route: paperRoute,
+  },
+  {
+    path: '/tutors',
+    route: tutorRoute,
   },
 ];
 
