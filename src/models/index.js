@@ -6,3 +6,4 @@ module.exports.Testimonial = require('./testimonial.model');
 module.exports.Faq = require('./faq.model');
 module.exports.Inquiry = require('./inquiry.model');
 module.exports.Paper = require('./paper.mode');
+module.exports.Tutor = require('./tutor.model');

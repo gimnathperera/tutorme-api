@@ -8,3 +8,4 @@ module.exports.testimonialService = require('./testimonial.service');
 module.exports.faqService = require('./faq.service');
 module.exports.inquiryService = require('./inquiry.service');
 module.exports.paperService = require('./paper.service');
+module.exports.tutorService = require('./tutor.service');

@@ -4,3 +4,4 @@ module.exports.gradeController = require('./grade.controller');
 module.exports.subjectController = require('./subject.controller');
 module.exports.testimonialsController = require('./testimonial.controller');
 module.exports.faqController = require('./faq.controller');
+module.exports.tutorController = require('./tutor.controller');
