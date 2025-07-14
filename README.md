@@ -27,13 +27,20 @@ We are goiing to create a platform for students and teachers. We are developing 
 
 ## ✨ Features
 
-* [List the key features of your backend application. For example:]
-    * User authentication (Registration, Login, JWT-based authentication)
-    * CRUD operations for [Resource Name] (e.g., Products, Posts, Users)
-    * Data validation
-    * Error handling
-    * API rate limiting
-    * [Any other significant features]
+* List the key features.
+    * User authentication (Registration, Login, JWT-based authentication, Email verification, Password reset)
+    * CRUD operations for multiple resources (Users, FAQs, Grades, Subjects, Testimonials, Inquiries, Papers, Tutors)
+    * Data validation using Joi
+    * Centralized error handling middleware
+    * API rate limiting for security
+    * Role-based access control for user management
+    * Input sanitization and security (e.g., XSS, MongoDB injection protection)
+    * API documentation with Swagger UI
+    * Logging with Winston
+    * Email notifications (e.g., verification, password reset)
+    * Testing framework integration (Jest, Supertest)
+    * Environment configuration via dotenv
+    * Request logging with Morgan
 
 ## 🛠️ Technologies Used
 
@@ -73,9 +80,8 @@ Follow these steps to get your development environment set up:
 3.  **Set up environment variables:**
     Create a `.env` file in the root directory of the project and add the necessary environment variables (see [Environment Variables](#-environment-variables) section).
 
-4.  **Database Setup (if applicable):**
-    * [Instructions on how to set up your database, e.g., create a database, run migrations, seed data.]
-    * Example for MongoDB: Ensure your MongoDB instance is running.
+4.  **Database Setup :**
+    * MongoDB: Ensure your MongoDB instance is running.
 
 ## 🏃 Usage
 
