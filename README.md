@@ -24,8 +24,6 @@ We are goiing to create a platform for students and teachers. We are developing 
 * [Testing](#-testing)
 * [Folder Structure](#-folder-structure)
 * [Contributing](#-contributing)
-* [License](#-license)
-* [Contact](#-contact)
 
 ## ✨ Features
 
@@ -41,13 +39,12 @@ We are goiing to create a platform for students and teachers. We are developing 
 
 * **Node.js**: Runtime environment
 * **Express.js**: Web framework for Node.js
-* **[Database Name]** ([e.g., MongoDB, PostgreSQL, MySQL]): Database system
-    * **[ORM/ODM Name]** ([e.g., Mongoose, Sequelize, Prisma]): Object-Relational Mapper / Object-Document Mapper (if applicable)
-* **[Authentication Library]** ([e.g., Passport.js, bcrypt.js, jsonwebtoken]): For authentication and authorization
-* **[Validation Library]** ([e.g., Joi, Express-Validator]): For input validation
-* **[Testing Framework]** ([e.g., Jest, Mocha, Chai, Supertest]): For unit/integration testing
-* **[Other Libraries]** ([e.g., Dotenv, Morgan, Helmet, CORS]): Any other significant libraries
-* **[Deployment Platform]** ([e.g., Heroku, AWS EC2, Vercel, Render]): Where the application is deployed (if applicable)
+* **MongoBD** : Database system
+* **Passport.js** : For authentication and authorization
+* **Joi** : For input validation
+* **Jest** : For unit/integration testing
+* **mongoose, passport-jwt, jsonwebtoken, bcryptjs, nodemailer, jest, supertest, pm2, dotenv** : Any other significant libraries
+* **AWS** : Where the application is deployed
 
 ## ⚙️ Prerequisites
 
@@ -56,7 +53,7 @@ Before you begin, ensure you have met the following requirements:
 * **Node.js**: Make sure you have Node.js installed (LTS version recommended).
     * You can download it from https://nodejs.org/.
 * **npm** (Node Package Manager) or **Yarn**: Usually comes with Node.js.
-* **[Database Client/Server]**: If you're using a local database, ensure it's installed and running (e.g., MongoDB Community Server, PostgreSQL).
+* **MongoDB Community Server**: If you're using a local database, ensure it's installed and running.
 
 ## 🚀 Installation
 
@@ -64,15 +61,13 @@ Follow these steps to get your development environment set up:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/](https://github.com/)[YourUsername]/[your-repo-name].git
-    cd [your-repo-name]
+    https://github.com/gimnathperera/tutorme-api.git
+    cd tutorme-api
     ```
 
 2.  **Install dependencies:**
     ```bash
     npm install
-    # OR
-    yarn install
     ```
 
 3.  **Set up environment variables:**
@@ -81,13 +76,6 @@ Follow these steps to get your development environment set up:
 4.  **Database Setup (if applicable):**
     * [Instructions on how to set up your database, e.g., create a database, run migrations, seed data.]
     * Example for MongoDB: Ensure your MongoDB instance is running.
-    * Example for SQL databases:
-        ```bash
-        # If using Sequelize with migrations
-        npx sequelize db:migrate
-        # If you have seeders
-        npx sequelize db:seed:all
-        ```
 
 ## 🏃 Usage
 
@@ -98,79 +86,86 @@ To start the development server:
 ```bash
 npm start
 # OR
-npm run dev # If you have a separate dev script (e.g., using nodemon)
-# OR
-yarn start
-# OR
-yarn dev
+npm run dev # If you have a separate dev script
 ```
 
-The server will typically run on `http://localhost:[PORT]`, where `[PORT]` is defined in your `.env` file (e.g., `3000`, `5000`).
+The server will typically run on `http://localhost:3000`, where `[PORT]` is defined in your `.env` file.
 
 ### API Endpoints
 
 Here's a list of the main API endpoints. You can use tools like Postman, Insomnia, or `curl` to test them.
 
-**Base URL:** `http://localhost:[PORT]/api/v1` (adjust as per your routing)
+**Base URL:** `http://localhost:3000/api/v1` (adjust as per your routing)
 
-| Method | Endpoint                    | Description                                        | Authentication Required | Request Body (Example) |
-|--------|-----------------------------|----------------------------------------------------|-------------------------|------------------------|
-| `POST` | `/auth/register`            | Register a new user                                | No                      | `{"username": "testuser", "email": "test@example.com", "password": "password123"}` |
-| `POST` | `/auth/login`               | Authenticate user and get JWT                      | No                      | `{"email": "test@example.com", "password": "password123"}` |
-| `GET`  | `/users/:id`                | Get user by ID                                     | Yes                     | `N/A`                  |
-| `GET`  | `/products`                 | Get all products                                   | No                      | `N/A`                  |
-| `POST` | `/products`                 | Create a new product                               | Yes                     | `{"name": "New Product", "price": 29.99, "description": "A great new product."}` |
-| `PUT`  | `/products/:id`             | Update a product by ID                             | Yes                     | `{"price": 35.00}`     |
-| `DELETE`|`/products/:id`             | Delete a product by ID                             | Yes                     | `N/A`                  |
-| `GET`  | `/profile`                  | Get authenticated user's profile                   | Yes                     | `N/A`                  |
-| `PATCH`| `/profile`                  | Update authenticated user's profile                | Yes                     | `{"username": "updated_user"}` |
-| `GET`  | `/admin/users`              | Get all users (Admin only)                         | Yes (Admin Role)        | `N/A`                  |
-| `DELETE`|`/admin/users/:id`          | Delete a user by ID (Admin only)                   | Yes (Admin Role)        | `N/A`                  |
+| Method | Endpoint | Description | Auth Required | Request Body |
+|--------|----------|-------------|---------------|--------------|
+| POST   | /v1/auth/register | Register a new user | No | `{ "username": "...", "email": "...", "password": "..." }` |
+| POST   | /v1/auth/login | Login | No | `{ "email": "...", "password": "..." }` |
+| POST   | /v1/auth/logout | Logout | No | `{ "refreshToken": "..." }` |
+| POST   | /v1/auth/refresh-tokens | Refresh tokens | No | `{ "refreshToken": "..." }` |
+| POST   | /v1/auth/forgot-password | Request password reset | No | `{ "email": "..." }` |
+| POST   | /v1/auth/reset-password | Reset password | No | `{ "token": "...", "password": "..." }` |
+| POST   | /v1/auth/send-verification-email | Send verification email | Yes | None |
+| POST   | /v1/auth/verify-email | Verify email | No | `{ "token": "..." }` |
+| POST   | /v1/users | Create user | Yes (admin) | `{ "name": "...", "email": "...", "password": "..." }` |
+| GET    | /v1/users | List users | Yes | None |
+| GET    | /v1/users/:userId | Get user by ID | Yes | None |
+| PATCH  | /v1/users/:userId | Update user | Yes (admin) | `{ ...fields to update... }` |
+| DELETE | /v1/users/:userId | Delete user | Yes (admin) | None |
+| PATCH  | /v1/users/change-password/:userId | Change password | Yes (admin) | `{ "password": "..." }` |
+| POST   | /v1/faqs | Create FAQ | No | `{ ... }` |
+| GET    | /v1/faqs | List FAQs | No | None |
+| GET    | /v1/faqs/:faqId | Get FAQ by ID | No | None |
+| PATCH  | /v1/faqs/:faqId | Update FAQ | No | `{ ... }` |
+| DELETE | /v1/faqs/:faqId | Delete FAQ | No | None |
+| POST   | /v1/grades | Create grade | No | `{ ... }` |
+| GET    | /v1/grades | List grades | No | None |
+| GET    | /v1/grades/:gradeId | Get grade by ID | No | None |
+| PATCH  | /v1/grades/:gradeId | Update grade | No | `{ ... }` |
+| DELETE | /v1/grades/:gradeId | Delete grade | No | None |
+| POST   | /v1/subjects | Create subject | No | `{ ... }` |
+| GET    | /v1/subjects | List subjects | No | None |
+| GET    | /v1/subjects/:subjectId | Get subject by ID | No | None |
+| PATCH  | /v1/subjects/:subjectId | Update subject | No | `{ ... }` |
+| DELETE | /v1/subjects/:subjectId | Delete subject | No | None |
+| POST   | /v1/testimonials | Create testimonial | No | `{ ... }` |
+| GET    | /v1/testimonials | List testimonials | No | None |
+| GET    | /v1/testimonials/:testimonialId | Get testimonial by ID | No | None |
+| PATCH  | /v1/testimonials/:testimonialId | Update testimonial | No | `{ ... }` |
+| DELETE | /v1/testimonials/:testimonialId | Delete testimonial | No | None |
+| POST   | /v1/inquiries | Create inquiry | No | `{ ... }` |
+| GET    | /v1/inquiries | List inquiries | No | None |
+| GET    | /v1/inquiries/:inquiryId | Get inquiry by ID | No | None |
+| PATCH  | /v1/inquiries/:inquiryId | Update inquiry | No | `{ ... }` |
+| DELETE | /v1/inquiries/:inquiryId | Delete inquiry | No | None |
+| POST   | /v1/papers | Create paper | No | `{ ... }` |
+| GET    | /v1/papers | List papers | No | None |
+| GET    | /v1/papers/:paperId | Get paper by ID | No | None |
+| PATCH  | /v1/papers/:paperId | Update paper | No | `{ ... }` |
+| DELETE | /v1/papers/:paperId | Delete paper | No | None |
+| POST   | /v1/tutors | Create tutor | No | `{ ... }` |
+| GET    | /v1/tutors | List tutors | No | None |
+| GET    | /v1/tutors/:tutorId | Get tutor by ID | No | None |
+| PATCH  | /v1/tutors/:tutorId | Update tutor | No | `{ ... }` |
+| DELETE | /v1/tutors/:tutorId | Delete tutor | No | None |
 
 ## 🔑 Environment Variables
 
 To run this project, you will need to add the following environment variables to your `.env` file:
 
-* `PORT=[Your_Port_Number]` (e.g., `5000`)
+* `PORT=3000`
 * `NODE_ENV=[development/production]`
-* `MONGO_URI=[Your_MongoDB_Connection_String]` (if using MongoDB)
-* `DB_HOST=[Your_DB_Host]` (if using SQL)
-* `DB_USER=[Your_DB_User]`
-* `DB_PASSWORD=[Your_DB_Password]`
-* `DB_NAME=[Your_DB_Name]`
-* `JWT_SECRET=[A_Strong_Random_Secret_Key]` (for JWT authentication)
-* `JWT_EXPIRE=[Time_for_JWT_Expiration]` (e.g., `1h`, `1d`)
-* `[Any_Other_API_Keys_or_Secrets]`
-
-**Example `.env` file:**
-
-```dotenv
-PORT=5000
-NODE_ENV=development
-MONGO_URI=mongodb+srv://user:password@cluster0.mongodb.net/mydatabase?retryWrites=true&w=majority
-JWT_SECRET=supersecretjwtkey
-JWT_EXPIRE=1d
-```
-
-## 🗄️ Database
-
-[Describe your database setup here. For example:]
-
-This project uses **MongoDB** as its primary database.
-* **Mongoose** is used as the ODM (Object Data Modeling) library for interacting with MongoDB.
-* The database schema definitions are located in the `models` directory.
-
-## ✅ Testing
-
-To run the tests for this project:
-
-```bash
-npm test
-# OR
-yarn test
-```
-
-[Optionally, describe your testing strategy or what types of tests are included, e.g., "Unit tests for services and integration tests for API endpoints are covered."]
+* `MONGO_URI=mongodb://127.0.0.1:27017/tutor-me`
+* `JWT_SECRET=thisisasamplesecret`
+* `JWT_ACCESS_EXPIRATION_MINUTES=30`
+* `JWT_REFRESH_EXPIRATION_DAYS=30`
+* `JWT_RESET_PASSWORD_EXPIRATION_MINUTES=10`
+* `JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=10`
+* `SMTP_HOST=email-server`
+* `SMTP_PORT=587`
+* `SMTP_USERNAME=email-server-username`
+* `SMTP_PASSWORD=email-server-password`
+* `EMAIL_FROM=support@yourapp.com`
 
 ## 📁 Folder Structure
 
@@ -236,13 +231,3 @@ Contributions are always welcome!
 5.  Open a Pull Request.
 
 Please ensure your code adheres to the project's coding standards and includes relevant tests.
-
-## 📄 License
-
-Distributed under the [MIT License](https://opensource.org/licenses/MIT). See `LICENSE` for more information.
-
-## ✉️ Contact
-
-[Your Name/Organization Name] - [Your Email Address]
-
-Project Link: https://github.com/[YourUsername]/[your-repo-name]
