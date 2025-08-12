@@ -1,135 +1,217 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
-const { requestStatus } = require('../config/tutor');
-const { tutorTypes } = require('../config/users');
 
-const personalInfoSchema = new mongoose.Schema(
+const tutorSchema = mongoose.Schema(
   {
-    firstName: {
+    fullName: {
       type: String,
       required: true,
+      trim: true,
     },
-    lastName: {
+    contactNumber: {
       type: String,
       required: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
+      trim: true,
+      lowercase: true,
     },
-    grade: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Grade',
+    dateOfBirth: {
+      type: Date,
+      required: true,
     },
-    phoneNumber: {
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    nationality: {
+      type: String,
+      enum: ['Singaporean', 'Singapore PR', 'Others'],
+      required: true,
+    },
+    race: {
+      type: String,
+      enum: ['Chinese', 'Malay', 'Indian', 'Eurasian', 'Caucasian', 'Punjabi', 'Others'],
+      required: true,
+    },
+    last4NRIC: {
       type: String,
       required: true,
-      trim: true,
+      length: 4,
     },
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    state: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    zip: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    region: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  { _id: false }
-);
 
-const lessonDetailsSchema = new mongoose.Schema(
-  {
-    subjects: [
+    tutoringLevels: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subject',
-      },
-    ],
-    duration: {
-      type: String,
-      required: true,
-    },
-    frequency: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
-const lessonInfoSchema = new mongoose.Schema(
-  {
-    tutorCount: {
-      type: String,
-      required: true,
-    },
-    lessonDetails: [
-      {
-        type: lessonDetailsSchema,
+        type: String,
+        enum: [
+          'Pre-School',
+          'Primary School',
+          'Lower Secondary',
+          'Upper Secondary',
+          'Junior College',
+          'IB/IGCSE',
+          'Diploma / Degree',
+          'Language',
+          'Computing',
+          'Special Skills',
+          'Music',
+        ],
         required: true,
       },
     ],
-  },
-  { _id: false }
-);
 
-const tutorTypeSchema = new mongoose.Schema(
-  {
+    preferredLocations: [
+      {
+        type: String,
+        enum: [
+          'Admiralty',
+          'Ang Mo Kio',
+          'Bishan',
+          'Boon Lay',
+          'Bukit Batok',
+          'Bukit Panjang',
+          'Choa Chu Kang',
+          'Clementi',
+          'Jurong East',
+          'Jurong West',
+          'Kranji',
+          'Marsiling',
+          'Sembawang',
+          'Sengkang',
+          'Woodlands',
+          'Yew Tee',
+          'Yishun',
+          'Bedok',
+          'Changi',
+          'East Coast',
+          'Geylang',
+          'Hougang',
+          'Katong',
+          'Marine Parade',
+          'Pasir Ris',
+          'Punggol',
+          'Serangoon',
+          'Tampines',
+          'Ubi',
+          'Boon Lay',
+          'Bukit Merah',
+          'Bukit Timah',
+          'Dover',
+          'Holland Village',
+          'Newton',
+          'Queenstown',
+          'Toa Payoh',
+          'West Coast',
+          'Boat Quay',
+          'Bugis',
+          'Chinatown',
+          'City Hall',
+          'Clarke Quay',
+          'Dhoby Ghaut',
+          'Marina Bay',
+          'Orchard',
+          'Raffles Place',
+          'Robertson Quay',
+          'Tanjong Pagar',
+          'Bukit Panjang',
+          'Hillview',
+          'Keat Hong',
+          'Teck Whye',
+          'Ang Mo Kio',
+          'Balestier',
+          'Bras Basah',
+          'Farrer Park',
+          'Kallang',
+          'Lavender',
+          'Little India',
+          'MacPherson',
+          'Novena',
+          'Potong Pasir',
+          'Rochor',
+          'Thomson',
+          'No Preference',
+        ],
+        required: true,
+      },
+    ],
+
     tutorType: {
       type: String,
-      enum: [tutorTypes.FULL_TIME, tutorTypes.PART_TIME, tutorTypes.GOV],
-      trim: true,
-    },
-    studentSchool: {
-      type: String,
-      trim: true,
+      enum: [
+        'Full Time Student',
+        'Undergraduate',
+        'Part Time Tutor',
+        'Full Time Tutor',
+        'Ex/Current MOE Teacher',
+        'Ex-MOE Teacher',
+        'Current MOE Teacher',
+      ],
       required: true,
     },
-    genderPreference: {
-      type: String,
-      trim: true,
+    yearsExperience: {
+      type: Number,
+      min: 0,
+      max: 50,
       required: true,
     },
-    isBilingualTutor: {
+    highestEducation: {
+      type: String,
+      enum: [
+        'PhD',
+        'Diploma',
+        'Masters',
+        'Undergraduate',
+        'Bachelor Degree',
+        'Diploma and Professional',
+        'JC/A Levels',
+        'Poly',
+        'Others',
+      ],
+      required: true,
+    },
+    academicDetails: {
+      type: String,
+      maxlength: 1000,
+      default: '',
+    },
+
+    teachingSummary: {
+      type: String,
+      maxlength: 750,
+      required: true,
+    },
+    studentResults: {
+      type: String,
+      maxlength: 750,
+      required: true,
+    },
+    sellingPoints: {
+      type: String,
+      maxlength: 750,
+      required: true,
+    },
+
+    agreeTerms: {
       type: Boolean,
+      required: true,
       default: false,
     },
-  },
-  { _id: false }
-);
+    agreeAssignmentInfo: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
 
-const tutorSchema = mongoose.Schema(
-  {
-    status: {
+    captchaToken: {
       type: String,
-      enum: [requestStatus.SUBMITTED, requestStatus.IN_PROGRESS, requestStatus.REJECTED, requestStatus.RESOLVED],
-      trim: true,
-      default: requestStatus.SUBMITTED,
-    },
-
-    personalInfo: {
-      type: personalInfoSchema,
-      required: true,
-    },
-    lessonInfo: {
-      type: lessonInfoSchema,
-      required: true,
-    },
-    tutorTypeInfo: {
-      type: tutorTypeSchema,
       required: true,
     },
   },
@@ -138,13 +220,9 @@ const tutorSchema = mongoose.Schema(
   }
 );
 
-// add plugin that converts mongoose to json
 tutorSchema.plugin(toJSON);
 tutorSchema.plugin(paginate);
 
-/**
- * @typedef Tutor
- */
 const Tutor = mongoose.model('Tutor', tutorSchema);
 
 module.exports = Tutor;
