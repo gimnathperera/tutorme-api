@@ -8,22 +8,32 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Tutor>}
  */
 const createTutor = async (tutorBody) => {
+  // Here you could add any business logic before saving
   return Tutor.create(tutorBody);
 };
 
 /**
- * Query for Tutors
+ * Query for tutors
  * @param {Object} filter
  * @param {Object} options
  * @returns {Promise<QueryResult>}
  */
 const queryTutors = async (filter, options) => {
-  const tutors = await Tutor.paginate(filter, options);
+  const query = { ...filter };
+
+  if (filter.preferredLocations) {
+    query.preferredLocations = { $in: filter.preferredLocations };
+  }
+  if (filter.tutorType) {
+    query.tutorType = filter.tutorType;
+  }
+
+  const tutors = await Tutor.paginate(query, options);
   return tutors;
 };
 
 /**
- * Get Tutor by id
+ * Get tutor by id
  * @param {ObjectId} id
  * @returns {Promise<Tutor>}
  */
@@ -32,7 +42,7 @@ const getTutorById = async (id) => {
 };
 
 /**
- * Update Tutor by id
+ * Update tutor by id
  * @param {ObjectId} tutorId
  * @param {Object} updateBody
  * @returns {Promise<Tutor>}
@@ -48,7 +58,7 @@ const updateTutorById = async (tutorId, updateBody) => {
 };
 
 /**
- * Delete Tutor by id
+ * Delete tutor by id
  * @param {ObjectId} tutorId
  * @returns {Promise<Tutor>}
  */

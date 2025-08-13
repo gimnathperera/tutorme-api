@@ -28,11 +28,12 @@ const toJSON = (schema) => {
         }
       });
 
-      ret.id = ret._id.toString();
+      // Always rename _id to id
+      ret.id = ret._id && ret._id.toString ? ret._id.toString() : ret._id;
       delete ret._id;
+      // Always remove __v
       delete ret.__v;
-      // delete ret.createdAt;
-      // delete ret.updatedAt;
+      // Keep createdAt and updatedAt
       if (transform) {
         return transform(doc, ret, options);
       }
