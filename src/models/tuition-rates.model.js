@@ -15,18 +15,18 @@ const tuitionRatesSchema = mongoose.Schema(
       enum: [tutorTypes.FULL_TIME, tutorTypes.PART_TIME, tutorTypes.GOV],
       trim: true,
     },
-    subject: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subject',
-      },
-    ],
-    grade: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Grade',
-      },
-    ],
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subject',
+    },
+    grade: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Grade',
+    },
+    level: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Level',
+    },
     maximumRate: {
       type: String,
       required: true,

@@ -8,6 +8,7 @@ const createTuitionRate = {
     tutorType: Joi.valid('part-time', 'full-time', 'gov'),
     subject: Joi.required(),
     grade: Joi.required(),
+    level: Joi.required(),
     maximumRate: Joi.string().required(),
     minimumRate: Joi.string().required(),
   }),

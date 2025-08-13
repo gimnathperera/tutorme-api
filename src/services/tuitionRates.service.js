@@ -18,7 +18,10 @@ const createTuitionRate = async (tuitionRateBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryTuitionRates = async (filter, options) => {
-  const tuitionRates = await TuitionRates.paginate(filter, options);
+  const tuitionRates = await TuitionRates.paginate(filter, {
+    ...options,
+    populate: 'grade subject level', // <-- pass a string here
+  });
   return tuitionRates;
 };
 
@@ -28,7 +31,7 @@ const queryTuitionRates = async (filter, options) => {
  * @returns {Promise<TuitionRates>}
  */
 const getTuitionRateById = async (id) => {
-  return TuitionRates.findById(id);
+  return TuitionRates.findById(id).populate('grade', 'title').populate('subject', 'title').populate('level', 'title');
 };
 
 /**
