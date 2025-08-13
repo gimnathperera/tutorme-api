@@ -9,6 +9,7 @@ const faqRoute = require('./faq.route');
 const inquiryRoute = require('./inquiry.route');
 const paperRoute = require('./paper.route');
 const tutorRoute = require('./tutor.route');
+const tuitionAssignmentRoute = require('./tuitionAssignment.route');
 const levelRoute = require('./level.route');
 const tuitionRateRoutes = require('./tuitionRates.route');
 const config = require('../../config/config');
@@ -59,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/levels',
     route: levelRoute,
+  },
+  {
+    path: '/tuition-assignments',
+    route: tuitionAssignmentRoute,
   },
 ];
 

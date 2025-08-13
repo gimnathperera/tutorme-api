@@ -11,3 +11,4 @@ module.exports.paperService = require('./paper.service');
 module.exports.tutorService = require('./tutor.service');
 module.exports.levelService = require('./level.service');
 module.exports.tuitionRateService = require('./tuitionRates.service');
+module.exports.tuitionAssignmentService = require('./tuitionAssignment.service');

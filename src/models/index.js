@@ -9,3 +9,4 @@ module.exports.Paper = require('./paper.mode');
 module.exports.Tutor = require('./tutor.model');
 module.exports.Level = require('./level.model');
 module.exports.TuitionRates = require('./tuition-rates.model');
+module.exports.TuitionAssignment = require('./tuitionAssignment.model');
