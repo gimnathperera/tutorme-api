@@ -7,3 +7,5 @@ module.exports.faqValidation = require('./faq.validation');
 module.exports.inquiryValidation = require('./inquiry.validation');
 module.exports.paperValidation = require('./paper.validation');
 module.exports.tutorValidation = require('./tutor.validation');
+module.exports.levelValidation = require('./level.validation');
+module.exports.tuitionRatesValidation = require('./tuitionRates.validation');
