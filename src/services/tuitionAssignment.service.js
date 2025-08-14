@@ -12,10 +12,18 @@ const enrichAssignment = async (assignment) => {
   const obj = assignment.toObject();
   const grade = await Grade.findById(obj.gradeId);
   const tutor = await Tutor.findById(obj.tutorId);
+
   obj.gradeName = grade ? grade.title : '';
-  obj.tutorName = tutor ? `${tutor.personalInfo.firstName} ${tutor.personalInfo.lastName}` : '';
-  obj.tutorGender = tutor ? tutor.personalInfo.genderPreference : '';
-  obj.tutorType = tutor ? tutor.tutorTypeInfo.tutorType : '';
+  obj.tutorName =
+    tutor && tutor.personalInfo ? `${tutor.personalInfo.firstName || ''} ${tutor.personalInfo.lastName || ''}`.trim() : '';
+  obj.tutorGender = tutor && tutor.personalInfo ? tutor.personalInfo.genderPreference || '' : '';
+  obj.tutorType = tutor && tutor.tutorTypeInfo ? tutor.tutorTypeInfo.tutorType || '' : '';
+
+  // Rename _id to id and remove __v
+  obj.id = obj._id;
+  delete obj._id;
+  delete obj.__v;
+
   return obj;
 };
 
