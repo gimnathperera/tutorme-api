@@ -184,10 +184,6 @@ const createTutor = {
       'any.only': 'You must agree to Terms and Conditions',
     }),
     agreeAssignmentInfo: Joi.boolean().valid(true).required(),
-
-    captchaToken: Joi.string().required().messages({
-      'string.empty': 'reCAPTCHA verification is required',
-    }),
   }),
 };
 

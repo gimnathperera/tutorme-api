@@ -209,11 +209,6 @@ const tutorSchema = mongoose.Schema(
       required: true,
       default: false,
     },
-
-    captchaToken: {
-      type: String,
-      required: true,
-    },
   },
   {
     timestamps: true,
