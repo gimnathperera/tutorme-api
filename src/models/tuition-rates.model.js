@@ -1,20 +1,8 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
-const { tutorTypes } = require('../config/users');
 
 const tuitionRatesSchema = mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      index: true,
-      unique: true,
-    },
-    tutorType: {
-      type: String,
-      enum: [tutorTypes.FULL_TIME, tutorTypes.PART_TIME, tutorTypes.GOV],
-      trim: true,
-    },
     subject: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Subject',
@@ -27,21 +15,49 @@ const tuitionRatesSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Level',
     },
-    maximumRate: {
-      type: String,
-      required: true,
-    },
-    minimumRate: {
-      type: String,
-      required: true,
-    },
+    govTuitionRate: [
+      {
+        maximumRate: {
+          type: String,
+          required: true,
+        },
+        minimumRate: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    partTimeTuitionRate: [
+      {
+        maximumRate: {
+          type: String,
+          required: true,
+        },
+        minimumRate: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    fullTimeTuitionRate: [
+      {
+        maximumRate: {
+          type: String,
+          required: true,
+        },
+        minimumRate: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-// add plugin that converts mongoose to json
+// Add plugins
 tuitionRatesSchema.plugin(toJSON);
 tuitionRatesSchema.plugin(paginate);
 
@@ -52,12 +68,12 @@ tuitionRatesSchema.plugin(paginate);
  * @returns {Promise<boolean>}
  */
 tuitionRatesSchema.statics.isTitleTaken = async function (title, excludedTuitionRateId) {
-  const tuitionRates = await this.findOne({ title, _id: { $ne: excludedTuitionRateId } });
-  return !!tuitionRates;
+  const tuitionRate = await this.findOne({ title, _id: { $ne: excludedTuitionRateId } });
+  return !!tuitionRate;
 };
 
 /**
- * @typedef tuition rates
+ * @typedef TuitionRates
  */
 const TuitionRates = mongoose.model('TuitionRates', tuitionRatesSchema);
 

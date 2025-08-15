@@ -21,7 +21,10 @@ const createLevel = async (levelBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryLevels = async (filter, options) => {
-  const levels = await Level.paginate(filter, options);
+  const levels = await Level.paginate(filter, {
+    ...options,
+    populate: 'subjects', // <-- pass a string here
+  });
   return levels;
 };
 
@@ -30,6 +33,7 @@ const queryLevels = async (filter, options) => {
  * @param {ObjectId} id
  * @returns {Promise<Level>}
  */
+
 const getLevelById = async (id) => {
   return Level.findById(id).populate('subjects');
 };
