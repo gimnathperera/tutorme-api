@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { TuitionAssignment, Grade, Tutor } = require('../models');
+const { TuitionAssignment } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -8,32 +8,12 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<TuitionAssignment>}
  */
 
-const enrichAssignment = async (assignment) => {
-  const obj = assignment.toObject();
-  const grade = await Grade.findById(obj.gradeId);
-  const tutor = await Tutor.findById(obj.tutorId);
-
-  obj.gradeName = grade ? grade.title || '' : '';
-  obj.tutorName =
-    tutor && tutor.personalInfo ? `${tutor.personalInfo.firstName || ''} ${tutor.personalInfo.lastName || ''}`.trim() : '';
-  obj.tutorGender = tutor && tutor.personalInfo ? tutor.personalInfo.genderPreference || '' : '';
-  obj.tutorType = tutor && tutor.tutorTypeInfo ? tutor.tutorTypeInfo.tutorType || '' : '';
-
-  // Rename _id to id and remove __v
-  obj.id = obj._id;
-  delete obj._id;
-  delete obj.__v;
-
-  return obj;
-};
-
 const createTuitionAssignment = async (body) => {
   const exists = await TuitionAssignment.findOne({ assignmentNumber: body.assignmentNumber });
   if (exists) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Assignment number already exists');
   }
-  const assignment = await TuitionAssignment.create(body);
-  return enrichAssignment(assignment);
+  return TuitionAssignment.create(body);
 };
 
 /**
@@ -44,7 +24,6 @@ const createTuitionAssignment = async (body) => {
  */
 const queryTuitionAssignments = async (filter, options) => {
   const result = await TuitionAssignment.paginate(filter, options);
-  result.results = await Promise.all(result.results.map(enrichAssignment));
   return result;
 };
 
@@ -54,9 +33,7 @@ const queryTuitionAssignments = async (filter, options) => {
  * @returns {Promise<TuitionAssignment>}
  */
 const getTuitionAssignmentById = async (id) => {
-  const assignment = await TuitionAssignment.findById(id);
-  if (!assignment) return null;
-  return enrichAssignment(assignment);
+  return TuitionAssignment.findById(id).populate('gradeId tutorId');
 };
 
 /**
@@ -66,7 +43,7 @@ const getTuitionAssignmentById = async (id) => {
  * @returns {Promise<TuitionAssignment>}
  */
 const updateTuitionAssignmentById = async (id, updateBody) => {
-  const assignment = await TuitionAssignment.findById(id);
+  const assignment = await getTuitionAssignmentById(id);
   if (!assignment) {
     throw new ApiError(httpStatus.NOT_FOUND, 'TuitionAssignment not found');
   }
@@ -78,7 +55,7 @@ const updateTuitionAssignmentById = async (id, updateBody) => {
   }
   Object.assign(assignment, updateBody);
   await assignment.save();
-  return enrichAssignment(assignment);
+  return assignment;
 };
 
 /**
