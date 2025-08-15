@@ -13,7 +13,7 @@ const enrichAssignment = async (assignment) => {
   const grade = await Grade.findById(obj.gradeId);
   const tutor = await Tutor.findById(obj.tutorId);
 
-  obj.gradeName = grade ? grade.title : '';
+  obj.gradeName = grade ? grade.title || '' : '';
   obj.tutorName =
     tutor && tutor.personalInfo ? `${tutor.personalInfo.firstName || ''} ${tutor.personalInfo.lastName || ''}`.trim() : '';
   obj.tutorGender = tutor && tutor.personalInfo ? tutor.personalInfo.genderPreference || '' : '';
