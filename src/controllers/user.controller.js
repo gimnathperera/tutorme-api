@@ -40,6 +40,11 @@ const changePassword = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const generateTempPassword = catchAsync(async (req, res) => {
+  await userService.generateTemporaryPassword(req.params.userId);
+  res.status(httpStatus.OK).send({ message: 'Temporary password sent to user email' });
+});
+
 module.exports = {
   createUser,
   getUsers,
@@ -47,4 +52,5 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  generateTempPassword,
 };

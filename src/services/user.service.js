@@ -1,6 +1,9 @@
 const httpStatus = require('http-status');
+const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { generateTempPassword } = require('../utils/generatePassword');
+// const emailService = require('./email.service');
 
 /**
  * Create a user
@@ -110,6 +113,36 @@ const changePassword = async (userId, updateBody) => {
   return { message: 'Password updated successfully' };
 };
 
+/**
+ * Generate a temporary password for a user and send it via email
+ * @param {ObjectId} userId
+ * @returns {Promise<void>}
+ */
+const generateTemporaryPassword = async (userId) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // 1. Generate temp password
+  const tempPassword = generateTempPassword();
+
+  // 2. Hash password
+  const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+  // 3. Update user
+  user.password = hashedPassword;
+  user.forcePasswordReset = true; // add this field in your User schema if not present
+  await user.save();
+
+  // 4. Send email
+  // await emailService.sendTemporaryPasswordEmail(user.email, tempPassword);
+  // console.log(`Temp password for ${user.email}: ${tempPassword}`);
+
+  return { message: 'Temporary password generated and sent to email' };
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -118,4 +151,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   changePassword,
+  generateTemporaryPassword,
 };

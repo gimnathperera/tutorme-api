@@ -55,9 +55,26 @@ If you did not create an account, then ignore this email.`;
   await sendEmail(to, subject, text);
 };
 
+/**
+ * Send temporary password email
+ * @param {string} to
+ * @param {string} tempPassword
+ * @returns {Promise}
+ */
+const sendTemporaryPasswordEmail = async (to, tempPassword) => {
+  const subject = 'Your Temporary Password';
+  const text = `Dear user,
+A temporary password has been generated for your account.
+Temporary Password: ${tempPassword}
+Please log in with this password and change it immediately for security reasons.
+If you did not request this, please contact support.`;
+  await sendEmail(to, subject, text);
+};
+
 module.exports = {
   transport,
   sendEmail,
   sendResetPasswordEmail,
   sendVerificationEmail,
+  sendTemporaryPasswordEmail,
 };
