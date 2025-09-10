@@ -36,10 +36,6 @@ const userSchema = mongoose.Schema(
       },
       private: true,
     },
-    forcePasswordReset: {
-      type: Boolean,
-      default: false,
-    },
     role: {
       type: String,
       enum: roles,

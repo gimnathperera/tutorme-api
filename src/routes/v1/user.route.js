@@ -22,7 +22,7 @@ router
   .patch(auth('manageUsers'), validate(userValidation.changePassword), userController.changePassword);
 
 router
-  .route('/:userId/temp-password')
+  .route('/temp-password/:userId')
   .post(auth('manageUsers'), validate(userValidation.generateTempPassword), userController.generateTempPassword);
 
 module.exports = router;

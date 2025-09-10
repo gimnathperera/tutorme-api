@@ -58,17 +58,36 @@ If you did not create an account, then ignore this email.`;
 /**
  * Send temporary password email
  * @param {string} to
+ * @param {string} username
  * @param {string} tempPassword
  * @returns {Promise}
  */
-const sendTemporaryPasswordEmail = async (to, tempPassword) => {
-  const subject = 'Your Temporary Password';
-  const text = `Dear user,
+const sendTemporaryPasswordEmail = async (to, username, tempPassword) => {
+  try {
+    const subject = 'Your Temporary Password for TutorMe';
+    const text = `
+Dear ${username},
+
 A temporary password has been generated for your account.
+
+=====================================
 Temporary Password: ${tempPassword}
-Please log in with this password and change it immediately for security reasons.
-If you did not request this, please contact support.`;
-  await sendEmail(to, subject, text);
+=====================================
+
+Security Notice:
+- Please log in immediately and change your password to something secure.
+- Do not share this password with anyone.
+
+If you did not request this, please contact support.
+
+Thanks, 
+The TutorMe support team.`;
+
+    await sendEmail(to, subject, text);
+  } catch (err) {
+    logger.error(`Failed to send temporary password email to ${to}:`, err);
+    throw new Error('Email sending failed');
+  }
 };
 
 module.exports = {
