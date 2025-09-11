@@ -261,7 +261,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/{id}/temp-password:
+ * /users/temp-password/{id}:
  *   post:
  *     summary: Generate temporary password for a user
  *     description: Only admins can generate a temporary password. The temporary password will be sent to the user’s email.

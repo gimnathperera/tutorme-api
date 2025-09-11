@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 /**
  * Generate a temporary password
- * @param {number} length - Length of the password (default: 12)
+ * @param {number} length - Length of the password
  * @returns {string} Generated temporary password
  */
 const generateTempPassword = (length = 12) => {
