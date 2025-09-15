@@ -1,5 +1,5 @@
 const express = require('express');
-const auth = require('../../middlewares/auth');
+// const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const userValidation = require('../../validations/user.validation');
 const userController = require('../../controllers/user.controller');
@@ -16,6 +16,15 @@ const router = express.Router();
 //   .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
 //   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
 //   .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
+
+// router
+//   .route('/change-password/:userId')
+//   .patch(auth('manageUsers'), validate(userValidation.changePassword), userController.changePassword);
+
+// router
+//   .route('/temp-password/:userId')
+//   .post(auth('manageUsers'), validate(userValidation.generateTempPassword), userController.generateTempPassword);
+
 router
   .route('/')
   .post(validate(userValidation.createUser), userController.createUser)
@@ -27,13 +36,11 @@ router
   .patch(validate(userValidation.updateUser), userController.updateUser)
   .delete(validate(userValidation.deleteUser), userController.deleteUser);
 
-router
-  .route('/change-password/:userId')
-  .patch(auth('manageUsers'), validate(userValidation.changePassword), userController.changePassword);
+router.route('/change-password/:userId').patch(validate(userValidation.changePassword), userController.changePassword);
 
 router
   .route('/temp-password/:userId')
-  .post(auth('manageUsers'), validate(userValidation.generateTempPassword), userController.generateTempPassword);
+  .post(validate(userValidation.generateTempPassword), userController.generateTempPassword);
 
 module.exports = router;
 
