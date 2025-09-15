@@ -58,6 +58,11 @@ module.exports = {
         user: envVars.SMTP_USERNAME,
         pass: envVars.SMTP_PASSWORD,
       },
+      tls: {
+        // Allow connections to servers with self-signed or invalid certificates.
+        // Do NOT use this in production, as it bypasses certificate security.
+        rejectUnauthorized: false,
+      },
     },
     from: envVars.EMAIL_FROM,
   },

@@ -1,6 +1,8 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { generateTempPassword } = require('../utils/generatePassword');
+const emailService = require('./email.service');
 
 /**
  * Create a user
@@ -110,6 +112,27 @@ const changePassword = async (userId, updateBody) => {
   return { message: 'Password updated successfully' };
 };
 
+/**
+ * Generate a temporary password for a user and send it via email
+ * @param {ObjectId} userId
+ * @returns {Promise<void>}
+ */
+const generateTemporaryPassword = async (userId) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  try {
+    const tempPassword = generateTempPassword();
+    user.password = tempPassword;
+    await user.save();
+    await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
+    return { message: 'Temporary password generated and sent to email' };
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
+  }
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -118,4 +141,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   changePassword,
+  generateTemporaryPassword,
 };

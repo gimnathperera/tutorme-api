@@ -16,6 +16,9 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
+  if (user.forcePasswordReset) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Password reset required. Please change your password.');
+  }
   return user;
 };
 
@@ -65,6 +68,10 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
       throw new Error();
     }
     await userService.updateUserById(user.id, { password: newPassword });
+    if (user.forcePasswordReset) {
+      user.forcePasswordReset = false;
+      await user.save();
+    }
     await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');

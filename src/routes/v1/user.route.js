@@ -1,5 +1,5 @@
 const express = require('express');
-const auth = require('../../middlewares/auth');
+// const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const userValidation = require('../../validations/user.validation');
 const userController = require('../../controllers/user.controller');
@@ -16,6 +16,15 @@ const router = express.Router();
 //   .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
 //   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
 //   .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
+
+// router
+//   .route('/change-password/:userId')
+//   .patch(auth('manageUsers'), validate(userValidation.changePassword), userController.changePassword);
+
+// router
+//   .route('/temp-password/:userId')
+//   .post(auth('manageUsers'), validate(userValidation.generateTempPassword), userController.generateTempPassword);
+
 router
   .route('/')
   .post(validate(userValidation.createUser), userController.createUser)
@@ -27,9 +36,11 @@ router
   .patch(validate(userValidation.updateUser), userController.updateUser)
   .delete(validate(userValidation.deleteUser), userController.deleteUser);
 
+router.route('/change-password/:userId').patch(validate(userValidation.changePassword), userController.changePassword);
+
 router
-  .route('/change-password/:userId')
-  .patch(auth('manageUsers'), validate(userValidation.changePassword), userController.changePassword);
+  .route('/temp-password/:userId')
+  .post(validate(userValidation.generateTempPassword), userController.generateTempPassword);
 
 module.exports = router;
 
@@ -257,6 +268,41 @@ module.exports = router;
  *     responses:
  *       "200":
  *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /users/temp-password/{id}:
+ *   post:
+ *     summary: Generate temporary password for a user
+ *     description: Only admins can generate a temporary password. The temporary password will be sent to the user’s email.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User id
+ *     responses:
+ *       "200":
+ *         description: Temporary password sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Temporary password sent to user email
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":

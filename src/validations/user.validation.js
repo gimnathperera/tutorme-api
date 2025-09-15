@@ -90,6 +90,12 @@ const changePassword = {
     .min(1),
 };
 
+const generateTempPassword = {
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -97,4 +103,5 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  generateTempPassword,
 };
