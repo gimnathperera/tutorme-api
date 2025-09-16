@@ -50,6 +50,11 @@ if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
 }
 
+// health check endpoint
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // v1 api routes
 app.use('/v1', routes);
 

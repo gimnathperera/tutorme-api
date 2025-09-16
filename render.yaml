@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: tutorme-api
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_EXPIRATION_MINUTES
+        value: 30
+      - key: JWT_REFRESH_EXPIRATION_DAYS
+        value: 30
+      - key: JWT_RESET_PASSWORD_EXPIRATION_MINUTES
+        value: 10
+      - key: JWT_VERIFY_EMAIL_EXPIRATION_MINUTES
+        value: 10
+      - key: MONGODB_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

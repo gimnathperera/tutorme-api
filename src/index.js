@@ -32,9 +32,25 @@ const unexpectedErrorHandler = (error) => {
 process.on('uncaughtException', unexpectedErrorHandler);
 process.on('unhandledRejection', unexpectedErrorHandler);
 
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received');
+// Graceful shutdown function
+async function shutdown() {
+  logger.info('Shutting down...');
+
   if (server) {
-    server.close();
+    server.close(() => {
+      logger.info('HTTP server closed');
+    });
   }
-});
+
+  try {
+    await mongoose.connection.close();
+    logger.info('MongoDB connection closed');
+  } catch (error) {
+    logger.error('Error closing MongoDB connection:', error);
+  }
+
+  process.exit(0);
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
