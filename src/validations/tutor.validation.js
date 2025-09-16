@@ -11,10 +11,7 @@ const createTutor = {
       'string.pattern.base': 'Contact Number must be digits only',
       'string.empty': 'Contact Number is required',
     }),
-    confirmContactNumber: Joi.any().valid(Joi.ref('contactNumber')).required().messages({
-      'any.only': 'Contact numbers do not match',
-      'any.required': 'Confirm Contact Number is required',
-    }),
+
     email: Joi.string().email().required().messages({
       'string.email': 'Email must be valid',
       'string.empty': 'Email is required',
@@ -23,16 +20,7 @@ const createTutor = {
       'string.isoDate': 'Date of Birth must be in ISO format (YYYY-MM-DD)',
       'any.required': 'Date of Birth is required',
     }),
-    confirmDateOfBirth: Joi.string()
-      .isoDate()
-      .required()
-      .custom((value, helpers) => {
-        const dob = helpers.state.ancestors[0].dateOfBirth;
-        if (value !== dob) {
-          return helpers.message('Date of Birth entries do not match');
-        }
-        return value;
-      }),
+
     gender: Joi.string().valid('Male', 'Female').required().messages({
       'any.only': 'Gender must be Male or Female',
       'any.required': 'Gender is required',
