@@ -53,6 +53,7 @@ const updateUser = {
       phoneNumber: Joi.string(),
       status: Joi.valid('active', 'inactive', 'blocked'),
       country: Joi.string(),
+      role: Joi.string().valid('user', 'tutor', 'admin'),
       city: Joi.string(),
       state: Joi.string(),
       region: Joi.string(),
