@@ -1,0 +1,123 @@
+const Joi = require('joi');
+const mongoose = require('mongoose');
+
+const objectId = () =>
+  Joi.string().custom((value, helpers) => {
+    if (!mongoose.Types.ObjectId.isValid(value)) {
+      return helpers.message('Invalid ID');
+    }
+    return value;
+  });
+
+// Create Blog
+const createBlog = {
+  body: Joi.object().keys({
+    title: Joi.string().required(),
+    date: Joi.date(),
+    author: Joi.object({
+      name: Joi.string().required(),
+      avatar: Joi.string().uri(),
+      role: Joi.string(),
+    }).required(),
+    content: Joi.array()
+      .items(
+        Joi.object({
+          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
+          text: Joi.string(),
+          src: Joi.string().uri(),
+          caption: Joi.string(),
+          level: Joi.number(),
+        })
+      )
+      .required(),
+    relatedArticles: Joi.array().items(
+      Joi.object({
+        title: Joi.string().required(),
+        description: Joi.string(),
+        image: Joi.string().uri(),
+        readTime: Joi.string(),
+      })
+    ),
+    status: Joi.string().valid('pending', 'approved', 'rejected'),
+  }),
+};
+
+// Get Blogs (with optional filters)
+const getBlogs = {
+  query: Joi.object().keys({
+    title: Joi.string(),
+    status: Joi.string().valid('pending', 'approved', 'rejected'),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
+};
+
+// Get Blog by ID
+const getBlog = {
+  params: Joi.object().keys({
+    blogId: objectId(),
+  }),
+};
+
+// Update Blog
+const updateBlog = {
+  params: Joi.object().keys({
+    blogId: objectId(),
+  }),
+  body: Joi.object()
+    .keys({
+      title: Joi.string(),
+      date: Joi.date(),
+      author: Joi.object({
+        name: Joi.string(),
+        avatar: Joi.string().uri(),
+        role: Joi.string(),
+      }),
+      content: Joi.array().items(
+        Joi.object({
+          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
+          text: Joi.string(),
+          src: Joi.string().uri(),
+          caption: Joi.string(),
+          level: Joi.number(),
+        })
+      ),
+      relatedArticles: Joi.array().items(
+        Joi.object({
+          title: Joi.string(),
+          description: Joi.string(),
+          image: Joi.string().uri(),
+          readTime: Joi.string(),
+        })
+      ),
+      status: Joi.string().valid('pending', 'approved', 'rejected'),
+    })
+    .min(1),
+};
+
+// Delete Blog
+const deleteBlog = {
+  params: Joi.object().keys({
+    blogId: objectId(),
+  }),
+};
+
+// Update Blog Status
+const updateBlogStatus = {
+  params: Joi.object().keys({
+    blogId: objectId(),
+  }),
+  body: Joi.object().keys({
+    status: Joi.string().valid('pending', 'approved', 'rejected').required(),
+  }),
+};
+
+module.exports = {
+  createBlog,
+  getBlogs,
+  getBlog,
+  updateBlog,
+  deleteBlog,
+  updateBlogStatus,
+};
