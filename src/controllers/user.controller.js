@@ -10,8 +10,33 @@ const createUser = catchAsync(async (req, res) => {
 });
 
 const getUsers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
-  const options = { ...pick(req.query, ['sortBy', 'limit', 'page']), populate: 'grades.grade,subjects.subject' };
+  const filter = pick(req.query, [
+    'id',
+    'email',
+    'phoneNumber',
+    'birthday',
+    'status',
+    'country',
+    'city',
+    'state',
+    'region',
+    'zip',
+    'address',
+    'tutorType',
+    'gender',
+    'duration',
+    'frequency',
+    'timeZone',
+    'language',
+    'avatar',
+    'createdAt',
+    'name',
+    'role',
+  ]);
+  const options = {
+    ...pick(req.query, ['sortBy', 'limit', 'page']),
+    populate: 'grades.grade,subjects.subject',
+  };
 
   const result = await userService.queryUsers(filter, options);
   res.send(result);
