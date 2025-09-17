@@ -201,10 +201,37 @@ const updateTutor = {
   }),
   body: Joi.object()
     .keys({
+      // 1. Personal Information
       fullName: Joi.string(),
       contactNumber: Joi.string().pattern(/^\d+$/).min(7).max(15),
       email: Joi.string().email(),
+      dateOfBirth: Joi.string().isoDate(),
       gender: Joi.string().valid('Male', 'Female'),
+      age: Joi.number().integer().min(1),
+      nationality: Joi.string().valid('Singaporean', 'Singapore PR', 'Others'),
+      race: Joi.string().valid('Chinese', 'Malay', 'Indian', 'Eurasian', 'Caucasian', 'Punjabi', 'Others'),
+      last4NRIC: Joi.string()
+        .length(4)
+        .pattern(/^\d{4}$/),
+
+      // 2. Tutoring Preferences
+      tutoringLevels: Joi.array().items(Joi.string()),
+      preferredLocations: Joi.array().items(Joi.string()),
+
+      // 3. Academic Qualifications & Experience
+      tutorType: Joi.string(),
+      yearsExperience: Joi.number().integer().min(0).max(50),
+      highestEducation: Joi.string(),
+      academicDetails: Joi.string().allow('').max(1000),
+
+      // 4. Tutor's Profile
+      teachingSummary: Joi.string().max(750),
+      studentResults: Joi.string().max(750),
+      sellingPoints: Joi.string().max(750),
+
+      // 5. Agreement & Submit
+      agreeTerms: Joi.boolean(),
+      agreeAssignmentInfo: Joi.boolean(),
     })
     .min(1),
 };
