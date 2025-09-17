@@ -4,7 +4,6 @@ const { toJSON, paginate } = require('./plugins');
 const blogSchema = mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, index: true },
-    date: { type: Date, default: Date.now },
     author: {
       name: { type: String, required: true },
       avatar: String,
@@ -12,7 +11,7 @@ const blogSchema = mongoose.Schema(
     },
     content: [
       {
-        type: { type: String, required: true }, // "paragraph", "image", "heading"
+        type: { type: String, required: true },
         text: String,
         src: String,
         caption: String,
@@ -21,10 +20,8 @@ const blogSchema = mongoose.Schema(
     ],
     relatedArticles: [
       {
-        title: String,
-        description: String,
-        image: String,
-        readTime: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Blog',
       },
     ],
     status: {
