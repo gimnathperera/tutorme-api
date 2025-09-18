@@ -9,6 +9,7 @@ const blogSchema = mongoose.Schema(
       avatar: String,
       role: String,
     },
+    image: { type: String, required: true },
     content: [
       {
         type: { type: String, required: true },

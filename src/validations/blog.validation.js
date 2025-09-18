@@ -19,6 +19,7 @@ const createBlog = {
       avatar: Joi.string().uri(),
       role: Joi.string(),
     }).required(),
+    image: Joi.string().uri(),
     content: Joi.array()
       .items(
         Joi.object({
@@ -30,14 +31,7 @@ const createBlog = {
         })
       )
       .required(),
-    relatedArticles: Joi.array().items(
-      Joi.object({
-        title: Joi.string().required(),
-        description: Joi.string(),
-        image: Joi.string().uri(),
-        readTime: Joi.string(),
-      })
-    ),
+    relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
   }),
 };
@@ -74,6 +68,7 @@ const updateBlog = {
         avatar: Joi.string().uri(),
         role: Joi.string(),
       }),
+      image: Joi.string().uri(),
       content: Joi.array().items(
         Joi.object({
           type: Joi.string().valid('paragraph', 'image', 'heading').required(),
@@ -83,14 +78,7 @@ const updateBlog = {
           level: Joi.number(),
         })
       ),
-      relatedArticles: Joi.array().items(
-        Joi.object({
-          title: Joi.string(),
-          description: Joi.string(),
-          image: Joi.string().uri(),
-          readTime: Joi.string(),
-        })
-      ),
+      relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
       status: Joi.string().valid('pending', 'approved', 'rejected'),
     })
     .min(1),

@@ -28,7 +28,7 @@ const queryBlogs = async (filter, options) => {
  * @returns {Promise<Blog>}
  */
 const getBlogById = async (id) => {
-  return Blog.findById(id);
+  return Blog.findById(id).populate('relatedArticles', 'title image author avatar');
 };
 
 /**

@@ -35,6 +35,9 @@ const deleteBlog = catchAsync(async (req, res) => {
 });
 
 const updateBlogStatus = catchAsync(async (req, res) => {
+  if (!req.body.status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Status is required');
+  }
   const blog = await blogService.updateBlogStatus(req.params.blogId, req.body.status);
   res.send(blog);
 });
