@@ -9,3 +9,5 @@ module.exports.paperValidation = require('./paper.validation');
 module.exports.tutorValidation = require('./tutor.validation');
 module.exports.levelValidation = require('./level.validation');
 module.exports.tuitionRatesValidation = require('./tuitionRates.validation');
+module.exports.tuitionAssignmentValidation = require('./tuitionAssignment.validation');
+module.exports.blogValidation = require('./blog.validation');
