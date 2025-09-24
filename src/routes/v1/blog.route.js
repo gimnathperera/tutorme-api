@@ -2,12 +2,13 @@ const express = require('express');
 const validate = require('../../middlewares/validate');
 const blogValidation = require('../../validations/blog.validation');
 const blogController = require('../../controllers/blog.controller');
+const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(validate(blogValidation.createBlog), blogController.createBlog)
+  .post(auth('manageBlogs'), validate(blogValidation.createBlog), blogController.createBlog)
   .get(validate(blogValidation.getBlogs), blogController.getBlogs);
 
 router
