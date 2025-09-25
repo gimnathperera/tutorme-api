@@ -1,6 +1,8 @@
 const httpStatus = require('http-status');
 const { Tutor } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { generateTempPassword } = require('../utils/generatePassword');
+const emailService = require('./email.service');
 
 /**
  * Create a Tutor
@@ -70,11 +72,53 @@ const deleteTutorById = async (tutorId) => {
   await tutor.remove();
   return tutor;
 };
+const changePassword = async (tutorId, updateBody) => {
+  const tutor = await getTutorById(tutorId);
 
+  if (!tutor) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
+  }
+
+  if (!tutor || !(await tutor.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  const payload = {
+    password: updateBody.newPassword,
+  };
+
+  Object.assign(tutor, payload);
+
+  await tutor.save();
+  return { message: 'Password updated successfully' };
+};
+/**
+ * Generate a temporary password for a user and send it via email
+ * @param {ObjectId} tutorId
+ * @returns {Promise<void>}
+ */
+
+const generateTemporaryPassword = async (tutorId) => {
+  const tutor = await getTutorById(tutorId);
+  if (!tutor) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
+  }
+  try {
+    const tempPassword = generateTempPassword();
+    tutor.password = tempPassword;
+    await tutor.save();
+    await emailService.sendTemporaryPasswordEmail(tutor.email, tutor.fullName, tempPassword);
+    return { message: 'Temporary password generated and sent to email' };
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
+  }
+};
 module.exports = {
   createTutor,
   queryTutors,
   getTutorById,
   updateTutorById,
   deleteTutorById,
+  changePassword,
+  generateTemporaryPassword,
 };
