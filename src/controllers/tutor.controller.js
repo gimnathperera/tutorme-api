@@ -34,11 +34,21 @@ const deleteTutor = catchAsync(async (req, res) => {
   await tutorService.deleteTutorById(req.params.tutorId);
   res.status(httpStatus.NO_CONTENT).send();
 });
+const changePassword = catchAsync(async (req, res) => {
+  const result = await tutorService.changePassword(req.params.tutorId, req.body);
+  res.send(result);
+});
 
+const generateTempPassword = catchAsync(async (req, res) => {
+  const result = await tutorService.generateTemporaryPassword(req.params.tutorId);
+  res.send(result);
+});
 module.exports = {
   createTutor,
   getTutors,
   getTutor,
   updateTutor,
   deleteTutor,
+  changePassword,
+  generateTempPassword,
 };

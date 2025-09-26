@@ -8,7 +8,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(auth(), validate(blogValidation.createBlog), blogController.createBlog)
+  .post(auth('manageBlogs'), validate(blogValidation.createBlog), blogController.createBlog)
   .get(validate(blogValidation.getBlogs), blogController.getBlogs);
 
 router

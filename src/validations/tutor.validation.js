@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { password, objectId } = require('./custom.validation');
 
 const createTutor = {
   body: Joi.object().keys({
@@ -247,10 +248,30 @@ const deleteTutor = {
   }),
 };
 
+const changePassword = {
+  params: Joi.object().keys({
+    tutorId: Joi.required().custom(objectId),
+  }),
+  body: Joi.object()
+    .keys({
+      currentPassword: Joi.string().custom(password),
+      newPassword: Joi.string().custom(password),
+    })
+    .min(1),
+};
+
+const generateTempPassword = {
+  params: Joi.object().keys({
+    tutorId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createTutor,
   getTutors,
   getTutor,
   updateTutor,
   deleteTutor,
+  changePassword,
+  generateTempPassword,
 };
