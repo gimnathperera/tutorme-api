@@ -16,4 +16,10 @@ router
   .patch(validate(tutorValidation.updateTutor), tutorController.updateTutor)
   .delete(validate(tutorValidation.deleteTutor), tutorController.deleteTutor);
 
+router.route('/change-password/:tutorId').patch(validate(tutorValidation.changePassword), tutorController.changePassword);
+
+router
+  .route('/temp-password/:tutorId')
+  .post(validate(tutorValidation.generateTempPassword), tutorController.generateTempPassword);
+
 module.exports = router;
