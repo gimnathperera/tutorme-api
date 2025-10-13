@@ -14,6 +14,7 @@ const levelRoute = require('./level.route');
 const tuitionRateRoutes = require('./tuitionRates.route');
 const config = require('../../config/config');
 const blogRoute = require('./blog.route');
+const requestTutorRoute = require('./request-tutor.route');
 
 const router = express.Router();
 
@@ -25,6 +26,10 @@ const defaultRoutes = [
   {
     path: '/tuitionRates',
     route: tuitionRateRoutes,
+  },
+  {
+    path: '/requestTutor',
+    route: requestTutorRoute,
   },
   {
     path: '/users',
