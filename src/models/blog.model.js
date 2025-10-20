@@ -10,15 +10,7 @@ const blogSchema = mongoose.Schema(
       role: String,
     },
     image: { type: String, required: true },
-    content: [
-      {
-        type: { type: String, required: true },
-        text: String,
-        src: String,
-        caption: String,
-        level: Number,
-      },
-    ],
+    content: { type: String, required: true },
     relatedArticles: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +23,12 @@ const blogSchema = mongoose.Schema(
       default: 'pending',
       index: true,
     },
+    tags: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
   },
   {
     timestamps: true,

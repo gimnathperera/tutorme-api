@@ -7,3 +7,4 @@ module.exports.faqController = require('./faq.controller');
 module.exports.tutorController = require('./tutor.controller');
 module.exports.levelController = require('./level.controller');
 module.exports.requestTutorController = require('./requestTutor.controllers');
+module.exports.tagController = require('./tag.controller');

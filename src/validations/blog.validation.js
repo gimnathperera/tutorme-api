@@ -20,18 +20,9 @@ const createBlog = {
       role: Joi.string(),
     }).required(),
     image: Joi.string().uri(),
-    content: Joi.array()
-      .items(
-        Joi.object({
-          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
-          text: Joi.string(),
-          src: Joi.string().uri(),
-          caption: Joi.string(),
-          level: Joi.number(),
-        })
-      )
-      .required(),
+    content: Joi.string.required(),
     relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
+    tags: Joi.array().optional(),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
   }),
 };
@@ -40,6 +31,7 @@ const createBlog = {
 const getBlogs = {
   query: Joi.object().keys({
     title: Joi.string(),
+    tags: Joi.array().optional(),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
@@ -63,21 +55,14 @@ const updateBlog = {
     .keys({
       title: Joi.string(),
       date: Joi.date(),
+      tags: Joi.array().optional(),
       author: Joi.object({
         name: Joi.string(),
         avatar: Joi.string().uri(),
         role: Joi.string(),
       }),
       image: Joi.string().uri(),
-      content: Joi.array().items(
-        Joi.object({
-          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
-          text: Joi.string(),
-          src: Joi.string().uri(),
-          caption: Joi.string(),
-          level: Joi.number(),
-        })
-      ),
+      content: Joi.string.required(),
       relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
       status: Joi.string().valid('pending', 'approved', 'rejected'),
     })

@@ -12,3 +12,4 @@ module.exports.TuitionRates = require('./tuition-rates.model');
 module.exports.TuitionAssignment = require('./tuitionAssignment.model');
 module.exports.Blog = require('./blog.model');
 module.exports.RequestTutor = require('./requestTutor.model');
+module.exports.Tag = require('./tags.model');
