@@ -10,7 +10,15 @@ const blogSchema = mongoose.Schema(
       role: String,
     },
     image: { type: String, required: true },
-    content: { type: String, required: true },
+    content: [
+      {
+        type: { type: String, required: true },
+        text: String,
+        src: String,
+        caption: String,
+        level: Number,
+      },
+    ],
     relatedArticles: [
       {
         type: mongoose.Schema.Types.ObjectId,

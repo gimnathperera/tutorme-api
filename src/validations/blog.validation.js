@@ -20,7 +20,17 @@ const createBlog = {
       role: Joi.string(),
     }).required(),
     image: Joi.string().uri(),
-    content: Joi.string.required(),
+    content: Joi.array()
+      .items(
+        Joi.object({
+          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
+          text: Joi.string(),
+          src: Joi.string().uri(),
+          caption: Joi.string(),
+          level: Joi.number(),
+        })
+      )
+      .required(),
     relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
     tags: Joi.array().optional(),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
@@ -62,7 +72,15 @@ const updateBlog = {
         role: Joi.string(),
       }),
       image: Joi.string().uri(),
-      content: Joi.string.required(),
+      content: Joi.array().items(
+        Joi.object({
+          type: Joi.string().valid('paragraph', 'image', 'heading').required(),
+          text: Joi.string(),
+          src: Joi.string().uri(),
+          caption: Joi.string(),
+          level: Joi.number(),
+        })
+      ),
       relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
       status: Joi.string().valid('pending', 'approved', 'rejected'),
     })
