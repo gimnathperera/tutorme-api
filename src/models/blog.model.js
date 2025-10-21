@@ -25,16 +25,22 @@ const blogSchema = mongoose.Schema(
         ref: 'Blog',
       },
     ],
+    tags: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
       index: true,
     },
-    tags: [
+    faqs: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Tag',
+        question: { type: String, required: true },
+        answer: { type: String, required: true },
       },
     ],
   },
@@ -43,7 +49,6 @@ const blogSchema = mongoose.Schema(
   }
 );
 
-// add plugin that converts mongoose to json
 blogSchema.plugin(toJSON);
 blogSchema.plugin(paginate);
 

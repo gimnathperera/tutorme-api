@@ -23,9 +23,11 @@ const queryBlogs = async (filter, options) => {
     query.tags = filter.tag;
     delete query.tag;
   }
+
   const blogs = await Blog.paginate(query, {
     ...options,
-    populate: { path: 'tags', select: 'name' },
+    populate: 'tags relatedArticles',
+    select: 'title author image content relatedArticles tags faqs status createdAt updatedAt',
   });
 
   return blogs;
@@ -37,7 +39,7 @@ const queryBlogs = async (filter, options) => {
  * @returns {Promise<Blog>}
  */
 const getBlogById = async (id) => {
-  return Blog.findById(id).populate('relatedArticles', 'title image author avatar').populate('tags', 'name');
+  return Blog.findById(id).populate('relatedArticles', 'title image author avatar').populate('tags', 'name'); // faqs are automatically included
 };
 
 /**
