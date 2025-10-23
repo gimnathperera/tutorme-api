@@ -10,7 +10,7 @@ const createBlog = catchAsync(async (req, res) => {
 });
 
 const getBlogs = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['title', 'status']);
+  const filter = pick(req.query, ['title', 'status', 'tag']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await blogService.queryBlogs(filter, options);
   res.send(result);

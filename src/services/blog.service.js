@@ -18,7 +18,18 @@ const createBlog = async (blogBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryBlogs = async (filter, options) => {
-  const blogs = await Blog.paginate(filter, options);
+  const query = { ...filter };
+  if (filter.tag) {
+    query.tags = filter.tag;
+    delete query.tag;
+  }
+
+  const blogs = await Blog.paginate(query, {
+    ...options,
+    populate: 'tags relatedArticles',
+    select: 'title author image content relatedArticles tags faqs status createdAt updatedAt',
+  });
+
   return blogs;
 };
 
@@ -28,7 +39,7 @@ const queryBlogs = async (filter, options) => {
  * @returns {Promise<Blog>}
  */
 const getBlogById = async (id) => {
-  return Blog.findById(id).populate('relatedArticles', 'title image author avatar');
+  return Blog.findById(id).populate('relatedArticles', 'title image author avatar').populate('tags', 'name'); // faqs are automatically included
 };
 
 /**

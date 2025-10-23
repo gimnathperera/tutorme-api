@@ -9,7 +9,6 @@ const objectId = () =>
     return value;
   });
 
-// Create Blog
 const createBlog = {
   body: Joi.object().keys({
     title: Joi.string().required(),
@@ -32,29 +31,17 @@ const createBlog = {
       )
       .required(),
     relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
+    tags: Joi.array().optional(),
+    faqs: Joi.array().items(
+      Joi.object({
+        question: Joi.string().required(),
+        answer: Joi.string().required(),
+      })
+    ),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
   }),
 };
 
-// Get Blogs (with optional filters)
-const getBlogs = {
-  query: Joi.object().keys({
-    title: Joi.string(),
-    status: Joi.string().valid('pending', 'approved', 'rejected'),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-  }),
-};
-
-// Get Blog by ID
-const getBlog = {
-  params: Joi.object().keys({
-    blogId: objectId(),
-  }),
-};
-
-// Update Blog
 const updateBlog = {
   params: Joi.object().keys({
     blogId: objectId(),
@@ -63,6 +50,7 @@ const updateBlog = {
     .keys({
       title: Joi.string(),
       date: Joi.date(),
+      tags: Joi.array().optional(),
       author: Joi.object({
         name: Joi.string(),
         avatar: Joi.string().uri(),
@@ -79,19 +67,40 @@ const updateBlog = {
         })
       ),
       relatedArticles: Joi.array().items(Joi.string().hex().length(24)),
+      faqs: Joi.array().items(
+        Joi.object({
+          question: Joi.string().required(),
+          answer: Joi.string().required(),
+        })
+      ),
       status: Joi.string().valid('pending', 'approved', 'rejected'),
     })
     .min(1),
 };
 
-// Delete Blog
+const getBlogs = {
+  query: Joi.object().keys({
+    title: Joi.string(),
+    tags: Joi.array().optional(),
+    status: Joi.string().valid('pending', 'approved', 'rejected'),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
+};
+
+const getBlog = {
+  params: Joi.object().keys({
+    blogId: objectId(),
+  }),
+};
+
 const deleteBlog = {
   params: Joi.object().keys({
     blogId: objectId(),
   }),
 };
 
-// Update Blog Status
 const updateBlogStatus = {
   params: Joi.object().keys({
     blogId: objectId(),

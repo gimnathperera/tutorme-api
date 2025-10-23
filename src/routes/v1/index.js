@@ -15,6 +15,7 @@ const tuitionRateRoutes = require('./tuitionRates.route');
 const config = require('../../config/config');
 const blogRoute = require('./blog.route');
 const requestTutorRoute = require('./request-tutor.route');
+const tagRoute = require('./tage.route');
 
 const router = express.Router();
 
@@ -22,6 +23,10 @@ const defaultRoutes = [
   {
     path: '/auth',
     route: authRoute,
+  },
+  {
+    path: '/tags',
+    route: tagRoute,
   },
   {
     path: '/tuitionRates',
