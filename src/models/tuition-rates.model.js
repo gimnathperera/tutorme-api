@@ -62,17 +62,6 @@ tuitionRatesSchema.plugin(toJSON);
 tuitionRatesSchema.plugin(paginate);
 
 /**
- * Check if title is taken
- * @param {string} title - The tuition rate's title
- * @param {ObjectId} [excludedTuitionRateId] - The id of the tuition rate to be excluded
- * @returns {Promise<boolean>}
- */
-tuitionRatesSchema.statics.isTitleTaken = async function (title, excludedTuitionRateId) {
-  const tuitionRate = await this.findOne({ title, _id: { $ne: excludedTuitionRateId } });
-  return !!tuitionRate;
-};
-
-/**
  * @typedef TuitionRates
  */
 const TuitionRates = mongoose.model('TuitionRates', tuitionRatesSchema);

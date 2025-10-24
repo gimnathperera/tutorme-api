@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
@@ -113,20 +114,24 @@ const changePassword = async (userId, updateBody) => {
 };
 
 /**
- * Generate a temporary password for a user and send it via email
  * @param {ObjectId} userId
  * @returns {Promise<void>}
  */
 const generateTemporaryPassword = async (userId) => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+
   try {
-    const tempPassword = generateTempPassword();
-    user.password = tempPassword;
+    const tempPassword = generateTempPassword(12);
+    if (!tempPassword) throw new Error('Temp password generation failed');
+    user.password = await bcrypt.hash(tempPassword, 10);
     await user.save();
-    await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
+    try {
+      await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to send temp password email for userId', userId, err);
+    }
     return { message: 'Temporary password generated and sent to email' };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
