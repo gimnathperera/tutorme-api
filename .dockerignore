@@ -6,8 +6,7 @@ yarn.lock
 .gitignore
 Dockerfile*
 docker-compose*.yml
-.env
-.env.*
+.env.example
 coverage
 dist
 .tmp
