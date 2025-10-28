@@ -12,7 +12,7 @@ const emailService = require('./email.service');
  */
 const createUser = async (userBody) => {
   if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please sign in or use a different email.');
   }
   return User.create(userBody);
 };
