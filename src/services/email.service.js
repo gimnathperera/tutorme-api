@@ -24,19 +24,57 @@ const sendEmail = async (to, subject, text) => {
 };
 
 /**
- * Send reset password email
+ * Send reset password email (HTML + Text)
  * @param {string} to
  * @param {string} token
  * @returns {Promise}
  */
 const sendResetPasswordEmail = async (to, token) => {
-  const subject = 'Reset password';
-  // replace this url with the link to the reset password page of your front-end app
-  const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
-  const text = `Dear user,
-To reset your password, click on this link: ${resetPasswordUrl}
-If you did not request any password resets, then ignore this email.`;
-  await sendEmail(to, subject, text);
+  try {
+    const subject = 'Reset Your TutorMe Password';
+    const resetPasswordUrl = `https://tutorme-client.vercel.app/reset-password?token=${token}`;
+
+    const text = `
+Hello,
+
+We received a request to reset the password for your TutorMe account.
+
+Reset your password using the link below:
+${resetPasswordUrl}
+
+If you didn’t request this, please ignore this email.
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.6;">
+        <p>Hello,</p>
+        <p>We received a request to reset the password for your <strong>TutorMe</strong> account.</p>
+        <p>You can reset your password by clicking the button below:</p>
+        <p style="text-align: center; margin: 25px 0;">
+          <a href="${resetPasswordUrl}" 
+             style="background-color: #4F46E5; color: #fff; padding: 12px 24px; 
+                    border-radius: 8px; text-decoration: none; font-weight: bold;">
+            Reset Password
+          </a>
+        </p>
+        <p>If the button above doesn’t work, you can copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #1d4ed8;">${resetPasswordUrl}</p>
+        <p>If you did not request a password reset, please ignore this message.</p>
+        <p>Thank you,<br><strong>The TutorMe Support Team</strong></p>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error(`Failed to send reset password email to ${to}:`, err);
+    throw new Error('Email sending failed');
+  }
 };
 
 /**
