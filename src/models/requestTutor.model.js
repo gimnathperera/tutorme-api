@@ -3,12 +3,7 @@ const { toJSON, paginate } = require('./plugins');
 
 const requestTutorSchema = mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    lastName: {
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -25,15 +20,27 @@ const requestTutorSchema = mongoose.Schema(
         ref: 'Grade',
       },
     ],
+    medium: {
+      type: String,
+      enum: ['Sinhala', 'English', 'Tamil'],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Approved', 'Tutor Assigned'],
+      required: true,
+    },
     phoneNumber: {
       type: String,
       required: true,
       trim: true,
     },
-    city: { type: String, required: true, trim: true },
-    state: { type: String, required: true, trim: true },
-    region: { type: String, required: true, trim: true },
-    zip: { type: String, required: true, trim: true },
+    assignedTutor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tutor',
+      },
+    ],
     tutors: [
       {
         _id: false,
@@ -54,20 +61,13 @@ const requestTutorSchema = mongoose.Schema(
           enum: ['Once a Week', 'Twice a Week', 'Daily'],
           required: true,
         },
+        preferredTutorType: {
+          type: String,
+          enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
+          required: true,
+        },
       },
     ],
-    preferredTutorType: {
-      type: String,
-      enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
-      required: true,
-    },
-    studentSchool: { type: String, required: true, trim: true },
-    genderPreference: { type: String, enum: ['Male', 'Female', 'Others'], required: true },
-    bilingual: {
-      type: String,
-      enum: ['Yes', 'No'],
-      required: true,
-    },
   },
   {
     timestamps: true,
