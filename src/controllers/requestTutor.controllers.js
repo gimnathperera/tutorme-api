@@ -32,9 +32,27 @@ const deleteTutor = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const updateStatus = catchAsync(async (req, res) => {
+  const { requestTutorId } = req.params;
+  const { status } = req.body;
+
+  const updated = await requestTutorService.updateStatusById(requestTutorId, status);
+  res.send(updated);
+});
+
+const updateAssignedTutor = catchAsync(async (req, res) => {
+  const { requestTutorId } = req.params;
+  const { assignedTutor } = req.body;
+
+  const updated = await requestTutorService.updateAssignedTutorById(requestTutorId, assignedTutor);
+  res.send(updated);
+});
+
 module.exports = {
   createTutorRequest,
   getTutorRequests,
   getTutorById,
   deleteTutor,
+  updateStatus,
+  updateAssignedTutor,
 };

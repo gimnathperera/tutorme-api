@@ -4,8 +4,6 @@ const ApiError = require('../utils/ApiError');
 
 /**
  * Request a Tutor
- * @param {Object} requestTutorBody
- * @returns {Promise<RequestTutor>}
  */
 const requestTutor = async (requestTutorBody) => {
   return RequestTutor.create(requestTutorBody);
@@ -13,9 +11,6 @@ const requestTutor = async (requestTutorBody) => {
 
 /**
  * Query for tutor requests
- * @param {Object} filter
- * @param {Object} options
- * @returns {Promise<QueryResult>}
  */
 const queryTutorsRequests = async (filter, options) => {
   const requestTutors = await RequestTutor.paginate(filter, {
@@ -26,26 +21,50 @@ const queryTutorsRequests = async (filter, options) => {
 };
 
 /**
- * Get requested tutor requests by id
- * @param {ObjectId} id
- * @returns {Promise<RequestTutor>}
+ * Get tutor request by id
  */
 const getRequestTutorById = async (id) => {
   return RequestTutor.findById(id).populate('grade').populate('tutors.subjects');
 };
 
 /**
- * Delete tutor requests by id
- * @param {ObjectId} requestTutorId
- * @returns {Promise<RequestTutor>}
+ * Delete tutor request
  */
 const deleteTutorRequestById = async (requestTutorId) => {
-  const requestTutors = await getRequestTutorById(requestTutorId);
-  if (!requestTutors) {
+  const tutorRequest = await getRequestTutorById(requestTutorId);
+  if (!tutorRequest) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
   }
-  await requestTutors.remove();
-  return requestTutors;
+  await tutorRequest.remove();
+  return tutorRequest;
+};
+
+/**
+ * Update ONLY the status
+ */
+const updateStatusById = async (requestTutorId, status) => {
+  const tutorRequest = await getRequestTutorById(requestTutorId);
+  if (!tutorRequest) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+  }
+
+  tutorRequest.status = status;
+  await tutorRequest.save();
+  return tutorRequest;
+};
+
+/**
+ * Update ONLY the assigned tutor
+ */
+const updateAssignedTutorById = async (requestTutorId, assignedTutor) => {
+  const tutorRequest = await getRequestTutorById(requestTutorId);
+  if (!tutorRequest) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+  }
+
+  tutorRequest.assignedTutor = assignedTutor;
+  await tutorRequest.save();
+  return tutorRequest;
 };
 
 module.exports = {
@@ -53,4 +72,6 @@ module.exports = {
   queryTutorsRequests,
   getRequestTutorById,
   deleteTutorRequestById,
+  updateStatusById,
+  updateAssignedTutorById,
 };

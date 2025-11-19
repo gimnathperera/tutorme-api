@@ -16,4 +16,16 @@ router
   .get(validate(requestTutorValidation.getTutor), requestTutorController.getTutorById)
   .delete(auth('manageUsers'), validate(requestTutorValidation.deleteTutor), requestTutorController.deleteTutor);
 
+router
+  .route('/status/:requestTutorId')
+  .patch(auth('manageUsers'), validate(requestTutorValidation.updateStatus), requestTutorController.updateStatus);
+
+router
+  .route('/assigned-tutor/:requestTutorId')
+  .patch(
+    auth('manageUsers'),
+    validate(requestTutorValidation.updateAssignedTutor),
+    requestTutorController.updateAssignedTutor
+  );
+
 module.exports = router;
