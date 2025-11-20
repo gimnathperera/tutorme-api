@@ -13,7 +13,7 @@ const getTutorRequests = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['firstName']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
-    populate: 'grade,tutors.subjects',
+    populate: 'grade,tutors.subjects,tutors.assignedTutor',
   };
   const result = await requestTutorService.queryTutorsRequests(filter, options);
   res.send(result);

@@ -10,6 +10,12 @@ const createRequestTutor = {
       'string.email': 'Invalid email format',
       'any.required': 'Email is required',
     }),
+    city: Joi.string().trim().required().messages({
+      'string.empty': 'City is required',
+    }),
+    district: Joi.string().trim().required().messages({
+      'string.empty': 'District is required',
+    }),
     phoneNumber: Joi.string()
       .pattern(/^[0-9]{7,15}$/)
       .required()
@@ -39,16 +45,6 @@ const createRequestTutor = {
       .messages({
         'array.min': 'At least one grade must be selected',
       }),
-    assignedTutor: Joi.array()
-      .items(
-        Joi.string().custom((value, helpers) => {
-          if (!mongoose.Types.ObjectId.isValid(value)) {
-            return helpers.message('Invalid Tutor ID');
-          }
-          return value;
-        })
-      )
-      .min(1),
 
     tutors: Joi.array()
       .items(
@@ -67,6 +63,16 @@ const createRequestTutor = {
             .messages({
               'array.min': 'Each tutor must have at least one subject',
             }),
+          assignedTutor: Joi.array()
+            .items(
+              Joi.string().custom((value, helpers) => {
+                if (!mongoose.Types.ObjectId.isValid(value)) {
+                  return helpers.message('Invalid Tutor ID');
+                }
+                return value;
+              })
+            )
+            .min(1),
           preferredTutorType: Joi.string()
             .valid('Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors')
             .required()
