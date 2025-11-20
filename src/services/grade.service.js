@@ -21,8 +21,12 @@ const createGrade = async (gradeBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryGrades = async (filter, options) => {
-  const grades = await Grade.paginate(filter, options);
-  return grades;
+  const query = { ...filter };
+  if (query.title) {
+    query.title = { $regex: query.title, $options: 'i' };
+  }
+
+  return Grade.paginate(query, options);
 };
 
 /**

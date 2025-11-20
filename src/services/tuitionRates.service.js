@@ -20,7 +20,7 @@ const createTuitionRate = async (tuitionRateBody) => {
 const queryTuitionRates = async (filter, options) => {
   const tuitionRates = await TuitionRates.paginate(filter, {
     ...options,
-    populate: 'grade subject', // <-- pass a string here
+    populate: 'grade subject',
   });
   return tuitionRates;
 };
