@@ -115,6 +115,13 @@ const createTutor = {
       .required(),
 
     // 3. Academic Qualifications & Experience
+    tutorMediums: Joi.array().items(Joi.string().valid('English', 'Sinhala ', 'Tamil ')).min(1).required().messages({
+      'array.min': 'Please select at least one medium.',
+    }),
+
+    grades: Joi.array().items(Joi.string()).min(1).required(),
+    subjects: Joi.array().items(Joi.string()).min(1).required(),
+
     tutorType: Joi.string()
       .valid(
         'Full Time Student',
