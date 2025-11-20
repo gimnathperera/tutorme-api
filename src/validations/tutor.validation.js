@@ -115,7 +115,7 @@ const createTutor = {
       .required(),
 
     // 3. Academic Qualifications & Experience
-    tutorMediums: Joi.array().items(Joi.string().valid('English', 'Sinhala ', 'Tamil ')).min(1).required().messages({
+    tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1).required().messages({
       'array.min': 'Please select at least one medium.',
     }),
 

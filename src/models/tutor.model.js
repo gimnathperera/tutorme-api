@@ -123,7 +123,7 @@ const tutorSchema = mongoose.Schema(
     ],
     tutorMediums: {
       type: [String],
-      enum: ['English', 'Sinhala', 'Tamil'],
+      enum: ['Sinhala', 'English', 'Tamil'],
       required: true,
     },
     subjects: [
