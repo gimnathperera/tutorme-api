@@ -18,8 +18,11 @@ const createSubject = async (subjectBody) => {
  * @returns {Promise<QueryResult>}
  */
 const querySubjects = async (filter, options) => {
-  const subjects = await Subject.paginate(filter, options);
-  return subjects;
+  const query = { ...filter };
+  if (query.title) {
+    query.title = { $regex: query.title, $options: 'i' };
+  }
+  return Subject.paginate(query, options);
 };
 
 /**
