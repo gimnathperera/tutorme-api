@@ -14,6 +14,16 @@ const requestTutorSchema = mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    district: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     grade: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -35,12 +45,7 @@ const requestTutorSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    assignedTutor: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Tutor',
-      },
-    ],
+
     tutors: [
       {
         _id: false,
@@ -61,6 +66,12 @@ const requestTutorSchema = mongoose.Schema(
           enum: ['Once a Week', 'Twice a Week', 'Daily'],
           required: true,
         },
+        assignedTutor: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Tutor',
+          },
+        ],
         preferredTutorType: {
           type: String,
           enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
