@@ -11,10 +11,6 @@ const tuitionRatesSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Grade',
     },
-    level: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Level',
-    },
     govTuitionRate: [
       {
         maximumRate: {

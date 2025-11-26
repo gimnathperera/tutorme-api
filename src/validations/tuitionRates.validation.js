@@ -6,7 +6,6 @@ const createTuitionRate = {
   body: Joi.object().keys({
     subject: Joi.string().required(),
     grade: Joi.string().required(),
-    level: Joi.string().required(),
     govTuitionRate: Joi.array().items(
       Joi.object().keys({
         minimumRate: Joi.string().required(),
@@ -33,7 +32,6 @@ const getTuitionRates = {
   query: Joi.object().keys({
     subject: Joi.string(),
     grade: Joi.string(),
-    level: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -66,7 +64,6 @@ const updateTuitionRates = {
     .keys({
       subject: Joi.string(),
       grade: Joi.string(),
-      level: Joi.string(),
       govTuitionRate: Joi.array().items(
         Joi.object().keys({
           minimumRate: Joi.string().required(),

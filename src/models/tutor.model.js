@@ -121,6 +121,23 @@ const tutorSchema = mongoose.Schema(
         required: true,
       },
     ],
+    tutorMediums: {
+      type: [String],
+      enum: ['Sinhala', 'English', 'Tamil'],
+      required: true,
+    },
+    subjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+      },
+    ],
+    grades: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Grade',
+      },
+    ],
 
     tutorType: {
       type: String,

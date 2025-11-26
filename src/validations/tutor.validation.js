@@ -115,6 +115,13 @@ const createTutor = {
       .required(),
 
     // 3. Academic Qualifications & Experience
+    tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1).required().messages({
+      'array.min': 'Please select at least one medium.',
+    }),
+
+    grades: Joi.array().items(Joi.string()).min(1).required(),
+    subjects: Joi.array().items(Joi.string()).min(1).required(),
+
     tutorType: Joi.string()
       .valid(
         'Full Time Student',
@@ -189,19 +196,96 @@ const updateTutor = {
       gender: Joi.string().valid('Male', 'Female'),
       age: Joi.number().integer().min(1),
       nationality: Joi.string().valid('Sri Lankan', 'Others'),
-      race: Joi.string().valid('Chinese', 'Malay', 'Indian', 'Eurasian', 'Caucasian', 'Punjabi', 'Others'),
+      race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'),
       last4NRIC: Joi.string()
         .length(4)
         .pattern(/^\d{4}$/),
 
+      tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1),
+      grades: Joi.array().items(Joi.string()),
+      subjects: Joi.array().items(Joi.string()),
+
       // 2. Tutoring Preferences
-      tutoringLevels: Joi.array().items(Joi.string()),
-      preferredLocations: Joi.array().items(Joi.string()),
+      tutoringLevels: Joi.array().items(
+        Joi.string().valid(
+          'Pre-School / Montessori',
+          'Primary School (Grades 1-5)',
+          'Ordinary Level (O/L) (Grades 6-11)',
+          'Advanced Level (A/L) (Grades 12-13)',
+          'International Syllabus (Cambridge, Edexcel, IB)',
+          'Undergraduate',
+          'Diploma / Degree',
+          'Language (e.g., English, French, Japanese)',
+          'Computing (e.g., Programming, Graphic Design)',
+          'Music & Arts',
+          'Special Skills'
+        )
+      ),
+
+      preferredLocations: Joi.array().items(
+        Joi.string().valid(
+          'Kollupitiya (Colombo 3)',
+          'Bambalapitiya (Colombo 4)',
+          'Havelock Town (Colombo 5)',
+          'Wellawatte (Colombo 6)',
+          'Cinnamon Gardens (Colombo 7)',
+          'Borella (Colombo 8)',
+          'Dehiwala',
+          'Mount Lavinia',
+          'Nugegoda',
+          'Rajagiriya',
+          'Kotte',
+          'Battaramulla',
+          'Malabe',
+          'Moratuwa',
+          'Gampaha',
+          'Negombo',
+          'Kadawatha',
+          'Kiribathgoda',
+          'Kelaniya',
+          'Wattala',
+          'Ja-Ela',
+          'Kalutara',
+          'Panadura',
+          'Horana',
+          'Wadduwa',
+          'Kandy',
+          'Matale',
+          'Nuwara Eliya',
+          'Galle',
+          'Matara',
+          'Hambantota',
+          'Kurunegala',
+          'Puttalam',
+          'Chilaw',
+          'Ratnapura',
+          'Kegalle',
+          'Badulla',
+          'Bandarawela',
+          'Anuradhapura',
+          'Polonnaruwa',
+          'Jaffna',
+          'Vavuniya',
+          'Trincomalee',
+          'Batticaloa',
+          'No Preference'
+        )
+      ),
 
       // 3. Academic Qualifications & Experience
       tutorType: Joi.string(),
       yearsExperience: Joi.number().integer().min(0).max(50),
-      highestEducation: Joi.string(),
+      highestEducation: Joi.string().valid(
+        'PhD',
+        'Diploma',
+        'Masters',
+        'Undergraduate',
+        'Bachelor Degree',
+        'Diploma and Professional',
+        'JC/A Levels',
+        'Poly',
+        'Others'
+      ),
       academicDetails: Joi.string().allow('').max(1000),
 
       // 4. Tutor's Profile
