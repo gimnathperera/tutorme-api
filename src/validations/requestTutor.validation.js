@@ -99,7 +99,12 @@ const createRequestTutor = {
 };
 
 const getTutors = {
-  query: Joi.object().keys({}),
+  query: Joi.object().keys({
+    name: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
 };
 
 const getTutor = {
@@ -135,6 +140,14 @@ const updateStatus = {
 
 const updateAssignedTutor = {
   body: Joi.object().keys({
+    tutorBlockId: Joi.string()
+      .required()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid Tutor Block ID');
+        }
+        return value;
+      }),
     assignedTutor: Joi.array()
       .items(
         Joi.string().custom((value, helpers) => {

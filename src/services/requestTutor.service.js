@@ -56,13 +56,17 @@ const updateStatusById = async (requestTutorId, status) => {
 /**
  * Update ONLY the assigned tutor
  */
-const updateAssignedTutorById = async (requestTutorId, assignedTutor) => {
-  const tutorRequest = await getRequestTutorById(requestTutorId);
+const updateAssignedTutorByBlockId = async (tutorBlockId, assignedTutor) => {
+  const tutorRequest = await RequestTutor.findOne({ 'tutors._id': tutorBlockId });
   if (!tutorRequest) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request or tutor block not found');
   }
+  const tutorBlock = tutorRequest.tutors.id(tutorBlockId);
+  if (!tutorBlock) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor block not found');
+  }
+  tutorBlock.assignedTutor = assignedTutor;
 
-  tutorRequest.assignedTutor = assignedTutor;
   await tutorRequest.save();
   return tutorRequest;
 };
@@ -73,5 +77,5 @@ module.exports = {
   getRequestTutorById,
   deleteTutorRequestById,
   updateStatusById,
-  updateAssignedTutorById,
+  updateAssignedTutorByBlockId,
 };
