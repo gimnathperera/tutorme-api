@@ -10,8 +10,12 @@ const createTuitionAssignment = catchAsync(async (req, res) => {
 });
 
 const getTuitionAssignments = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['title']);
-  const options = { ...pick(req.query, ['sortBy', 'limit', 'page']), populate: 'gradeId tutorId' };
+  const filter = pick(req.query, ['title', 'gradeId', 'tutorId']); // 🔥 include gradeId
+  const options = {
+    ...pick(req.query, ['sortBy', 'limit', 'page']),
+    populate: 'gradeId tutorId',
+  };
+
   const result = await tuitionAssignmentService.queryTuitionAssignments(filter, options);
   res.send(result);
 });
