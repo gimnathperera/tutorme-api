@@ -10,7 +10,7 @@ const createTuitionAssignment = catchAsync(async (req, res) => {
 });
 
 const getTuitionAssignments = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['title', 'gradeId', 'tutorId']); // 🔥 include gradeId
+  const filter = pick(req.query, ['title', 'gradeId', 'tutorId']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
     populate: 'gradeId tutorId',
