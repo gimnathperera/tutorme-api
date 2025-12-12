@@ -20,7 +20,7 @@ const subjectSchema = mongoose.Schema(
   }
 );
 subjectSchema.index({ title: 1 }, { unique: true });
-// add plugin that converts mongoose to json
+
 subjectSchema.plugin(toJSON);
 subjectSchema.plugin(paginate);
 

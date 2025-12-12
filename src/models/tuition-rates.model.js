@@ -53,7 +53,7 @@ const tuitionRatesSchema = mongoose.Schema(
   }
 );
 tuitionRatesSchema.index({ subject: 1, grade: 1 }, { unique: true });
-// Add plugins
+
 tuitionRatesSchema.plugin(toJSON);
 tuitionRatesSchema.plugin(paginate);
 
