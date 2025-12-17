@@ -145,7 +145,11 @@ const createTutor = {
     teachingSummary: Joi.string().max(750).required(),
     studentResults: Joi.string().max(750).required(),
     sellingPoints: Joi.string().max(750).required(),
-    certificatesAndQualifications: Joi.string().required(),
+    certificatesAndQualifications: Joi.array().items(Joi.string().trim().min(3)).min(1).required().messages({
+      'array.base': 'Certificates and qualifications must be an array',
+      'array.min': 'At least one certificate or qualification is required',
+      'string.min': 'Certificate name must be at least 3 characters long',
+    }),
 
     // 5. Agreement & Submit
     agreeTerms: Joi.boolean().valid(true).required().messages({
@@ -282,7 +286,7 @@ const updateTutor = {
       teachingSummary: Joi.string().max(750),
       studentResults: Joi.string().max(750),
       sellingPoints: Joi.string().max(750),
-      certificatesAndQualifications: Joi.string(),
+      certificatesAndQualifications: Joi.array(),
 
       // 5. Agreement & Submit
       agreeTerms: Joi.boolean(),

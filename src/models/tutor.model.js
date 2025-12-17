@@ -200,7 +200,13 @@ const tutorSchema = mongoose.Schema(
       required: true,
       default: false,
     },
-    certificatesAndQualifications: { type: String, trim: true, required: true },
+    certificatesAndQualifications: [
+      {
+        type: String,
+        trim: true,
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,
