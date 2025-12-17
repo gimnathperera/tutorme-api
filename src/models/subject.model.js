@@ -6,6 +6,7 @@ const subjectSchema = mongoose.Schema(
     title: {
       type: String,
       required: true,
+      unique: true,
       index: true,
     },
     description: {
@@ -18,8 +19,8 @@ const subjectSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+subjectSchema.index({ title: 1 }, { unique: true });
 
-// add plugin that converts mongoose to json
 subjectSchema.plugin(toJSON);
 subjectSchema.plugin(paginate);
 
