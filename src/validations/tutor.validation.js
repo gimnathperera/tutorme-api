@@ -329,6 +329,14 @@ const generateTempPassword = {
   }),
 };
 
+const matchTutorsBySubjects = {
+  body: Joi.object().keys({
+    subjects: Joi.array().items(Joi.string().custom(objectId)).min(1).required(),
+
+    tutorType: Joi.string().optional(),
+  }),
+};
+
 module.exports = {
   createTutor,
   getTutors,
@@ -337,4 +345,5 @@ module.exports = {
   deleteTutor,
   changePassword,
   generateTempPassword,
+  matchTutorsBySubjects,
 };
