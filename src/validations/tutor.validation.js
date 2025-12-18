@@ -32,14 +32,6 @@ const createTutor = {
     }),
     nationality: Joi.string().valid('Sri Lankan', 'Others').required(),
     race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').required(),
-    last4NRIC: Joi.string()
-      .length(4)
-      .pattern(/^\d{4}$/)
-      .required()
-      .messages({
-        'string.length': 'Last 4 digits of NRIC must be exactly 4 digits',
-        'string.pattern.base': 'Last 4 digits of NRIC must be numbers',
-      }),
 
     // 2. Tutoring Preferences
     tutoringLevels: Joi.array()
@@ -153,6 +145,11 @@ const createTutor = {
     teachingSummary: Joi.string().max(750).required(),
     studentResults: Joi.string().max(750).required(),
     sellingPoints: Joi.string().max(750).required(),
+    certificatesAndQualifications: Joi.array().items(Joi.string().trim().min(3)).min(1).required().messages({
+      'array.base': 'Certificates and qualifications must be an array',
+      'array.min': 'At least one certificate or qualification is required',
+      'string.min': 'Certificate name must be at least 3 characters long',
+    }),
 
     // 5. Agreement & Submit
     agreeTerms: Joi.boolean().valid(true).required().messages({
@@ -197,9 +194,6 @@ const updateTutor = {
       age: Joi.number().integer().min(1),
       nationality: Joi.string().valid('Sri Lankan', 'Others'),
       race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'),
-      last4NRIC: Joi.string()
-        .length(4)
-        .pattern(/^\d{4}$/),
 
       tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1),
       grades: Joi.array().items(Joi.string()),
@@ -292,6 +286,7 @@ const updateTutor = {
       teachingSummary: Joi.string().max(750),
       studentResults: Joi.string().max(750),
       sellingPoints: Joi.string().max(750),
+      certificatesAndQualifications: Joi.array(),
 
       // 5. Agreement & Submit
       agreeTerms: Joi.boolean(),

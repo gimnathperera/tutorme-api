@@ -42,11 +42,6 @@ const tutorSchema = mongoose.Schema(
       enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
       required: true,
     },
-    last4NRIC: {
-      type: String,
-      required: true,
-      length: 4,
-    },
 
     tutoringLevels: [
       {
@@ -205,6 +200,13 @@ const tutorSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    certificatesAndQualifications: [
+      {
+        type: String,
+        trim: true,
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,
