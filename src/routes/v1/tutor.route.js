@@ -23,4 +23,6 @@ router
   .route('/temp-password/:tutorId')
   .post(auth('manageUsers'), validate(tutorValidation.generateTempPassword), tutorController.generateTempPassword);
 
+router.post('/match-by-subjects', validate(tutorValidation.matchTutorsBySubjects), tutorController.matchTutorsBySubjects);
+
 module.exports = router;

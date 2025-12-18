@@ -113,6 +113,20 @@ const generateTemporaryPassword = async (tutorId) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
   }
 };
+
+// Find Tutors by Subjects
+const findTutorsBySubjects = async (subjects, tutorType) => {
+  const query = {
+    subjects: { $all: subjects },
+  };
+
+  if (tutorType) {
+    query.tutorType = tutorType;
+  }
+
+  return Tutor.find(query).select('fullName email tutorType subjects').lean();
+};
+
 module.exports = {
   createTutor,
   queryTutors,
@@ -121,4 +135,5 @@ module.exports = {
   deleteTutorById,
   changePassword,
   generateTemporaryPassword,
+  findTutorsBySubjects,
 };
