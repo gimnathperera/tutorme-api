@@ -12,67 +12,69 @@ We are goiing to create a platform for students and teachers. We are developing 
 
 ## 📋 Table of Contents
 
-* [Features](#-features)
-* [Technologies Used](#-technologies-used)
-* [Prerequisites](#-prerequisites)
-* [Installation](#-installation)
-* [Usage](#-usage)
-    * [Running the Server](#running-the-server)
-    * [API Endpoints](#api-endpoints)
-* [Environment Variables](#-environment-variables)
-* [Database](#-database)
-* [Testing](#-testing)
-* [Folder Structure](#-folder-structure)
-* [Contributing](#-contributing)
+- [Features](#-features)
+- [Technologies Used](#-technologies-used)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Running the Server](#running-the-server)
+  - [API Endpoints](#api-endpoints)
+- [Environment Variables](#-environment-variables)
+- [Database](#-database)
+- [Testing](#-testing)
+- [Folder Structure](#-folder-structure)
+- [Contributing](#-contributing)
 
 ## ✨ Features
 
-* List the key features.
-    * User authentication (Registration, Login, JWT-based authentication, Email verification, Password reset)
-    * CRUD operations for multiple resources (Users, FAQs, Grades, Subjects, Testimonials, Inquiries, Papers, Tutors)
-    * Data validation using Joi
-    * Centralized error handling middleware
-    * API rate limiting for security
-    * Role-based access control for user management
-    * Input sanitization and security (e.g., XSS, MongoDB injection protection)
-    * API documentation with Swagger UI
-    * Logging with Winston
-    * Email notifications (e.g., verification, password reset)
-    * Testing framework integration (Jest, Supertest)
-    * Environment configuration via dotenv
-    * Request logging with Morgan
+- List the key features.
+  - User authentication (Registration, Login, JWT-based authentication, Email verification, Password reset)
+  - CRUD operations for multiple resources (Users, FAQs, Grades, Subjects, Testimonials, Inquiries, Papers, Tutors)
+  - Data validation using Joi
+  - Centralized error handling middleware
+  - API rate limiting for security
+  - Role-based access control for user management
+  - Input sanitization and security (e.g., XSS, MongoDB injection protection)
+  - API documentation with Swagger UI
+  - Logging with Winston
+  - Email notifications (e.g., verification, password reset)
+  - Testing framework integration (Jest, Supertest)
+  - Environment configuration via dotenv
+  - Request logging with Morgan
 
 ## 🛠️ Technologies Used
 
-* **Node.js**: Runtime environment
-* **Express.js**: Web framework for Node.js
-* **MongoBD** : Database system
-* **Passport.js** : For authentication and authorization
-* **Joi** : For input validation
-* **Jest** : For unit/integration testing
-* **mongoose, passport-jwt, jsonwebtoken, bcryptjs, nodemailer, jest, supertest, pm2, dotenv** : Any other significant libraries
-* **AWS** : Where the application is deployed
+- **Node.js**: Runtime environment
+- **Express.js**: Web framework for Node.js
+- **MongoBD** : Database system
+- **Passport.js** : For authentication and authorization
+- **Joi** : For input validation
+- **Jest** : For unit/integration testing
+- **mongoose, passport-jwt, jsonwebtoken, bcryptjs, nodemailer, jest, supertest, pm2, dotenv** : Any other significant libraries
+- **AWS** : Where the application is deployed
 
 ## ⚙️ Prerequisites
 
 Before you begin, ensure you have met the following requirements:
 
-* **Node.js**: Make sure you have Node.js installed (LTS version recommended).
-    * You can download it from https://nodejs.org/.
-* **npm** (Node Package Manager) or **Yarn**: Usually comes with Node.js.
-* **MongoDB Community Server**: If you're using a local database, ensure it's installed and running.
+- **Node.js**: Make sure you have Node.js installed (LTS version recommended).
+  - You can download it from https://nodejs.org/.
+- **npm** (Node Package Manager) or **Yarn**: Usually comes with Node.js.
+- **MongoDB Community Server**: If you're using a local database, ensure it's installed and running.
 
 ## 🚀 Installation
 
 Follow these steps to get your development environment set up:
 
 1.  **Clone the repository:**
+
     ```bash
     https://github.com/gimnathperera/tutorme-api.git
     cd tutorme-api
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```
@@ -81,7 +83,7 @@ Follow these steps to get your development environment set up:
     Create a `.env` file in the root directory of the project and add the necessary environment variables (see [Environment Variables](#-environment-variables) section).
 
 4.  **Database Setup :**
-    * MongoDB: Ensure your MongoDB instance is running.
+    - MongoDB: Ensure your MongoDB instance is running.
 
 ## 🏃 Usage
 
@@ -103,75 +105,75 @@ Here's a list of the main API endpoints. You can use tools like Postman, Insomni
 
 **Base URL:** `http://localhost:3000/api/v1` (adjust as per your routing)
 
-| Method | Endpoint | Description | Auth Required | Request Body |
-|--------|----------|-------------|---------------|--------------|
-| POST   | /v1/auth/register | Register a new user | No | `{ "username": "...", "email": "...", "password": "..." }` |
-| POST   | /v1/auth/login | Login | No | `{ "email": "...", "password": "..." }` |
-| POST   | /v1/auth/logout | Logout | No | `{ "refreshToken": "..." }` |
-| POST   | /v1/auth/refresh-tokens | Refresh tokens | No | `{ "refreshToken": "..." }` |
-| POST   | /v1/auth/forgot-password | Request password reset | No | `{ "email": "..." }` |
-| POST   | /v1/auth/reset-password | Reset password | No | `{ "token": "...", "password": "..." }` |
-| POST   | /v1/auth/send-verification-email | Send verification email | Yes | None |
-| POST   | /v1/auth/verify-email | Verify email | No | `{ "token": "..." }` |
-| POST   | /v1/users | Create user | Yes (admin) | `{ "name": "...", "email": "...", "password": "..." }` |
-| GET    | /v1/users | List users | Yes | None |
-| GET    | /v1/users/:userId | Get user by ID | Yes | None |
-| PATCH  | /v1/users/:userId | Update user | Yes (admin) | `{ ...fields to update... }` |
-| DELETE | /v1/users/:userId | Delete user | Yes (admin) | None |
-| PATCH  | /v1/users/change-password/:userId | Change password | Yes (admin) | `{ "password": "..." }` |
-| POST   | /v1/faqs | Create FAQ | No | `{ ... }` |
-| GET    | /v1/faqs | List FAQs | No | None |
-| GET    | /v1/faqs/:faqId | Get FAQ by ID | No | None |
-| PATCH  | /v1/faqs/:faqId | Update FAQ | No | `{ ... }` |
-| DELETE | /v1/faqs/:faqId | Delete FAQ | No | None |
-| POST   | /v1/grades | Create grade | No | `{ ... }` |
-| GET    | /v1/grades | List grades | No | None |
-| GET    | /v1/grades/:gradeId | Get grade by ID | No | None |
-| PATCH  | /v1/grades/:gradeId | Update grade | No | `{ ... }` |
-| DELETE | /v1/grades/:gradeId | Delete grade | No | None |
-| POST   | /v1/subjects | Create subject | No | `{ ... }` |
-| GET    | /v1/subjects | List subjects | No | None |
-| GET    | /v1/subjects/:subjectId | Get subject by ID | No | None |
-| PATCH  | /v1/subjects/:subjectId | Update subject | No | `{ ... }` |
-| DELETE | /v1/subjects/:subjectId | Delete subject | No | None |
-| POST   | /v1/testimonials | Create testimonial | No | `{ ... }` |
-| GET    | /v1/testimonials | List testimonials | No | None |
-| GET    | /v1/testimonials/:testimonialId | Get testimonial by ID | No | None |
-| PATCH  | /v1/testimonials/:testimonialId | Update testimonial | No | `{ ... }` |
-| DELETE | /v1/testimonials/:testimonialId | Delete testimonial | No | None |
-| POST   | /v1/inquiries | Create inquiry | No | `{ ... }` |
-| GET    | /v1/inquiries | List inquiries | No | None |
-| GET    | /v1/inquiries/:inquiryId | Get inquiry by ID | No | None |
-| PATCH  | /v1/inquiries/:inquiryId | Update inquiry | No | `{ ... }` |
-| DELETE | /v1/inquiries/:inquiryId | Delete inquiry | No | None |
-| POST   | /v1/papers | Create paper | No | `{ ... }` |
-| GET    | /v1/papers | List papers | No | None |
-| GET    | /v1/papers/:paperId | Get paper by ID | No | None |
-| PATCH  | /v1/papers/:paperId | Update paper | No | `{ ... }` |
-| DELETE | /v1/papers/:paperId | Delete paper | No | None |
-| POST   | /v1/tutors | Create tutor | No | `{ ... }` |
-| GET    | /v1/tutors | List tutors | No | None |
-| GET    | /v1/tutors/:tutorId | Get tutor by ID | No | None |
-| PATCH  | /v1/tutors/:tutorId | Update tutor | No | `{ ... }` |
-| DELETE | /v1/tutors/:tutorId | Delete tutor | No | None |
+| Method | Endpoint                          | Description             | Auth Required | Request Body                                               |
+| ------ | --------------------------------- | ----------------------- | ------------- | ---------------------------------------------------------- |
+| POST   | /v1/auth/register                 | Register a new user     | No            | `{ "username": "...", "email": "...", "password": "..." }` |
+| POST   | /v1/auth/login                    | Login                   | No            | `{ "email": "...", "password": "..." }`                    |
+| POST   | /v1/auth/logout                   | Logout                  | No            | `{ "refreshToken": "..." }`                                |
+| POST   | /v1/auth/refresh-tokens           | Refresh tokens          | No            | `{ "refreshToken": "..." }`                                |
+| POST   | /v1/auth/forgot-password          | Request password reset  | No            | `{ "email": "..." }`                                       |
+| POST   | /v1/auth/reset-password           | Reset password          | No            | `{ "token": "...", "password": "..." }`                    |
+| POST   | /v1/auth/send-verification-email  | Send verification email | Yes           | None                                                       |
+| POST   | /v1/auth/verify-email             | Verify email            | No            | `{ "token": "..." }`                                       |
+| POST   | /v1/users                         | Create user             | Yes (admin)   | `{ "name": "...", "email": "...", "password": "..." }`     |
+| GET    | /v1/users                         | List users              | Yes           | None                                                       |
+| GET    | /v1/users/:userId                 | Get user by ID          | Yes           | None                                                       |
+| PATCH  | /v1/users/:userId                 | Update user             | Yes (admin)   | `{ ...fields to update... }`                               |
+| DELETE | /v1/users/:userId                 | Delete user             | Yes (admin)   | None                                                       |
+| PATCH  | /v1/users/change-password/:userId | Change password         | Yes (admin)   | `{ "password": "..." }`                                    |
+| POST   | /v1/faqs                          | Create FAQ              | No            | `{ ... }`                                                  |
+| GET    | /v1/faqs                          | List FAQs               | No            | None                                                       |
+| GET    | /v1/faqs/:faqId                   | Get FAQ by ID           | No            | None                                                       |
+| PATCH  | /v1/faqs/:faqId                   | Update FAQ              | No            | `{ ... }`                                                  |
+| DELETE | /v1/faqs/:faqId                   | Delete FAQ              | No            | None                                                       |
+| POST   | /v1/grades                        | Create grade            | No            | `{ ... }`                                                  |
+| GET    | /v1/grades                        | List grades             | No            | None                                                       |
+| GET    | /v1/grades/:gradeId               | Get grade by ID         | No            | None                                                       |
+| PATCH  | /v1/grades/:gradeId               | Update grade            | No            | `{ ... }`                                                  |
+| DELETE | /v1/grades/:gradeId               | Delete grade            | No            | None                                                       |
+| POST   | /v1/subjects                      | Create subject          | No            | `{ ... }`                                                  |
+| GET    | /v1/subjects                      | List subjects           | No            | None                                                       |
+| GET    | /v1/subjects/:subjectId           | Get subject by ID       | No            | None                                                       |
+| PATCH  | /v1/subjects/:subjectId           | Update subject          | No            | `{ ... }`                                                  |
+| DELETE | /v1/subjects/:subjectId           | Delete subject          | No            | None                                                       |
+| POST   | /v1/testimonials                  | Create testimonial      | No            | `{ ... }`                                                  |
+| GET    | /v1/testimonials                  | List testimonials       | No            | None                                                       |
+| GET    | /v1/testimonials/:testimonialId   | Get testimonial by ID   | No            | None                                                       |
+| PATCH  | /v1/testimonials/:testimonialId   | Update testimonial      | No            | `{ ... }`                                                  |
+| DELETE | /v1/testimonials/:testimonialId   | Delete testimonial      | No            | None                                                       |
+| POST   | /v1/inquiries                     | Create inquiry          | No            | `{ ... }`                                                  |
+| GET    | /v1/inquiries                     | List inquiries          | No            | None                                                       |
+| GET    | /v1/inquiries/:inquiryId          | Get inquiry by ID       | No            | None                                                       |
+| PATCH  | /v1/inquiries/:inquiryId          | Update inquiry          | No            | `{ ... }`                                                  |
+| DELETE | /v1/inquiries/:inquiryId          | Delete inquiry          | No            | None                                                       |
+| POST   | /v1/papers                        | Create paper            | No            | `{ ... }`                                                  |
+| GET    | /v1/papers                        | List papers             | No            | None                                                       |
+| GET    | /v1/papers/:paperId               | Get paper by ID         | No            | None                                                       |
+| PATCH  | /v1/papers/:paperId               | Update paper            | No            | `{ ... }`                                                  |
+| DELETE | /v1/papers/:paperId               | Delete paper            | No            | None                                                       |
+| POST   | /v1/tutors                        | Create tutor            | No            | `{ ... }`                                                  |
+| GET    | /v1/tutors                        | List tutors             | No            | None                                                       |
+| GET    | /v1/tutors/:tutorId               | Get tutor by ID         | No            | None                                                       |
+| PATCH  | /v1/tutors/:tutorId               | Update tutor            | No            | `{ ... }`                                                  |
+| DELETE | /v1/tutors/:tutorId               | Delete tutor            | No            | None                                                       |
 
 ## 🔑 Environment Variables
 
 To run this project, you will need to add the following environment variables to your `.env` file:
 
-* `PORT=3000`
-* `NODE_ENV=[development/production]`
-* `MONGO_URI=mongodb://127.0.0.1:27017/tutor-me`
-* `JWT_SECRET=thisisasamplesecret`
-* `JWT_ACCESS_EXPIRATION_MINUTES=30`
-* `JWT_REFRESH_EXPIRATION_DAYS=30`
-* `JWT_RESET_PASSWORD_EXPIRATION_MINUTES=10`
-* `JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=10`
-* `SMTP_HOST=email-server`
-* `SMTP_PORT=587`
-* `SMTP_USERNAME=email-server-username`
-* `SMTP_PASSWORD=email-server-password`
-* `EMAIL_FROM=support@yourapp.com`
+- `PORT=3000`
+- `NODE_ENV=[development/production]`
+- `MONGO_URI=mongodb://127.0.0.1:27017/tutor-me`
+- `JWT_SECRET=thisisasamplesecret`
+- `JWT_ACCESS_EXPIRATION_MINUTES=30`
+- `JWT_REFRESH_EXPIRATION_DAYS=30`
+- `JWT_RESET_PASSWORD_EXPIRATION_MINUTES=10`
+- `JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=10`
+- `SMTP_HOST=email-server`
+- `SMTP_PORT=587`
+- `SMTP_USERNAME=email-server-username`
+- `SMTP_PASSWORD=email-server-password`
+- `EMAIL_FROM=support@yourapp.com`
 
 ## 📁 Folder Structure
 
@@ -199,7 +201,7 @@ yarn.lock
 ├── post-commit
 ├── pre-commit
 ├── .gitignore
-├── husky.sh    
+├── husky.sh
 .vscode
 ├── settings.json
 bin
@@ -212,15 +214,15 @@ src/
     ├──── models/
     ├──────── plugins/
     ├──── routes
-    ├──────── v1/  
+    ├──────── v1/
     ├──── services/
     ├──── utils/
     ├──── validations/
 tests
-    ├── fixtures/    
+    ├── fixtures/
     ├── integration/
     ├── unit
-    ├──── middlewares/   
+    ├──── middlewares/
     ├──── models/
     ├──── plugins/
     ├── utils/

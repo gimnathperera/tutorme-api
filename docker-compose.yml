@@ -3,7 +3,7 @@ services:
     image: mongo:7
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongo_data:/data/db
     environment:
@@ -17,18 +17,18 @@ services:
       dockerfile: Dockerfile
     environment:
       PORT: 3000
-      MONGODB_URL: "mongodb://admin:password@mongo:27017/tutorme?authSource=admin"
+      MONGODB_URL: 'mongodb://admin:password@mongo:27017/tutorme?authSource=admin'
       NODE_ENV: development
-      JWT_SECRET: "your-jwt-secret-key-here"
+      JWT_SECRET: 'your-jwt-secret-key-here'
       JWT_ACCESS_EXPIRATION_MINUTES: 30
       JWT_REFRESH_EXPIRATION_DAYS: 30
       JWT_RESET_PASSWORD_EXPIRATION_MINUTES: 10
       JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: 10
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - mongo
-    command: ["node", "src/index.js"]
+    command: ['node', 'src/index.js']
 
 volumes:
   mongo_data:
