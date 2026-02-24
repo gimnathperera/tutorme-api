@@ -31,48 +31,19 @@ const createRequestTutor = {
       'any.only': 'Status must be one of the allowed values',
       'any.required': 'Status is required',
     }),
-    grade: Joi.array()
-      .items(
-        Joi.string().custom((value, helpers) => {
-          if (!mongoose.Types.ObjectId.isValid(value)) {
-            return helpers.message('Invalid Grade ID');
-          }
-          return value;
-        })
-      )
-      .min(1)
-      .required()
-      .messages({
-        'array.min': 'At least one grade must be selected',
-      }),
+    grade: Joi.string().trim().required().messages({
+      'string.empty': 'Grade is required',
+      'any.required': 'Grade is required',
+    }),
 
     tutors: Joi.array()
       .items(
         Joi.object({
-          subjects: Joi.array()
-            .items(
-              Joi.string().custom((value, helpers) => {
-                if (!mongoose.Types.ObjectId.isValid(value)) {
-                  return helpers.message('Invalid Subject ID');
-                }
-                return value;
-              })
-            )
-            .min(1)
-            .required()
-            .messages({
-              'array.min': 'Each tutor must have at least one subject',
-            }),
-          assignedTutor: Joi.array()
-            .items(
-              Joi.string().custom((value, helpers) => {
-                if (!mongoose.Types.ObjectId.isValid(value)) {
-                  return helpers.message('Invalid Tutor ID');
-                }
-                return value;
-              })
-            )
-            .min(1),
+          subject: Joi.string().trim().required().messages({
+            'string.empty': 'Subject is required',
+            'any.required': 'Subject is required',
+          }),
+          assignedTutor: Joi.string().trim().allow('', null).optional(),
           preferredTutorType: Joi.string()
             .valid('Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors')
             .required()
@@ -140,28 +111,13 @@ const updateStatus = {
 
 const updateAssignedTutor = {
   body: Joi.object().keys({
-    tutorBlockId: Joi.string()
-      .required()
-      .custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          return helpers.message('Invalid Tutor Block ID');
-        }
-        return value;
-      }),
-    assignedTutor: Joi.array()
-      .items(
-        Joi.string().custom((value, helpers) => {
-          if (!mongoose.Types.ObjectId.isValid(value)) {
-            return helpers.message('Invalid Tutor ID');
-          }
-          return value;
-        })
-      )
-      .min(1)
-      .required()
-      .messages({
-        'array.min': 'At least one tutor must be assigned',
-      }),
+    tutorBlockId: Joi.string().required().messages({
+      'any.required': 'Tutor Block ID is required',
+    }),
+    assignedTutor: Joi.string().trim().required().messages({
+      'string.empty': 'Assigned Tutor is required',
+      'any.required': 'Assigned Tutor is required',
+    }),
   }),
 };
 

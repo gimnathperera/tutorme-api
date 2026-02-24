@@ -15,7 +15,6 @@ const requestTutor = async (requestTutorBody) => {
 const queryTutorsRequests = async (filter, options) => {
   const requestTutors = await RequestTutor.paginate(filter, {
     ...options,
-    populate: 'grade,tutors.subjects,tutors.assignedTutor',
   });
   return requestTutors;
 };
@@ -24,7 +23,7 @@ const queryTutorsRequests = async (filter, options) => {
  * Get tutor request by id
  */
 const getRequestTutorById = async (id) => {
-  return RequestTutor.findById(id).populate('grade').populate('tutors.subjects').populate('tutors.assignedTutor');
+  return RequestTutor.findById(id);
 };
 
 /**
@@ -54,7 +53,7 @@ const updateStatusById = async (requestTutorId, status) => {
 };
 
 /**
- * Update ONLY the assigned tutor
+ * Update ONLY the assigned tutor for a specific tutor block
  */
 const updateAssignedTutorByBlockId = async (tutorBlockId, assignedTutor) => {
   const tutorRequest = await RequestTutor.findOne({ 'tutors._id': tutorBlockId });
