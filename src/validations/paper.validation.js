@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 const createPaper = {
   body: Joi.object().keys({
     title: Joi.string().required(),
-    description: Joi.string().required(),
+    medium: Joi.string().required(),
     subject: Joi.string().required(),
     grade: Joi.string().required(),
-    year: Joi.string().required(),
+    year: Joi.number().required(),
     url: Joi.string().required(),
   }),
 };
@@ -20,6 +20,7 @@ const getPapers = {
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
+    order: Joi.string().valid('asc', 'desc').default('desc'),
   }),
 };
 
@@ -46,10 +47,10 @@ const updatePaper = {
   body: Joi.object()
     .keys({
       title: Joi.string(),
-      description: Joi.string(),
+      medium: Joi.string(),
       subject: Joi.string(),
       grade: Joi.string(),
-      year: Joi.string(),
+      year: Joi.number(),
       url: Joi.string(),
     })
     .min(1),

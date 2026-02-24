@@ -128,10 +128,127 @@ The TutorMe support team.`;
   }
 };
 
+/**
+ * Send tutor request acknowledgement email
+ * @param {Object} requestTutorBody
+ * @returns {Promise}
+ */
+const sendAcknowledgement = async (requestTutorBody) => {
+  try {
+    const { name, email, phoneNumber, district, city, medium, grade, tutors } = requestTutorBody;
+
+    const subject = 'Tutor Request Received – Tuition Lanka';
+
+    // Build tutor blocks (max 4)
+    const tutorDetailsText = tutors
+      .slice(0, 4)
+      .map((tutor, index) => {
+        return `
+Tutor ${index + 1} Details
+Subjects: ${tutor.subjects.join(', ')}
+Class Duration: ${tutor.duration}
+Frequency: ${tutor.frequency}
+Preferred Tutor Type: ${tutor.preferredTutorType}
+`;
+      })
+      .join('\n');
+
+    const text = `
+Dear ${name},
+
+Thank you for submitting your tutor request with Tuition Lanka.
+We’re happy to inform you that we have successfully received your request.
+
+👤 Student Details
+Full Name: ${name}
+Email: ${email}
+Phone Number: ${phoneNumber}
+District: ${district}
+City: ${city}
+
+Academic Preferences
+Medium: ${medium}
+Grade: ${Array.isArray(grade) && grade.length ? grade.join(', ') : 'N/A'}
+Number of Tutors Requested: ${tutors.length}
+
+${tutorDetailsText}
+
+Our team has now started processing your request. We will carefully review your requirements and contact you soon.
+
+Warm regards,
+Tuition Lanka Team
+Tuition Lanka – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
+        <p>Dear <strong>${name}</strong>,</p>
+
+        <p>Thank you for submitting your tutor request with <strong>Tuition Lanka</strong>.
+        We’re happy to inform you that we have successfully received your request.</p>
+
+        <h3>👤 Student Details</h3>
+        <ul>
+          <li><strong>Full Name:</strong> ${name}</li>
+          <li><strong>Email:</strong> ${email}</li>
+          <li><strong>Phone Number:</strong> ${phoneNumber}</li>
+          <li><strong>District:</strong> ${district}</li>
+          <li><strong>City:</strong> ${city}</li>
+        </ul>
+
+        <h3>📘 Academic Preferences</h3>
+        <ul>
+          <li><strong>Medium:</strong> ${medium}</li>
+          <li><strong>Grade:</strong> ${Array.isArray(grade) && grade.length ? grade.join(', ') : 'N/A'}</li>
+          <li><strong>Number of Tutors Requested:</strong> ${tutors.length}</li>
+        </ul>
+
+        ${tutors
+          .slice(0, 4)
+          .map(
+            (tutor, index) => `
+          <h4>Tutor ${index + 1} Details</h4>
+          <ul>
+            <li><strong>Subjects:</strong> ${tutor.subjects.join(', ')}</li>
+            <li><strong>Class Duration:</strong> ${tutor.duration}</li>
+            <li><strong>Frequency:</strong> ${tutor.frequency}</li>
+            <li><strong>Preferred Tutor Type:</strong> ${tutor.preferredTutorType}</li>
+          </ul>
+        `
+          )
+          .join('')}
+
+        <p>
+          Our team has now started processing your request. We will carefully review your requirements,
+          assign suitable tutors, and contact you shortly.
+        </p>
+
+        <p>
+          Warm regards,<br/>
+          <strong>Tuition Lanka Team</strong><br/>
+          Tuition Lanka – Learn Better, Achieve More
+        </p>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to: email,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error('Failed to send acknowledgement email:', err);
+    throw new Error('Acknowledgement email failed');
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
   sendResetPasswordEmail,
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
+  sendAcknowledgement,
 };

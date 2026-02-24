@@ -26,6 +26,17 @@ const getGrade = catchAsync(async (req, res) => {
   res.send(grade);
 });
 
+const getSubjectsForGrades = catchAsync(async (req, res) => {
+  const { gradeIds } = req.body;
+
+  const subjects = await gradeService.getSubjectsForGrades(gradeIds);
+
+  res.send({
+    count: subjects.length,
+    subjects,
+  });
+});
+
 const updateGrade = catchAsync(async (req, res) => {
   const grade = await gradeService.updateGradeById(req.params.gradeId, req.body);
   res.send(grade);
@@ -40,6 +51,7 @@ module.exports = {
   createGrade,
   getGrades,
   getGrade,
+  getSubjectsForGrades,
   updateGrade,
   deleteGrade,
 };

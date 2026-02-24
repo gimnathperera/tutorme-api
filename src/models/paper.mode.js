@@ -9,7 +9,7 @@ const papersSchema = mongoose.Schema(
       index: true,
       unique: true,
     },
-    description: {
+    medium: {
       type: String,
       trim: true,
     },
@@ -22,7 +22,7 @@ const papersSchema = mongoose.Schema(
       ref: 'Grade',
     },
     year: {
-      type: String,
+      type: Number,
     },
     url: {
       type: String,

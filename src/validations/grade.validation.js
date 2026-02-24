@@ -29,6 +29,22 @@ const getGrade = {
   }),
 };
 
+const getSubjectsForGrades = {
+  body: Joi.object().keys({
+    gradeIds: Joi.array()
+      .items(
+        Joi.string().custom((value, helpers) => {
+          if (!mongoose.Types.ObjectId.isValid(value)) {
+            return helpers.message('Invalid grade id');
+          }
+          return value;
+        })
+      )
+      .min(1)
+      .required(),
+  }),
+};
+
 const updateGrade = {
   params: Joi.object().keys({
     gradeId: Joi.string().custom((value, helpers) => {
@@ -62,6 +78,7 @@ module.exports = {
   createGrade,
   getGrades,
   getGrade,
+  getSubjectsForGrades,
   updateGrade,
   deleteGrade,
 };

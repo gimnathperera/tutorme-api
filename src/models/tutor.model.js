@@ -42,11 +42,6 @@ const tutorSchema = mongoose.Schema(
       enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
       required: true,
     },
-    last4NRIC: {
-      type: String,
-      required: true,
-      length: 4,
-    },
 
     tutoringLevels: [
       {
@@ -139,19 +134,14 @@ const tutorSchema = mongoose.Schema(
       },
     ],
 
-    tutorType: {
-      type: String,
-      enum: [
-        'Full Time Student',
-        'Undergraduate',
-        'Part Time Tutor',
-        'Full Time Tutor',
-        'Ex/Current MOE Teacher',
-        'Ex-MOE Teacher',
-        'Current MOE Teacher',
-      ],
-      required: true,
-    },
+    tutorType: [
+      {
+        type: String,
+        enum: ['Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches'],
+        required: true,
+      },
+    ],
+
     yearsExperience: {
       type: Number,
       min: 0,
@@ -160,17 +150,7 @@ const tutorSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: [
-        'PhD',
-        'Diploma',
-        'Masters',
-        'Undergraduate',
-        'Bachelor Degree',
-        'Diploma and Professional',
-        'JC/A Levels',
-        'Poly',
-        'Others',
-      ],
+      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Bachelor Degree', 'Diploma and Professional', 'AL'],
       required: true,
     },
     academicDetails: {
@@ -205,6 +185,13 @@ const tutorSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    certificatesAndQualifications: [
+      {
+        type: String,
+        trim: true,
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,

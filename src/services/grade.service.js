@@ -38,6 +38,26 @@ const getGradeById = async (id) => {
   return Grade.findById(id).populate('subjects');
 };
 
+const getSubjectsForGrades = async (gradeIds) => {
+  const grades = await Grade.find({
+    _id: { $in: gradeIds },
+  }).populate('subjects');
+
+  if (!grades.length) {
+    return [];
+  }
+
+  const subjectMap = new Map();
+
+  grades.forEach((grade) => {
+    grade.subjects.forEach((subject) => {
+      subjectMap.set(subject.id, subject);
+    });
+  });
+
+  return Array.from(subjectMap.values());
+};
+
 /**
  * Update grade by id
  * @param {ObjectId} gradeId
@@ -75,6 +95,7 @@ module.exports = {
   createGrade,
   queryGrades,
   getGradeById,
+  getSubjectsForGrades,
   updateGradeById,
   deleteGradeById,
 };

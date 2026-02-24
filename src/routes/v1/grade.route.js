@@ -11,6 +11,8 @@ router
   .post(auth('manageUsers'), validate(gradeValidation.createGrade), gradeController.createGrade)
   .get(validate(gradeValidation.getGrades), gradeController.getGrades);
 
+router.post('/subjects-by-grades', validate(gradeValidation.getSubjectsForGrades), gradeController.getSubjectsForGrades);
+
 router
   .route('/:gradeId')
   .get(validate(gradeValidation.getGrade), gradeController.getGrade)

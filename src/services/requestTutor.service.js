@@ -1,12 +1,28 @@
 const httpStatus = require('http-status');
 const { RequestTutor } = require('../models');
 const ApiError = require('../utils/ApiError');
+const emailService = require('./email.service');
+const logger = require('../config/logger');
+
+const sendAcknowledgement = async (requestTutorBody) => {
+  try {
+    await emailService.sendAcknowledgement(requestTutorBody);
+  } catch (err) {
+    logger.error({ err }, 'Failed to send acknowledgement email');
+  }
+};
 
 /**
  * Request a Tutor
  */
 const requestTutor = async (requestTutorBody) => {
-  return RequestTutor.create(requestTutorBody);
+  logger.info({ requestTutorBody }, 'Tutor request created');
+
+  const tutorCreateResponse = await RequestTutor.create(requestTutorBody);
+  if (tutorCreateResponse) {
+    sendAcknowledgement(requestTutorBody);
+  }
+  return tutorCreateResponse;
 };
 
 /**

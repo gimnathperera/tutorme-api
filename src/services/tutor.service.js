@@ -30,7 +30,13 @@ const queryTutors = async (filter, options) => {
     query.tutorType = filter.tutorType;
   }
 
-  const tutors = await Tutor.paginate(query, options);
+  const sortOptions = { ...options };
+
+  if (!sortOptions.sortBy) {
+    sortOptions.sortBy = 'createdAt:desc';
+  }
+
+  const tutors = await Tutor.paginate(query, sortOptions);
   return tutors;
 };
 
@@ -113,6 +119,20 @@ const generateTemporaryPassword = async (tutorId) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
   }
 };
+
+// Find Tutors by Subjects
+const findTutorsBySubjects = async (subjects, tutorType) => {
+  const query = {
+    subjects: { $all: subjects },
+  };
+
+  if (tutorType) {
+    query.tutorType = tutorType;
+  }
+
+  return Tutor.find(query).select('fullName email tutorType subjects').lean();
+};
+
 module.exports = {
   createTutor,
   queryTutors,
@@ -121,4 +141,5 @@ module.exports = {
   deleteTutorById,
   changePassword,
   generateTemporaryPassword,
+  findTutorsBySubjects,
 };

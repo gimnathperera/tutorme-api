@@ -43,6 +43,18 @@ const generateTempPassword = catchAsync(async (req, res) => {
   const result = await tutorService.generateTemporaryPassword(req.params.tutorId);
   res.send(result);
 });
+
+const matchTutorsBySubjects = catchAsync(async (req, res) => {
+  const { subjects, tutorType } = req.body;
+
+  const tutors = await tutorService.findTutorsBySubjects(subjects, tutorType);
+
+  res.send({
+    count: tutors.length,
+    tutors,
+  });
+});
+
 module.exports = {
   createTutor,
   getTutors,
@@ -51,4 +63,5 @@ module.exports = {
   deleteTutor,
   changePassword,
   generateTempPassword,
+  matchTutorsBySubjects,
 };

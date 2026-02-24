@@ -32,14 +32,6 @@ const createTutor = {
     }),
     nationality: Joi.string().valid('Sri Lankan', 'Others').required(),
     race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').required(),
-    last4NRIC: Joi.string()
-      .length(4)
-      .pattern(/^\d{4}$/)
-      .required()
-      .messages({
-        'string.length': 'Last 4 digits of NRIC must be exactly 4 digits',
-        'string.pattern.base': 'Last 4 digits of NRIC must be numbers',
-      }),
 
     // 2. Tutoring Preferences
     tutoringLevels: Joi.array()
@@ -122,30 +114,13 @@ const createTutor = {
     grades: Joi.array().items(Joi.string()).min(1).required(),
     subjects: Joi.array().items(Joi.string()).min(1).required(),
 
-    tutorType: Joi.string()
-      .valid(
-        'Full Time Student',
-        'Undergraduate',
-        'Part Time Tutor',
-        'Full Time Tutor',
-        'Ex/Current MOE Teacher',
-        'Ex-MOE Teacher',
-        'Current MOE Teacher'
-      )
+    tutorType: Joi.array()
+      .items(Joi.string().valid('Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches'))
+      .min(1)
       .required(),
     yearsExperience: Joi.number().integer().min(0).max(50).required(),
     highestEducation: Joi.string()
-      .valid(
-        'PhD',
-        'Diploma',
-        'Masters',
-        'Undergraduate',
-        'Bachelor Degree',
-        'Diploma and Professional',
-        'JC/A Levels',
-        'Poly',
-        'Others'
-      )
+      .valid('PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Bachelor Degree', 'Diploma and Professional', 'AL')
       .required(),
     academicDetails: Joi.string().allow('').max(1000),
 
@@ -153,6 +128,11 @@ const createTutor = {
     teachingSummary: Joi.string().max(750).required(),
     studentResults: Joi.string().max(750).required(),
     sellingPoints: Joi.string().max(750).required(),
+    certificatesAndQualifications: Joi.array().items(Joi.string().trim().min(3)).min(1).required().messages({
+      'array.base': 'Certificates and qualifications must be an array',
+      'array.min': 'At least one certificate or qualification is required',
+      'string.min': 'Certificate name must be at least 3 characters long',
+    }),
 
     // 5. Agreement & Submit
     agreeTerms: Joi.boolean().valid(true).required().messages({
@@ -163,7 +143,12 @@ const createTutor = {
 };
 
 const getTutors = {
-  query: Joi.object().keys({}),
+  query: Joi.object().keys({
+    title: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
 };
 
 const getTutor = {
@@ -197,9 +182,6 @@ const updateTutor = {
       age: Joi.number().integer().min(1),
       nationality: Joi.string().valid('Sri Lankan', 'Others'),
       race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'),
-      last4NRIC: Joi.string()
-        .length(4)
-        .pattern(/^\d{4}$/),
 
       tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1),
       grades: Joi.array().items(Joi.string()),
@@ -273,18 +255,15 @@ const updateTutor = {
       ),
 
       // 3. Academic Qualifications & Experience
-      tutorType: Joi.string(),
+      tutorType: Joi.array().items(Joi.string()).min(1).required(),
       yearsExperience: Joi.number().integer().min(0).max(50),
       highestEducation: Joi.string().valid(
         'PhD',
-        'Diploma',
         'Masters',
-        'Undergraduate',
         'Bachelor Degree',
+        'Undergraduate',
         'Diploma and Professional',
-        'JC/A Levels',
-        'Poly',
-        'Others'
+        'AL'
       ),
       academicDetails: Joi.string().allow('').max(1000),
 
@@ -292,6 +271,7 @@ const updateTutor = {
       teachingSummary: Joi.string().max(750),
       studentResults: Joi.string().max(750),
       sellingPoints: Joi.string().max(750),
+      certificatesAndQualifications: Joi.array(),
 
       // 5. Agreement & Submit
       agreeTerms: Joi.boolean(),
@@ -329,6 +309,14 @@ const generateTempPassword = {
   }),
 };
 
+const matchTutorsBySubjects = {
+  body: Joi.object().keys({
+    subjects: Joi.array().items(Joi.string().custom(objectId)).min(1).required(),
+
+    tutorType: Joi.string().optional(),
+  }),
+};
+
 module.exports = {
   createTutor,
   getTutors,
@@ -337,4 +325,5 @@ module.exports = {
   deleteTutor,
   changePassword,
   generateTempPassword,
+  matchTutorsBySubjects,
 };
