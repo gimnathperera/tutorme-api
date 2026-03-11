@@ -145,6 +145,8 @@ const createTutor = {
 const getTutors = {
   query: Joi.object().keys({
     title: Joi.string(),
+    gradeId: Joi.string().custom(objectId).optional(),
+    subjectId: Joi.string().custom(objectId).optional(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
