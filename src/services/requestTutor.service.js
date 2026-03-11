@@ -69,18 +69,37 @@ const updateStatusById = async (requestTutorId, status) => {
 };
 
 /**
- * Update ONLY the assigned tutor for a specific tutor block
+ * Update the assignedTutor for tutor block(s) within a request.
+ * - assignedTutor as array: maps positionally to tutor blocks (index 0 → block 0, etc.)
+ * - assignedTutor as string + tutorBlockId: targets that specific sub-document
+ * - assignedTutor as string only: defaults to the first tutor block
  */
-const updateAssignedTutorByBlockId = async (tutorBlockId, assignedTutor) => {
-  const tutorRequest = await RequestTutor.findOne({ 'tutors._id': tutorBlockId });
+const updateAssignedTutor = async (requestTutorId, assignedTutor, tutorBlockId) => {
+  const tutorRequest = await getRequestTutorById(requestTutorId);
   if (!tutorRequest) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request or tutor block not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
   }
-  const tutorBlock = tutorRequest.tutors.id(tutorBlockId);
-  if (!tutorBlock) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor block not found');
+
+  if (Array.isArray(assignedTutor)) {
+    // Positionally assign each tutor ID to the corresponding tutor block
+    assignedTutor.forEach((tutorId, index) => {
+      if (tutorRequest.tutors[index]) {
+        tutorRequest.tutors[index].assignedTutor = tutorId;
+      }
+    });
+  } else if (tutorBlockId) {
+    const tutorBlock = tutorRequest.tutors.id(tutorBlockId);
+    if (!tutorBlock) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Tutor block not found');
+    }
+    tutorBlock.assignedTutor = assignedTutor;
+  } else {
+    const tutorBlock = tutorRequest.tutors[0];
+    if (!tutorBlock) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No tutor blocks found in this request');
+    }
+    tutorBlock.assignedTutor = assignedTutor;
   }
-  tutorBlock.assignedTutor = assignedTutor;
 
   await tutorRequest.save();
   return tutorRequest;
@@ -92,5 +111,5 @@ module.exports = {
   getRequestTutorById,
   deleteTutorRequestById,
   updateStatusById,
-  updateAssignedTutorByBlockId,
+  updateAssignedTutor,
 };

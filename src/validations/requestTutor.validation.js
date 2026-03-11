@@ -110,14 +110,32 @@ const updateStatus = {
 };
 
 const updateAssignedTutor = {
+  params: Joi.object().keys({
+    requestTutorId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid request tutor ID');
+        }
+        return value;
+      })
+      .required(),
+  }),
   body: Joi.object().keys({
-    tutorBlockId: Joi.string().required().messages({
-      'any.required': 'Tutor Block ID is required',
-    }),
-    assignedTutor: Joi.string().trim().required().messages({
-      'string.empty': 'Assigned Tutor is required',
-      'any.required': 'Assigned Tutor is required',
-    }),
+    assignedTutor: Joi.alternatives()
+      .try(Joi.string().trim(), Joi.array().items(Joi.string().trim()).min(1))
+      .required()
+      .messages({
+        'alternatives.match': 'assignedTutor must be a string or an array of strings',
+        'any.required': 'Assigned Tutor is required',
+      }),
+    tutorBlockId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid tutor block ID');
+        }
+        return value;
+      })
+      .optional(),
   }),
 };
 

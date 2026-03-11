@@ -40,13 +40,10 @@ const updateStatus = catchAsync(async (req, res) => {
 });
 
 const updateAssignedTutor = catchAsync(async (req, res) => {
-  const { tutorBlockId, assignedTutor } = req.body;
+  const { requestTutorId } = req.params;
+  const { assignedTutor, tutorBlockId } = req.body;
 
-  if (!tutorBlockId) {
-    return res.status(400).send({ message: 'Tutor block ID is required' });
-  }
-
-  const updated = await requestTutorService.updateAssignedTutorByBlockId(tutorBlockId, assignedTutor);
+  const updated = await requestTutorService.updateAssignedTutor(requestTutorId, assignedTutor, tutorBlockId);
 
   res.send(updated);
 });

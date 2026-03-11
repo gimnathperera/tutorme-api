@@ -21,7 +21,7 @@ router
   .patch(auth('manageUsers'), validate(requestTutorValidation.updateStatus), requestTutorController.updateStatus);
 
 router
-  .route('/assigned-tutor/:tutorBlockId')
+  .route('/assigned-tutor/:requestTutorId')
   .patch(
     auth('manageUsers'),
     validate(requestTutorValidation.updateAssignedTutor),
