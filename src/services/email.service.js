@@ -33,7 +33,7 @@ const sendEmail = async (to, subject, text) => {
 const sendResetPasswordEmail = async (to, token) => {
   try {
     const subject = 'Reset Your TutorMe Password';
-    const resetPasswordUrl = `https://tutorme-client.vercel.app/reset-password?token=${token}`;
+    const resetPasswordUrl = `https://tuitionlanka.com/reset-password?token=${token}`;
 
     const text = `
 Hello,
