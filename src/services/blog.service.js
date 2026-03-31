@@ -79,7 +79,7 @@ const deleteBlogById = async (blogId) => {
  * @returns {Promise<Blog>}
  */
 const updateBlogStatus = async (blogId, status) => {
-  if (!['pending', 'approved', 'rejected'].includes(status)) {
+  if (!['pending', 'published', 'draft'].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid status');
   }
   return updateBlogById(blogId, { status });

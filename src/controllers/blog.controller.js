@@ -3,8 +3,12 @@ const catchAsync = require('../utils/catchAsync');
 const { blogService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const logger = require('../config/logger');
 
 const createBlog = catchAsync(async (req, res) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.info(`Create Blog Payload: ${JSON.stringify(req.body, null, 2)}`);
+  }
   const blog = await blogService.createBlog(req.body);
   res.status(httpStatus.CREATED).send(blog);
 });

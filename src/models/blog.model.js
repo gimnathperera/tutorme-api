@@ -10,15 +10,10 @@ const blogSchema = mongoose.Schema(
       role: String,
     },
     image: { type: String, required: true },
-    content: [
-      {
-        type: { type: String, required: true },
-        text: String,
-        src: String,
-        caption: String,
-        level: Number,
-      },
-    ],
+    content: {
+      type: [mongoose.Schema.Types.Mixed],
+      required: true,
+    },
     relatedArticles: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -33,8 +28,8 @@ const blogSchema = mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      enum: ['pending', 'published', 'draft'],
+      default: 'draft',
       index: true,
     },
     faqs: [
