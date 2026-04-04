@@ -23,6 +23,17 @@ const createBlog = catchAsync(async (req, res) => {
 });
 
 const updateBlog = catchAsync(async (req, res) => {
+  // Fetch the blog first so we can check ownership
+  const existing = await blogService.getBlogById(req.params.blogId);
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
+
+  // Tutors can only edit their own blogs; admins can edit any
+  if (req.user.role === 'tutor' && String(existing.author && existing.author.id) !== String(req.user.id)) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only edit your own blogs');
+  }
+
   // Strip any client-sent author field; author is immutable after creation
   const { author: _author, ...updateBody } = req.body;
   const blog = await blogService.updateBlogById(req.params.blogId, updateBody);
@@ -57,6 +68,17 @@ const getBlogBySlug = catchAsync(async (req, res) => {
 });
 
 const deleteBlog = catchAsync(async (req, res) => {
+  // Fetch the blog first so we can check ownership
+  const existing = await blogService.getBlogById(req.params.blogId);
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
+
+  // Tutors can only delete their own blogs; admins can delete any
+  if (req.user.role === 'tutor' && String(existing.author && existing.author.id) !== String(req.user.id)) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only delete your own blogs');
+  }
+
   await blogService.deleteBlogById(req.params.blogId);
   res.status(httpStatus.NO_CONTENT).send();
 });

@@ -8,7 +8,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(auth('manageUsers'), validate(blogValidation.createBlog), blogController.createBlog)
+  .post(auth('manageBlog'), validate(blogValidation.createBlog), blogController.createBlog)
   .get(validate(blogValidation.getBlogs), blogController.getBlogs);
 
 /**
@@ -26,8 +26,8 @@ router.route('/migrate-slugs').post(auth('manageUsers'), blogController.migrateS
 router
   .route('/:blogId')
   .get(validate(blogValidation.getBlog), blogController.getBlog)
-  .patch(auth(), validate(blogValidation.updateBlog), blogController.updateBlog)
-  .delete(auth('manageUsers'), validate(blogValidation.deleteBlog), blogController.deleteBlog);
+  .patch(auth('manageBlog'), validate(blogValidation.updateBlog), blogController.updateBlog)
+  .delete(auth('manageBlog'), validate(blogValidation.deleteBlog), blogController.deleteBlog);
 
 router
   .route('/:blogId/status')

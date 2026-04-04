@@ -78,7 +78,7 @@ const deleteBlogById = async (blogId) => {
   if (!blog) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
   }
-  await blog.remove();
+  await blog.deleteOne();
   return blog;
 };
 
