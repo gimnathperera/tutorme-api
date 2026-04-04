@@ -10,10 +10,9 @@ const createTutorRequest = catchAsync(async (req, res) => {
 });
 
 const getTutorRequests = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['firstName']);
+  const filter = pick(req.query, ['name']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
-    populate: 'grade,tutors.subjects,tutors.assignedTutor',
   };
   const result = await requestTutorService.queryTutorsRequests(filter, options);
   res.send(result);
@@ -41,14 +40,10 @@ const updateStatus = catchAsync(async (req, res) => {
 });
 
 const updateAssignedTutor = catchAsync(async (req, res) => {
-  const { tutorBlockId } = req.body;
-  const { assignedTutor } = req.body;
+  const { requestTutorId } = req.params;
+  const { assignedTutor, tutorBlockId } = req.body;
 
-  if (!tutorBlockId) {
-    return res.status(400).send({ message: 'Tutor block ID is required' });
-  }
-
-  const updated = await requestTutorService.updateAssignedTutorByBlockId(tutorBlockId, assignedTutor);
+  const updated = await requestTutorService.updateAssignedTutor(requestTutorId, assignedTutor, tutorBlockId);
 
   res.send(updated);
 });

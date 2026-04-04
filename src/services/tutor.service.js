@@ -30,6 +30,18 @@ const queryTutors = async (filter, options) => {
     query.tutorType = filter.tutorType;
   }
 
+  // Filter tutors that support the requested grade
+  if (filter.gradeId) {
+    query.grades = { $in: [filter.gradeId] };
+    delete query.gradeId;
+  }
+
+  // Filter tutors that support the requested subject
+  if (filter.subjectId) {
+    query.subjects = { $in: [filter.subjectId] };
+    delete query.subjectId;
+  }
+
   const sortOptions = { ...options };
 
   if (!sortOptions.sortBy) {

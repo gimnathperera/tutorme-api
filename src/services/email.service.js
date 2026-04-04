@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../config/config');
 const logger = require('../config/logger');
+const { Grade, Subject } = require('../models');
 
 const transport = nodemailer.createTransport(config.email.smtp);
 /* istanbul ignore next */
@@ -32,7 +33,7 @@ const sendEmail = async (to, subject, text) => {
 const sendResetPasswordEmail = async (to, token) => {
   try {
     const subject = 'Reset Your TutorMe Password';
-    const resetPasswordUrl = `https://tutorme-client.vercel.app/reset-password?token=${token}`;
+    const resetPasswordUrl = `https://tuitionlanka.com/reset-password?token=${token}`;
 
     const text = `
 Hello,
@@ -137,27 +138,50 @@ const sendAcknowledgement = async (requestTutorBody) => {
   try {
     const { name, email, phoneNumber, district, city, medium, grade, tutors } = requestTutorBody;
 
-    const subject = 'Tutor Request Received – Tuition Lanka';
+    const emailSubject = 'Tutor Request Received – Tuition Lanka';
 
-    // Build tutor blocks (max 4)
+    // Resolve grade name
+    let gradeName = 'N/A';
+    if (grade) {
+      const gradeDoc = await Grade.findById(grade).select('title').lean();
+      if (gradeDoc) gradeName = gradeDoc.title;
+    }
+
+    // Collect all unique subject IDs across all tutor blocks
+    const subjectIds = [
+      ...new Set(
+        tutors
+          .slice(0, 4)
+          .map((t) => t.subject)
+          .filter(Boolean)
+      ),
+    ];
+    const subjectDocs = await Subject.find({ _id: { $in: subjectIds } })
+      .select('_id title')
+      .lean();
+    const subjectMap = Object.fromEntries(subjectDocs.map((s) => [s._id.toString(), s.title]));
+
+    const resolveSubject = (id) => (id ? subjectMap[id.toString()] || id.toString() : 'N/A');
+
+    // Build tutor blocks (max 4) – plain text
     const tutorDetailsText = tutors
       .slice(0, 4)
-      .map((tutor, index) => {
-        return `
+      .map(
+        (tutor, index) => `
 Tutor ${index + 1} Details
-Subjects: ${tutor.subjects.join(', ')}
+Subject: ${resolveSubject(tutor.subject)}
 Class Duration: ${tutor.duration}
 Frequency: ${tutor.frequency}
 Preferred Tutor Type: ${tutor.preferredTutorType}
-`;
-      })
+`
+      )
       .join('\n');
 
     const text = `
 Dear ${name},
 
 Thank you for submitting your tutor request with Tuition Lanka.
-We’re happy to inform you that we have successfully received your request.
+We're happy to inform you that we have successfully received your request.
 
 👤 Student Details
 Full Name: ${name}
@@ -168,7 +192,7 @@ City: ${city}
 
 Academic Preferences
 Medium: ${medium}
-Grade: ${Array.isArray(grade) && grade.length ? grade.join(', ') : 'N/A'}
+Grade: ${gradeName}
 Number of Tutors Requested: ${tutors.length}
 
 ${tutorDetailsText}
@@ -185,7 +209,7 @@ Tuition Lanka – Learn Better, Achieve More
         <p>Dear <strong>${name}</strong>,</p>
 
         <p>Thank you for submitting your tutor request with <strong>Tuition Lanka</strong>.
-        We’re happy to inform you that we have successfully received your request.</p>
+        We're happy to inform you that we have successfully received your request.</p>
 
         <h3>👤 Student Details</h3>
         <ul>
@@ -199,7 +223,7 @@ Tuition Lanka – Learn Better, Achieve More
         <h3>📘 Academic Preferences</h3>
         <ul>
           <li><strong>Medium:</strong> ${medium}</li>
-          <li><strong>Grade:</strong> ${Array.isArray(grade) && grade.length ? grade.join(', ') : 'N/A'}</li>
+          <li><strong>Grade:</strong> ${gradeName}</li>
           <li><strong>Number of Tutors Requested:</strong> ${tutors.length}</li>
         </ul>
 
@@ -209,7 +233,7 @@ Tuition Lanka – Learn Better, Achieve More
             (tutor, index) => `
           <h4>Tutor ${index + 1} Details</h4>
           <ul>
-            <li><strong>Subjects:</strong> ${tutor.subjects.join(', ')}</li>
+            <li><strong>Subject:</strong> ${resolveSubject(tutor.subject)}</li>
             <li><strong>Class Duration:</strong> ${tutor.duration}</li>
             <li><strong>Frequency:</strong> ${tutor.frequency}</li>
             <li><strong>Preferred Tutor Type:</strong> ${tutor.preferredTutorType}</li>
@@ -234,7 +258,7 @@ Tuition Lanka – Learn Better, Achieve More
     await transport.sendMail({
       from: config.email.from,
       to: email,
-      subject,
+      subject: emailSubject,
       text,
       html,
     });

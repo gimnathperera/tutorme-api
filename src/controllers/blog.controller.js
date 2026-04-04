@@ -3,10 +3,41 @@ const catchAsync = require('../utils/catchAsync');
 const { blogService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const logger = require('../config/logger');
+const { Blog } = require('../models');
 
 const createBlog = catchAsync(async (req, res) => {
-  const blog = await blogService.createBlog(req.body);
+  if (process.env.NODE_ENV === 'development') {
+    logger.info(`Create Blog Payload: ${JSON.stringify(req.body, null, 2)}`);
+  }
+  // Populate author from the authenticated user — never trust client-sent author data
+  const blogBody = {
+    ...req.body,
+    author: {
+      id: req.user.id,
+      role: req.user.role,
+    },
+  };
+  const blog = await blogService.createBlog(blogBody);
   res.status(httpStatus.CREATED).send(blog);
+});
+
+const updateBlog = catchAsync(async (req, res) => {
+  // Fetch the blog first so we can check ownership
+  const existing = await blogService.getBlogById(req.params.blogId);
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
+
+  // Tutors can only edit their own blogs; admins can edit any
+  if (req.user.role === 'tutor' && String(existing.author && existing.author.id) !== String(req.user.id)) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only edit your own blogs');
+  }
+
+  // Strip any client-sent author field; author is immutable after creation
+  const { author: _author, ...updateBody } = req.body;
+  const blog = await blogService.updateBlogById(req.params.blogId, updateBody);
+  res.send(blog);
 });
 
 const getBlogs = catchAsync(async (req, res) => {
@@ -24,12 +55,30 @@ const getBlog = catchAsync(async (req, res) => {
   res.send(blog);
 });
 
-const updateBlog = catchAsync(async (req, res) => {
-  const blog = await blogService.updateBlogById(req.params.blogId, req.body);
+/**
+ * GET /v1/blogs/slug/:slug
+ * Fetch a single blog by its SEO-friendly slug.
+ */
+const getBlogBySlug = catchAsync(async (req, res) => {
+  const blog = await blogService.getBlogBySlug(req.params.slug);
+  if (!blog) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
   res.send(blog);
 });
 
 const deleteBlog = catchAsync(async (req, res) => {
+  // Fetch the blog first so we can check ownership
+  const existing = await blogService.getBlogById(req.params.blogId);
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
+
+  // Tutors can only delete their own blogs; admins can delete any
+  if (req.user.role === 'tutor' && String(existing.author && existing.author.id) !== String(req.user.id)) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only delete your own blogs');
+  }
+
   await blogService.deleteBlogById(req.params.blogId);
   res.status(httpStatus.NO_CONTENT).send();
 });
@@ -42,11 +91,40 @@ const updateBlogStatus = catchAsync(async (req, res) => {
   res.send(blog);
 });
 
+/**
+ * POST /v1/blogs/migrate-slugs
+ * One-time migration: back-fills slug on all existing blogs that have none.
+ * Restricted to admin users. Safe to call multiple times (idempotent).
+ */
+const migrateSlugs = catchAsync(async (req, res) => {
+  const blogsWithoutSlug = await Blog.find({ slug: { $exists: false } });
+
+  const results = await Promise.all(
+    blogsWithoutSlug.map(async (blog) => {
+      try {
+        // Trigger the pre-save hook by marking title as modified
+        blog.markModified('title');
+        await blog.save();
+        return { id: blog.id, slug: blog.slug, status: 'ok' };
+      } catch (err) {
+        return { id: blog.id, status: 'error', error: err.message };
+      }
+    })
+  );
+
+  res.send({
+    message: `Processed ${blogsWithoutSlug.length} blog(s) without a slug.`,
+    results,
+  });
+});
+
 module.exports = {
   createBlog,
   getBlogs,
   getBlog,
+  getBlogBySlug,
   updateBlog,
   deleteBlog,
   updateBlogStatus,
+  migrateSlugs,
 };

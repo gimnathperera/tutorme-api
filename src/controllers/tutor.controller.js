@@ -10,8 +10,7 @@ const createTutor = catchAsync(async (req, res) => {
 });
 
 const getTutors = catchAsync(async (req, res) => {
-  // You can add filters for location, tutorType, etc. if needed
-  const filter = pick(req.query, ['tutorType', 'preferredLocations']);
+  const filter = pick(req.query, ['tutorType', 'preferredLocations', 'gradeId', 'subjectId']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await tutorService.queryTutors(filter, options);
   res.send(result);

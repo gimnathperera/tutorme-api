@@ -24,12 +24,11 @@ const requestTutorSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    grade: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Grade',
-      },
-    ],
+    grade: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     medium: {
       type: String,
       enum: ['Sinhala', 'English', 'Tamil'],
@@ -48,13 +47,21 @@ const requestTutorSchema = mongoose.Schema(
 
     tutors: [
       {
-        subjects: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Subject',
-            required: true,
-          },
-        ],
+        subject: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        assignedTutor: {
+          type: String,
+          trim: true,
+          default: null,
+        },
+        preferredTutorType: {
+          type: String,
+          enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
+          required: true,
+        },
         duration: {
           type: String,
           enum: ['30 Minutes', 'One Hour', 'Two Hours'],
@@ -63,17 +70,6 @@ const requestTutorSchema = mongoose.Schema(
         frequency: {
           type: String,
           enum: ['Once a Week', 'Twice a Week', 'Daily'],
-          required: true,
-        },
-        assignedTutor: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Tutor',
-          },
-        ],
-        preferredTutorType: {
-          type: String,
-          enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
           required: true,
         },
       },

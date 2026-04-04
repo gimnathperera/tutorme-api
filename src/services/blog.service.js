@@ -27,7 +27,8 @@ const queryBlogs = async (filter, options) => {
   const blogs = await Blog.paginate(query, {
     ...options,
     populate: 'tags relatedArticles',
-    select: 'title author image content relatedArticles tags faqs status createdAt updatedAt',
+    // slug is now included so the frontend can build SEO-friendly links
+    select: 'title slug author image content relatedArticles tags faqs status createdAt updatedAt',
   });
 
   return blogs;
@@ -39,7 +40,16 @@ const queryBlogs = async (filter, options) => {
  * @returns {Promise<Blog>}
  */
 const getBlogById = async (id) => {
-  return Blog.findById(id).populate('relatedArticles', 'title image author avatar').populate('tags', 'name'); // faqs are automatically included
+  return Blog.findById(id).populate('relatedArticles', 'title image author slug').populate('tags', 'name');
+};
+
+/**
+ * Get Blog by slug (SEO-friendly URL lookup)
+ * @param {string} slug
+ * @returns {Promise<Blog>}
+ */
+const getBlogBySlug = async (slug) => {
+  return Blog.findOne({ slug }).populate('relatedArticles', 'title image author slug').populate('tags', 'name');
 };
 
 /**
@@ -54,7 +64,7 @@ const updateBlogById = async (blogId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
   }
   Object.assign(blog, updateBody);
-  await blog.save();
+  await blog.save(); // pre-save hook will regenerate slug if title changed
   return blog;
 };
 
@@ -68,7 +78,7 @@ const deleteBlogById = async (blogId) => {
   if (!blog) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
   }
-  await blog.remove();
+  await blog.deleteOne();
   return blog;
 };
 
@@ -79,7 +89,7 @@ const deleteBlogById = async (blogId) => {
  * @returns {Promise<Blog>}
  */
 const updateBlogStatus = async (blogId, status) => {
-  if (!['pending', 'approved', 'rejected'].includes(status)) {
+  if (!['pending', 'published', 'draft'].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid status');
   }
   return updateBlogById(blogId, { status });
@@ -89,6 +99,7 @@ module.exports = {
   createBlog,
   queryBlogs,
   getBlogById,
+  getBlogBySlug,
   updateBlogById,
   deleteBlogById,
   updateBlogStatus,
