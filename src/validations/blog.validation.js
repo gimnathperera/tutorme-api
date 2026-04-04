@@ -117,6 +117,13 @@ const getBlog = {
   }),
 };
 
+// Slug is a plain string, not an ObjectId
+const getBlogBySlug = {
+  params: Joi.object().keys({
+    slug: Joi.string().trim().min(1).required(),
+  }),
+};
+
 const deleteBlog = {
   params: Joi.object().keys({
     blogId: objectId().required(),
@@ -136,6 +143,7 @@ module.exports = {
   createBlog,
   getBlogs,
   getBlog,
+  getBlogBySlug,
   updateBlog,
   deleteBlog,
   updateBlogStatus,
