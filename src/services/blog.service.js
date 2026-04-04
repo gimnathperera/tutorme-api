@@ -40,7 +40,7 @@ const queryBlogs = async (filter, options) => {
  * @returns {Promise<Blog>}
  */
 const getBlogById = async (id) => {
-  return Blog.findById(id).populate('relatedArticles', 'title image author avatar slug').populate('tags', 'name');
+  return Blog.findById(id).populate('relatedArticles', 'title image author slug').populate('tags', 'name');
 };
 
 /**
@@ -49,7 +49,7 @@ const getBlogById = async (id) => {
  * @returns {Promise<Blog>}
  */
 const getBlogBySlug = async (slug) => {
-  return Blog.findOne({ slug }).populate('relatedArticles', 'title image author avatar slug').populate('tags', 'name');
+  return Blog.findOne({ slug }).populate('relatedArticles', 'title image author slug').populate('tags', 'name');
 };
 
 /**

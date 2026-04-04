@@ -29,9 +29,8 @@ const blogSchema = mongoose.Schema(
     },
 
     author: {
-      name: { type: String, required: true },
-      avatar: String,
-      role: String,
+      id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      role: { type: String, enum: ['admin', 'tutor'], required: true },
     },
     image: { type: String, required: true },
     content: {

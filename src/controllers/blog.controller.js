@@ -10,8 +10,23 @@ const createBlog = catchAsync(async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
     logger.info(`Create Blog Payload: ${JSON.stringify(req.body, null, 2)}`);
   }
-  const blog = await blogService.createBlog(req.body);
+  // Populate author from the authenticated user — never trust client-sent author data
+  const blogBody = {
+    ...req.body,
+    author: {
+      id: req.user.id,
+      role: req.user.role,
+    },
+  };
+  const blog = await blogService.createBlog(blogBody);
   res.status(httpStatus.CREATED).send(blog);
+});
+
+const updateBlog = catchAsync(async (req, res) => {
+  // Strip any client-sent author field; author is immutable after creation
+  const { author: _author, ...updateBody } = req.body;
+  const blog = await blogService.updateBlogById(req.params.blogId, updateBody);
+  res.send(blog);
 });
 
 const getBlogs = catchAsync(async (req, res) => {
@@ -38,11 +53,6 @@ const getBlogBySlug = catchAsync(async (req, res) => {
   if (!blog) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Blog not found');
   }
-  res.send(blog);
-});
-
-const updateBlog = catchAsync(async (req, res) => {
-  const blog = await blogService.updateBlogById(req.params.blogId, req.body);
   res.send(blog);
 });
 

@@ -53,11 +53,6 @@ const createBlog = {
   body: Joi.object().keys({
     title: Joi.string().required(),
     date: Joi.date(),
-    author: Joi.object({
-      name: Joi.string().required(),
-      avatar: Joi.string(),
-      role: Joi.string(),
-    }).required(),
     image: Joi.string(),
     content: Joi.array().items(contentBlockSchema).required(),
     relatedArticles: Joi.array().items(objectId()),
@@ -81,11 +76,6 @@ const updateBlog = {
       title: Joi.string(),
       date: Joi.date(),
       tags: Joi.array().items(objectId()),
-      author: Joi.object({
-        name: Joi.string(),
-        avatar: Joi.string(),
-        role: Joi.string(),
-      }),
       image: Joi.string(),
       content: Joi.array().items(contentBlockSchema),
       relatedArticles: Joi.array().items(objectId()),
