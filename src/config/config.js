@@ -64,6 +64,6 @@ module.exports = {
         rejectUnauthorized: false,
       },
     },
-    from: envVars.EMAIL_FROM,
+    from: `"Tuition Lanka" <${process.env.EMAIL_FROM}>`,
   },
 };
