@@ -15,3 +15,4 @@ module.exports.tuitionAssignmentService = require('./tuitionAssignment.service')
 module.exports.blogService = require('./blog.service');
 module.exports.requestTutorService = require('./requestTutor.service');
 module.exports.tagService = require('./tag.service');
+module.exports.dashboardService = require('./dashboard.service');
