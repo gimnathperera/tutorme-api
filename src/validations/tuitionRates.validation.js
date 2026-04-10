@@ -6,19 +6,25 @@ const createTuitionRate = {
   body: Joi.object().keys({
     subject: Joi.string().required(),
     grade: Joi.string().required(),
-    govTuitionRate: Joi.array().items(
+    onlineIndividualTuitionRate: Joi.array().items(
       Joi.object().keys({
         minimumRate: Joi.string().required(),
         maximumRate: Joi.string().required(),
       })
     ),
-    partTimeTuitionRate: Joi.array().items(
+    onlineGroupTuitionRate: Joi.array().items(
       Joi.object().keys({
         minimumRate: Joi.string().required(),
         maximumRate: Joi.string().required(),
       })
     ),
-    fullTimeTuitionRate: Joi.array().items(
+    physicalIndividualTuitionRate: Joi.array().items(
+      Joi.object().keys({
+        minimumRate: Joi.string().required(),
+        maximumRate: Joi.string().required(),
+      })
+    ),
+    physicalGroupTuitionRate: Joi.array().items(
       Joi.object().keys({
         minimumRate: Joi.string().required(),
         maximumRate: Joi.string().required(),
@@ -64,19 +70,25 @@ const updateTuitionRates = {
     .keys({
       subject: Joi.string(),
       grade: Joi.string(),
-      govTuitionRate: Joi.array().items(
+      onlineIndividualTuitionRate: Joi.array().items(
         Joi.object().keys({
           minimumRate: Joi.string().required(),
           maximumRate: Joi.string().required(),
         })
       ),
-      partTimeTuitionRate: Joi.array().items(
+      onlineGroupTuitionRate: Joi.array().items(
         Joi.object().keys({
           minimumRate: Joi.string().required(),
           maximumRate: Joi.string().required(),
         })
       ),
-      fullTimeTuitionRate: Joi.array().items(
+      physicalIndividualTuitionRate: Joi.array().items(
+        Joi.object().keys({
+          minimumRate: Joi.string().required(),
+          maximumRate: Joi.string().required(),
+        })
+      ),
+      physicalGroupTuitionRate: Joi.array().items(
         Joi.object().keys({
           minimumRate: Joi.string().required(),
           maximumRate: Joi.string().required(),

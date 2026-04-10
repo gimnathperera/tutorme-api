@@ -11,7 +11,7 @@ const tuitionRatesSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Grade',
     },
-    govTuitionRate: [
+    onlineIndividualTuitionRate: [
       {
         maximumRate: {
           type: String,
@@ -23,7 +23,7 @@ const tuitionRatesSchema = mongoose.Schema(
         },
       },
     ],
-    partTimeTuitionRate: [
+    onlineGroupTuitionRate: [
       {
         maximumRate: {
           type: String,
@@ -35,7 +35,19 @@ const tuitionRatesSchema = mongoose.Schema(
         },
       },
     ],
-    fullTimeTuitionRate: [
+    physicalIndividualTuitionRate: [
+      {
+        maximumRate: {
+          type: String,
+          required: true,
+        },
+        minimumRate: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    physicalGroupTuitionRate: [
       {
         maximumRate: {
           type: String,
