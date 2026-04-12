@@ -16,6 +16,7 @@ const config = require('../../config/config');
 const blogRoute = require('./blog.route');
 const requestTutorRoute = require('./request-tutor.route');
 const tagRoute = require('./tage.route');
+const dashboardRoute = require('./dashboard.route');
 
 const router = express.Router();
 
@@ -24,6 +25,11 @@ const defaultRoutes = [
     path: '/auth',
     route: authRoute,
   },
+  {
+    path: '/dashboard',
+    route: dashboardRoute,
+  },
+
   {
     path: '/tags',
     route: tagRoute,
