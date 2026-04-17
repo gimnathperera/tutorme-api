@@ -15,7 +15,22 @@ const getPapers = catchAsync(async (req, res) => {
   const options = { ...pick(req.query, ['sortBy', 'limit', 'page', 'order']), populate: 'grade,subject' };
 
   const result = await paperService.queryPapers(filter, options);
+
+  if (filter.grade && filter.subject) {
+    result.mediums = await paperService.getPaperMediums(pick(filter, ['grade', 'subject']));
+  }
+
   res.send(result);
+});
+
+const getPaperMediums = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['grade', 'subject']);
+  const mediums =
+    filter.grade || filter.subject ? await paperService.getPaperMediums(filter) : paperService.getConfiguredPaperMediums();
+
+  res.send({
+    mediums,
+  });
 });
 
 const getPaper = catchAsync(async (req, res) => {
@@ -39,6 +54,7 @@ const deletePaper = catchAsync(async (req, res) => {
 module.exports = {
   createPaper,
   getPapers,
+  getPaperMediums,
   getPaper,
   updatePaper,
   deletePaper,

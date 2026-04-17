@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { formatPaperMedium } = require('../config/paper');
 
 const papersSchema = mongoose.Schema(
   {
@@ -32,6 +33,13 @@ const papersSchema = mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        const medium = formatPaperMedium(ret.medium);
+        // eslint-disable-next-line no-param-reassign
+        ret.medium = medium || null;
+      },
+    },
   }
 );
 

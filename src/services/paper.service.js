@@ -1,6 +1,56 @@
 const httpStatus = require('http-status');
-const { Paper } = require('../models');
+const { Grade, Paper, Subject } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { formatPaperMediums, normalizePaperMedium, paperMediums } = require('../config/paper');
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const normalizeMediumOrThrow = (medium) => {
+  const normalizedMedium = normalizePaperMedium(medium);
+
+  if (!normalizedMedium) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid medium');
+  }
+
+  return normalizedMedium;
+};
+
+const preparePaperData = (paperBody) => {
+  const paperData = { ...paperBody };
+
+  if (paperData.medium !== undefined) {
+    paperData.medium = normalizeMediumOrThrow(paperData.medium);
+  }
+
+  return paperData;
+};
+
+const preparePaperQuery = (filter) => {
+  const query = { ...filter };
+
+  if (query.medium !== undefined) {
+    const normalizedMedium = normalizeMediumOrThrow(query.medium);
+    query.medium = { $regex: `^${escapeRegex(normalizedMedium)}$`, $options: 'i' };
+  }
+
+  return query;
+};
+
+const validatePaperReferences = async (paperBody) => {
+  if (paperBody.grade) {
+    const gradeExists = await Grade.exists({ _id: paperBody.grade });
+    if (!gradeExists) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid grade');
+    }
+  }
+
+  if (paperBody.subject) {
+    const subjectExists = await Subject.exists({ _id: paperBody.subject });
+    if (!subjectExists) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid subject');
+    }
+  }
+};
 
 /**
  * Create a paper
@@ -8,7 +58,13 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Paper>}
  */
 const createPaper = async (paperBody) => {
-  return Paper.create(paperBody);
+  if (paperBody.medium === undefined) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Medium is required');
+  }
+
+  const paperData = preparePaperData(paperBody);
+  await validatePaperReferences(paperData);
+  return Paper.create(paperData);
 };
 
 /**
@@ -18,8 +74,17 @@ const createPaper = async (paperBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryPapers = async (filter, options) => {
-  const papers = await Paper.paginate(filter, options);
+  const query = preparePaperQuery(filter);
+  const papers = await Paper.paginate(query, options);
   return papers;
+};
+
+const getConfiguredPaperMediums = () => paperMediums;
+
+const getPaperMediums = async (filter) => {
+  const query = preparePaperQuery(filter);
+  const mediums = await Paper.distinct('medium', query);
+  return formatPaperMediums(mediums);
 };
 
 /**
@@ -28,7 +93,7 @@ const queryPapers = async (filter, options) => {
  * @returns {Promise<Paper>}
  */
 const getPaperById = async (id) => {
-  return Paper.findById(id).populate('subjects').populate('grade').populate('subject');
+  return Paper.findById(id).populate('grade').populate('subject');
 };
 
 /**
@@ -43,7 +108,10 @@ const updatePaperById = async (paperId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Paper not found');
   }
 
-  Object.assign(paper, updateBody);
+  const paperData = preparePaperData(updateBody);
+  await validatePaperReferences(paperData);
+
+  Object.assign(paper, paperData);
   await paper.save();
   return paper;
 };
@@ -65,6 +133,8 @@ const deletePaperById = async (paperId) => {
 module.exports = {
   createPaper,
   queryPapers,
+  getConfiguredPaperMediums,
+  getPaperMediums,
   getPaperById,
   updatePaperById,
   deletePaperById,
