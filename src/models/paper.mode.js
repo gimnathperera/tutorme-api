@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
-const { formatPaperMedium, paperMediumIds } = require('../config/paper');
+const { formatPaperMedium } = require('../config/paper');
 
 const papersSchema = mongoose.Schema(
   {
@@ -13,8 +13,6 @@ const papersSchema = mongoose.Schema(
     medium: {
       type: String,
       trim: true,
-      required: true,
-      enum: paperMediumIds,
     },
     subject: {
       type: mongoose.Schema.Types.ObjectId,

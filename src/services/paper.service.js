@@ -58,6 +58,10 @@ const validatePaperReferences = async (paperBody) => {
  * @returns {Promise<Paper>}
  */
 const createPaper = async (paperBody) => {
+  if (paperBody.medium === undefined) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Medium is required');
+  }
+
   const paperData = preparePaperData(paperBody);
   await validatePaperReferences(paperData);
   return Paper.create(paperData);
