@@ -51,8 +51,8 @@ const blogSchema = mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ['pending', 'published', 'draft'],
-      default: 'draft',
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
       index: true,
     },
     faqs: [

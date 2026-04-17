@@ -29,4 +29,17 @@ const auth =
       .catch((err) => next(err));
   };
 
+// Optional auth — sets req.user if a valid JWT is present, but does not fail if missing
+const optionalAuth = async (req, res, next) => {
+  return new Promise((resolve) => {
+    passport.authenticate('jwt', { session: false }, (err, user) => {
+      if (user) {
+        req.user = user;
+      }
+      resolve();
+    })(req, res, next);
+  }).then(() => next());
+};
+
 module.exports = auth;
+module.exports.optionalAuth = optionalAuth;

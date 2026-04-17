@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
+const { optionalAuth } = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const blogValidation = require('../../validations/blog.validation');
 const blogController = require('../../controllers/blog.controller');
@@ -9,7 +10,7 @@ const router = express.Router();
 router
   .route('/')
   .post(auth('manageBlog'), validate(blogValidation.createBlog), blogController.createBlog)
-  .get(validate(blogValidation.getBlogs), blogController.getBlogs);
+  .get(optionalAuth, validate(blogValidation.getBlogs), blogController.getBlogs);
 
 /**
  * GET /v1/blogs/slug/:slug
