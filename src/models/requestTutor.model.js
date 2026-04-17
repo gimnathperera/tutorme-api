@@ -59,7 +59,12 @@ const requestTutorSchema = mongoose.Schema(
         },
         preferredTutorType: {
           type: String,
-          enum: ['Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors'],
+          enum: ['Private Tutor', 'Government Teacher', 'University Student', 'Coach'],
+          required: true,
+        },
+        preferredClassType: {
+          type: String,
+          enum: ['Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group'],
           required: true,
         },
         duration: {

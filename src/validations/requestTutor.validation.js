@@ -45,11 +45,18 @@ const createRequestTutor = {
           }),
           assignedTutor: Joi.string().trim().allow('', null).optional(),
           preferredTutorType: Joi.string()
-            .valid('Part Time Tutors', 'Full Time Tutors', 'Ex / Current Government School Tutors')
+            .valid('Private Tutor', 'Government Teacher', 'University Student', 'Coach')
             .required()
             .messages({
               'any.only': 'Preferred Tutor Type must be one of the allowed values',
               'any.required': 'Preferred Tutor Type is required',
+            }),
+          preferredClassType: Joi.string()
+            .valid('Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group')
+            .required()
+            .messages({
+              'any.only': 'Preferred Class Type must be one of the allowed values',
+              'any.required': 'Preferred Class Type is required',
             }),
           duration: Joi.string().valid('30 Minutes', 'One Hour', 'Two Hours').required().messages({
             'any.only': 'Duration must be 30 Minutes, One Hour, or Two Hours',
