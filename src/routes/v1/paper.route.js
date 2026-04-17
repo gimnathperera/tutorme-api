@@ -8,13 +8,15 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(validate(auth(), paperValidation.createPaper), paperController.createPaper)
+  .post(auth(), validate(paperValidation.createPaper), paperController.createPaper)
   .get(validate(paperValidation.getPapers), paperController.getPapers);
+
+router.get('/mediums', validate(paperValidation.getPaperMediums), paperController.getPaperMediums);
 
 router
   .route('/:paperId')
   .get(validate(paperValidation.getPaper), paperController.getPaper)
-  .patch(validate(auth(), paperValidation.updatePaper), paperController.updatePaper)
-  .delete(validate(auth('manageUsers'), paperValidation.deletePaper), paperController.deletePaper);
+  .patch(auth(), validate(paperValidation.updatePaper), paperController.updatePaper)
+  .delete(auth('manageUsers'), validate(paperValidation.deletePaper), paperController.deletePaper);
 
 module.exports = router;
