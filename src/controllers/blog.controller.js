@@ -11,12 +11,14 @@ const createBlog = catchAsync(async (req, res) => {
     logger.info(`Create Blog Payload: ${JSON.stringify(req.body, null, 2)}`);
   }
   // Populate author from the authenticated user — never trust client-sent author data
+  // Always force pending on create regardless of what frontend sends
   const blogBody = {
     ...req.body,
     author: {
       id: req.user.id,
       role: req.user.role,
     },
+    status: 'pending',
   };
   const blog = await blogService.createBlog(blogBody);
   res.status(httpStatus.CREATED).send(blog);
@@ -36,6 +38,16 @@ const updateBlog = catchAsync(async (req, res) => {
 
   // Strip any client-sent author field; author is immutable after creation
   const { author: _author, ...updateBody } = req.body;
+
+  if (req.user.role === 'tutor') {
+    // Tutors cannot manually change status
+    delete updateBody.status;
+    // If the blog was rejected, auto-reset to pending on edit
+    if (existing.status === 'rejected') {
+      updateBody.status = 'pending';
+    }
+  }
+
   const blog = await blogService.updateBlogById(req.params.blogId, updateBody);
   res.send(blog);
 });
@@ -43,7 +55,7 @@ const updateBlog = catchAsync(async (req, res) => {
 const getBlogs = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['title', 'status', 'tag']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await blogService.queryBlogs(filter, options);
+  const result = await blogService.queryBlogs(filter, options, req.user);
   res.send(result);
 });
 

@@ -63,7 +63,7 @@ const createBlog = {
         answer: Joi.string().required(),
       })
     ),
-    status: Joi.string().valid('pending', 'published', 'draft'),
+    status: Joi.string().valid('pending', 'approved', 'rejected'),
   }),
 };
 
@@ -85,7 +85,7 @@ const updateBlog = {
           answer: Joi.string().required(),
         })
       ),
-      status: Joi.string().valid('pending', 'published', 'draft'),
+      status: Joi.string().valid('pending', 'approved', 'rejected'),
     })
     .min(1),
 };
@@ -94,7 +94,7 @@ const getBlogs = {
   query: Joi.object().keys({
     title: Joi.string(),
     tags: Joi.array().items(objectId()),
-    status: Joi.string().valid('pending', 'published', 'draft'),
+    status: Joi.string().valid('pending', 'approved', 'rejected'),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -125,7 +125,7 @@ const updateBlogStatus = {
     blogId: objectId().required(),
   }),
   body: Joi.object().keys({
-    status: Joi.string().valid('pending', 'published', 'draft').required(),
+    status: Joi.string().valid('pending', 'approved', 'rejected').required(),
   }),
 };
 

@@ -17,17 +17,29 @@ const createBlog = async (blogBody) => {
  * @param {Object} options
  * @returns {Promise<QueryResult>}
  */
-const queryBlogs = async (filter, options) => {
+const queryBlogs = async (filter, options, user) => {
   const query = { ...filter };
   if (filter.tag) {
     query.tags = filter.tag;
     delete query.tag;
   }
 
+  // Role-based status filtering
+  if (!user || user.role === 'user') {
+    // Not logged in or regular user — only approved blogs
+    query.status = 'approved';
+  } else if (user.role === 'tutor') {
+    // Tutor sees approved blogs + their own pending/rejected blogs
+    delete query.status;
+    query.$or = [{ status: 'approved' }, { status: { $in: ['pending', 'rejected'] }, 'author.id': user.id }];
+  } else if (user.role === 'admin') {
+    // Admin sees all blogs — ignore any status filter from query params
+    delete query.status;
+  }
+
   const blogs = await Blog.paginate(query, {
     ...options,
     populate: 'tags relatedArticles',
-    // slug is now included so the frontend can build SEO-friendly links
     select: 'title slug author image content relatedArticles tags faqs status createdAt updatedAt',
   });
 
@@ -89,7 +101,7 @@ const deleteBlogById = async (blogId) => {
  * @returns {Promise<Blog>}
  */
 const updateBlogStatus = async (blogId, status) => {
-  if (!['pending', 'published', 'draft'].includes(status)) {
+  if (!['pending', 'approved', 'rejected'].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid status');
   }
   return updateBlogById(blogId, { status });
