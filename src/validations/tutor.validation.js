@@ -203,6 +203,9 @@ const updateTutor = {
       // 0. Status (admin-only)
       status: Joi.string().valid('pending', 'approved', 'rejected', 'suspended').optional(),
 
+      // Custom rejection message (used when status is 'rejected')
+      rejectionMessage: Joi.string().allow('').max(1000).optional(),
+
       // 1. Personal Information
       fullName: Joi.string(),
       contactNumber: Joi.string().pattern(/^\d+$/).min(7).max(15),

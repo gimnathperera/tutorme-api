@@ -6,11 +6,27 @@ const logger = require('../config/logger');
 const emailService = require('./email.service');
 
 /**
+ * Check if an email belongs to a suspended tutor.
+ * Throws 403 FORBIDDEN if suspended so they cannot re-register.
+ * @param {string} email
+ * @returns {Promise<void>}
+ */
+const checkEmailSuspended = async (email) => {
+  const existing = await Tutor.findOne({ email: email.toLowerCase().trim() }).select('status').lean();
+  if (existing && existing.status === 'suspended') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'This email has been suspended. Please contact admin.');
+  }
+};
+
+/**
  * Create a Tutor
  * @param {Object} tutorBody
  * @returns {Promise<Tutor>}
  */
 const createTutor = async (tutorBody) => {
+  // Block suspended emails from re-registering
+  await checkEmailSuspended(tutorBody.email);
+
   const tutor = await Tutor.create({ ...tutorBody, status: 'pending' });
   try {
     await emailService.sendTutorRegistrationPendingEmail(tutor.email, tutor.fullName);
@@ -161,4 +177,5 @@ module.exports = {
   changePassword,
   generateTemporaryPassword,
   findTutorsBySubjects,
+  checkEmailSuspended,
 };
