@@ -12,16 +12,17 @@ const createTutor = {
       'string.pattern.base': 'Contact Number must be digits only',
       'string.empty': 'Contact Number is required',
     }),
-
     email: Joi.string().email().required().messages({
       'string.email': 'Email must be valid',
       'string.empty': 'Email is required',
+    }),
+    password: Joi.string().custom(password).required().messages({
+      'string.empty': 'Password is required',
     }),
     dateOfBirth: Joi.string().isoDate().required().messages({
       'string.isoDate': 'Date of Birth must be in ISO format (YYYY-MM-DD)',
       'any.required': 'Date of Birth is required',
     }),
-
     gender: Joi.string().valid('Male', 'Female').required().messages({
       'any.only': 'Gender must be Male or Female',
       'any.required': 'Gender is required',
@@ -34,6 +35,10 @@ const createTutor = {
     race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').required(),
 
     // 2. Tutoring Preferences
+    classType: Joi.array()
+      .items(Joi.string().valid('Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'))
+      .min(1)
+      .required(),
     tutoringLevels: Joi.array()
       .items(
         Joi.string().valid(
@@ -50,12 +55,10 @@ const createTutor = {
           'Special Skills'
         )
       )
-      .min(1)
-      .required(),
+      .optional(),
     preferredLocations: Joi.array()
       .items(
         Joi.string().valid(
-          // List all locations
           'Kollupitiya (Colombo 3)',
           'Bambalapitiya (Colombo 4)',
           'Havelock Town (Colombo 5)',
@@ -110,17 +113,28 @@ const createTutor = {
     tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1).required().messages({
       'array.min': 'Please select at least one medium.',
     }),
-
     grades: Joi.array().items(Joi.string()).min(1).required(),
     subjects: Joi.array().items(Joi.string()).min(1).required(),
-
     tutorType: Joi.array()
-      .items(Joi.string().valid('Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches'))
+      .items(
+        Joi.string().valid(
+          'Private Tutor',
+          'Government Teacher',
+          'International School Teacher',
+          'University Lecturer',
+          'Full-Time',
+          'Part-Time',
+          'Online',
+          'School Teacher Tutors',
+          'Group Tutors',
+          'Exam Coaches'
+        )
+      )
       .min(1)
       .required(),
     yearsExperience: Joi.number().integer().min(0).max(50).required(),
     highestEducation: Joi.string()
-      .valid('PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Bachelor Degree', 'Diploma and Professional', 'AL')
+      .valid('PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL')
       .required(),
     academicDetails: Joi.string().allow('').max(1000),
 
@@ -128,11 +142,19 @@ const createTutor = {
     teachingSummary: Joi.string().max(750).required(),
     studentResults: Joi.string().max(750).required(),
     sellingPoints: Joi.string().max(750).required(),
-    certificatesAndQualifications: Joi.array().items(Joi.string().trim().min(3)).min(1).required().messages({
-      'array.base': 'Certificates and qualifications must be an array',
-      'array.min': 'At least one certificate or qualification is required',
-      'string.min': 'Certificate name must be at least 3 characters long',
-    }),
+    certificatesAndQualifications: Joi.array()
+      .items(
+        Joi.object().keys({
+          type: Joi.string().required(),
+          url: Joi.string().uri().required(),
+        })
+      )
+      .min(1)
+      .required()
+      .messages({
+        'array.base': 'Certificates and qualifications must be an array',
+        'array.min': 'At least one certificate or qualification is required',
+      }),
 
     // 5. Agreement & Submit
     agreeTerms: Joi.boolean().valid(true).required().messages({
@@ -175,6 +197,12 @@ const updateTutor = {
   }),
   body: Joi.object()
     .keys({
+      // Admin identifier for role verification
+      adminId: Joi.string().optional(),
+
+      // 0. Status (admin-only)
+      status: Joi.string().valid('pending', 'approved', 'rejected', 'suspended').optional(),
+
       // 1. Personal Information
       fullName: Joi.string(),
       contactNumber: Joi.string().pattern(/^\d+$/).min(7).max(15),
@@ -190,6 +218,18 @@ const updateTutor = {
       subjects: Joi.array().items(Joi.string()),
 
       // 2. Tutoring Preferences
+      classType: Joi.array().items(
+        Joi.string().valid(
+          'Online - Individual',
+          'Online - Group',
+          'Home Visit - Individual',
+          'Home Visit - Group',
+          "At Tutor's Place - Individual",
+          "At Tutor's Place - Group",
+          'In-Person - Individual',
+          'In-Person - Group'
+        )
+      ),
       tutoringLevels: Joi.array().items(
         Joi.string().valid(
           'Pre-School / Montessori',
@@ -257,15 +297,36 @@ const updateTutor = {
       ),
 
       // 3. Academic Qualifications & Experience
-      tutorType: Joi.array().items(Joi.string()).min(1).required(),
+      tutorType: Joi.array()
+        .items(
+          Joi.string().valid(
+            'Private Tutor',
+            'Government Teacher',
+            'International School Teacher',
+            'University Lecturer',
+            'Online Tutor',
+            'Others',
+            'Full-Time',
+            'Part-Time',
+            'Online',
+            'School Teacher Tutors',
+            'Group Tutors',
+            'Exam Coaches'
+          )
+        )
+        .optional(),
       yearsExperience: Joi.number().integer().min(0).max(50),
       highestEducation: Joi.string().valid(
         'PhD',
+        'Diploma',
         'Masters',
         'Bachelor Degree',
         'Undergraduate',
         'Diploma and Professional',
-        'AL'
+        'JC/A Levels',
+        'Poly',
+        'AL',
+        'Others'
       ),
       academicDetails: Joi.string().allow('').max(1000),
 
@@ -273,9 +334,15 @@ const updateTutor = {
       teachingSummary: Joi.string().max(750),
       studentResults: Joi.string().max(750),
       sellingPoints: Joi.string().max(750),
-      certificatesAndQualifications: Joi.array(),
+      certificatesAndQualifications: Joi.array().items(
+        Joi.object().keys({
+          id: Joi.string().optional(),
+          type: Joi.string().required(),
+          url: Joi.string().uri().required(),
+        })
+      ),
 
-      // 5. Agreement & Submit
+      // 5. Agreement
       agreeTerms: Joi.boolean(),
       agreeAssignmentInfo: Joi.boolean(),
     })

@@ -25,7 +25,12 @@ const getTutor = catchAsync(async (req, res) => {
 });
 
 const updateTutor = catchAsync(async (req, res) => {
-  const tutor = await tutorService.updateTutorById(req.params.tutorId, req.body);
+  // Verify the caller is the admin identified by adminId (if provided)
+  const { adminId, ...updateBody } = req.body;
+  if (adminId && req.user && req.user.id !== adminId) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You are not authorized to perform this action');
+  }
+  const tutor = await tutorService.updateTutorById(req.params.tutorId, updateBody);
   res.send(tutor);
 });
 

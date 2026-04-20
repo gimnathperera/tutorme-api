@@ -268,6 +268,81 @@ Tuition Lanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send tutor registration pending email
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @returns {Promise}
+ */
+const sendTutorRegistrationPendingEmail = async (to, tutorName) => {
+  try {
+    const subject = 'Your Tutor Registration is Pending Review – TutorMe';
+
+    const text = `
+Dear ${tutorName},
+
+Thank you for registering as a tutor on TutorMe!
+
+We have successfully received your registration and it is currently under review by our team.
+
+What happens next?
+- Our team will carefully review your profile and submitted documents.
+- You will receive a confirmation email once your registration has been approved.
+- This process typically takes 2–5 business days.
+
+If you have any questions in the meantime, please don't hesitate to contact our support team.
+
+Thank you for your patience and for choosing TutorMe.
+
+Warm regards,
+The TutorMe Team
+TutorMe – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #4F46E5; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Registration Received – Pending Review</h2>
+        </div>
+        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p>Dear <strong>${tutorName}</strong>,</p>
+          <p>Thank you for registering as a tutor on <strong>TutorMe</strong>!</p>
+          <p>We have successfully received your registration and it is currently <strong>under review</strong> by our team.</p>
+
+          <div style="background-color: #EFF6FF; border-left: 4px solid #4F46E5; padding: 16px 20px; border-radius: 4px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📋 What happens next?</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #1e3a8a;">
+              <li>Our team will carefully review your profile and submitted documents.</li>
+              <li>You will receive a confirmation email once your registration has been <strong>approved</strong>.</li>
+              <li>This process typically takes <strong>2–5 business days</strong>.</li>
+            </ul>
+          </div>
+
+          <p>If you have any questions in the meantime, please don't hesitate to contact our support team.</p>
+          <p>Thank you for your patience and for choosing TutorMe.</p>
+
+          <p style="margin-top: 28px;">
+            Warm regards,<br/>
+            <strong>The TutorMe Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error(`Failed to send tutor registration pending email to ${to}:`, err);
+    throw new Error('Tutor registration pending email failed');
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -275,4 +350,5 @@ module.exports = {
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
   sendAcknowledgement,
+  sendTutorRegistrationPendingEmail,
 };

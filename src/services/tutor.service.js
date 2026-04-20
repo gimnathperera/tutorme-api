@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { Tutor } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const logger = require('../config/logger');
 const emailService = require('./email.service');
 
 /**
@@ -10,8 +11,14 @@ const emailService = require('./email.service');
  * @returns {Promise<Tutor>}
  */
 const createTutor = async (tutorBody) => {
-  // Here you could add any business logic before saving
-  return Tutor.create(tutorBody);
+  const tutor = await Tutor.create({ ...tutorBody, status: 'pending' });
+  try {
+    await emailService.sendTutorRegistrationPendingEmail(tutor.email, tutor.fullName);
+  } catch (emailErr) {
+    // Log but don't fail registration if email fails
+    logger.warn(`Tutor registered but failed to send pending email to ${tutor.email}: ${emailErr.message}`);
+  }
+  return tutor;
 };
 
 /**
