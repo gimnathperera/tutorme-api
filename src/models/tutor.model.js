@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 
 const tutorSchema = mongoose.Schema(
@@ -18,6 +19,13 @@ const tutorSchema = mongoose.Schema(
       required: true,
       trim: true,
       lowercase: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 8,
+      private: true,
     },
     dateOfBirth: {
       type: Date,
@@ -43,6 +51,19 @@ const tutorSchema = mongoose.Schema(
       required: true,
     },
 
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'suspended'],
+      default: 'pending',
+    },
+
+    classType: [
+      {
+        type: String,
+        enum: ['Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'],
+      },
+    ],
+
     tutoringLevels: [
       {
         type: String,
@@ -59,7 +80,6 @@ const tutorSchema = mongoose.Schema(
           'Music & Arts',
           'Special Skills',
         ],
-        required: true,
       },
     ],
 
@@ -137,7 +157,18 @@ const tutorSchema = mongoose.Schema(
     tutorType: [
       {
         type: String,
-        enum: ['Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches'],
+        enum: [
+          'Private Tutor',
+          'Government Teacher',
+          'International School Teacher',
+          'University Lecturer',
+          'Full-Time',
+          'Part-Time',
+          'Online',
+          'School Teacher Tutors',
+          'Group Tutors',
+          'Exam Coaches',
+        ],
         required: true,
       },
     ],
@@ -150,7 +181,7 @@ const tutorSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Bachelor Degree', 'Diploma and Professional', 'AL'],
+      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL'],
       required: true,
     },
     academicDetails: {
@@ -187,16 +218,48 @@ const tutorSchema = mongoose.Schema(
     },
     certificatesAndQualifications: [
       {
-        type: String,
-        trim: true,
-        required: true,
+        type: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        url: {
+          type: String,
+          required: true,
+          trim: true,
+        },
       },
     ],
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Hash password before saving
+tutorSchema.pre('save', async function (next) {
+  const tutor = this;
+  if (tutor.isModified('password')) {
+    tutor.password = await bcrypt.hash(tutor.password, 8);
+  }
+  next();
+});
+
+/**
+ * Check if password matches the stored hashed password
+ * @param {string} password
+ * @returns {Promise<boolean>}
+ */
+tutorSchema.methods.isPasswordMatch = async function (password) {
+  const tutor = this;
+  return bcrypt.compare(password, tutor.password);
+};
 
 tutorSchema.plugin(toJSON);
 tutorSchema.plugin(paginate);

@@ -268,6 +268,271 @@ Tuition Lanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send tutor registration pending email
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @returns {Promise}
+ */
+const sendTutorRegistrationPendingEmail = async (to, tutorName) => {
+  try {
+    const subject = 'Your Tutor Registration is Pending Review – TutorMe';
+
+    const text = `
+Dear ${tutorName},
+
+Thank you for registering as a tutor on TutorMe!
+
+We have successfully received your registration and it is currently under review by our team.
+
+What happens next?
+- Our team will carefully review your profile and submitted documents.
+- You will receive a confirmation email once your registration has been approved.
+- This process typically takes 2–5 business days.
+
+If you have any questions in the meantime, please don't hesitate to contact our support team.
+
+Thank you for your patience and for choosing TutorMe.
+
+Warm regards,
+The TutorMe Team
+TutorMe – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #4F46E5; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Registration Received – Pending Review</h2>
+        </div>
+        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p>Dear <strong>${tutorName}</strong>,</p>
+          <p>Thank you for registering as a tutor on <strong>TutorMe</strong>!</p>
+          <p>We have successfully received your registration and it is currently <strong>under review</strong> by our team.</p>
+
+          <div style="background-color: #EFF6FF; border-left: 4px solid #4F46E5; padding: 16px 20px; border-radius: 4px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📋 What happens next?</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #1e3a8a;">
+              <li>Our team will carefully review your profile and submitted documents.</li>
+              <li>You will receive a confirmation email once your registration has been <strong>approved</strong>.</li>
+              <li>This process typically takes <strong>2–5 business days</strong>.</li>
+            </ul>
+          </div>
+
+          <p>If you have any questions in the meantime, please don't hesitate to contact our support team.</p>
+          <p>Thank you for your patience and for choosing TutorMe.</p>
+
+          <p style="margin-top: 28px;">
+            Warm regards,<br/>
+            <strong>The TutorMe Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error(`Failed to send tutor registration pending email to ${to}:`, err);
+    throw new Error('Tutor registration pending email failed');
+  }
+};
+
+/**
+ * Send tutor approval email
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @returns {Promise}
+ */
+const sendTutorApprovedEmail = async (to, tutorName) => {
+  try {
+    const subject = 'Your Tutor Registration is Approved – TutorMe';
+    const signInUrl = 'https://www.tuitionlanka.com/sign-in';
+
+    const text = `
+Dear ${tutorName},
+
+Great news! Your tutor registration on TutorMe has been approved.
+
+You can now log in to the platform using the link below:
+${signInUrl}
+
+Thank you for joining TutorMe. We look forward to connecting you with students!
+
+Warm regards,
+The TutorMe Team
+TutorMe – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #16a34a; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">🎉 Registration Approved!</h2>
+        </div>
+        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p>Dear <strong>${tutorName}</strong>,</p>
+          <p>Great news! Your tutor registration on <strong>TutorMe</strong> has been <strong style="color: #16a34a;">approved</strong>.</p>
+          <p>You can now log in to the platform and start connecting with students.</p>
+
+          <p style="text-align: center; margin: 28px 0;">
+            <a href="${signInUrl}"
+               style="background-color: #4F46E5; color: #fff; padding: 13px 28px;
+                      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
+              Log In to TutorMe
+            </a>
+          </p>
+
+          <p style="color: #6b7280; font-size: 13px;">Or copy this link into your browser:<br/>
+            <a href="${signInUrl}" style="color: #4F46E5;">${signInUrl}</a>
+          </p>
+
+          <p>Thank you for joining TutorMe. We look forward to connecting you with students!</p>
+
+          <p style="margin-top: 28px;">
+            Warm regards,<br/>
+            <strong>The TutorMe Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send tutor approved email to ${to}:`, err);
+    throw new Error('Tutor approved email failed');
+  }
+};
+
+/**
+ * Send tutor rejection email
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @param {string} customMessage - Admin's custom rejection message
+ * @returns {Promise}
+ */
+const sendTutorRejectedEmail = async (to, tutorName, customMessage) => {
+  try {
+    const subject = 'Your Tutor Registration was Not Approved – TutorMe';
+    const messageBlock = customMessage ? `\nReason provided by our team:\n${customMessage}\n` : '';
+
+    const text = `
+Dear ${tutorName},
+
+Thank you for your interest in joining TutorMe as a tutor.
+
+After careful review, we regret to inform you that your registration has not been approved at this time.
+${messageBlock}
+If you have any questions or would like to discuss further, please contact our support team.
+
+Thank you for your understanding.
+
+Warm regards,
+The TutorMe Team
+TutorMe – Learn Better, Achieve More
+`;
+
+    const messageHtml = customMessage
+      ? `<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 14px 18px; border-radius: 4px; margin: 20px 0;">
+           <p style="margin: 0; color: #7f1d1d; font-size: 14px;"><strong>Reason provided by our team:</strong></p>
+           <p style="margin: 8px 0 0; color: #991b1b; white-space: pre-wrap;">${customMessage}</p>
+         </div>`
+      : '';
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #dc2626; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Registration Not Approved</h2>
+        </div>
+        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p>Dear <strong>${tutorName}</strong>,</p>
+          <p>Thank you for your interest in joining <strong>TutorMe</strong> as a tutor.</p>
+          <p>After careful review, we regret to inform you that your registration has <strong style="color: #dc2626;">not been approved</strong> at this time.</p>
+
+          ${messageHtml}
+
+          <p>If you have any questions or would like to discuss further, please contact our support team.</p>
+          <p>Thank you for your understanding.</p>
+
+          <p style="margin-top: 28px;">
+            Warm regards,<br/>
+            <strong>The TutorMe Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send tutor rejected email to ${to}:`, err);
+    throw new Error('Tutor rejected email failed');
+  }
+};
+
+/**
+ * Send tutor suspension email
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @returns {Promise}
+ */
+const sendTutorSuspendedEmail = async (to, tutorName) => {
+  try {
+    const subject = 'Your Tutor Account has been Suspended – TutorMe';
+
+    const text = `
+Dear ${tutorName},
+
+We are writing to inform you that your TutorMe tutor account has been suspended.
+
+During the suspension period, you will not be able to log in or access the platform.
+
+If you believe this is a mistake or would like to appeal, please contact our support team directly.
+
+Thank you for your understanding.
+
+Warm regards,
+The TutorMe Team
+TutorMe – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #4b5563; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Account Suspended</h2>
+        </div>
+        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p>Dear <strong>${tutorName}</strong>,</p>
+          <p>We are writing to inform you that your <strong>TutorMe</strong> tutor account has been <strong style="color: #4b5563;">suspended</strong>.</p>
+
+          <div style="background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 14px 18px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; color: #374151;">During the suspension period, you will not be able to log in or access the platform.</p>
+          </div>
+
+          <p>If you believe this is a mistake or would like to appeal, please contact our support team directly.</p>
+          <p>Thank you for your understanding.</p>
+
+          <p style="margin-top: 28px;">
+            Warm regards,<br/>
+            <strong>The TutorMe Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send tutor suspended email to ${to}:`, err);
+    throw new Error('Tutor suspended email failed');
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -275,4 +540,8 @@ module.exports = {
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
   sendAcknowledgement,
+  sendTutorRegistrationPendingEmail,
+  sendTutorApprovedEmail,
+  sendTutorRejectedEmail,
+  sendTutorSuspendedEmail,
 };
