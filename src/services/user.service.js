@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
-const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const emailService = require('./email.service');
+const accountSyncService = require('./accountSync.service');
 
 /**
  * Create a user
@@ -66,9 +66,14 @@ const updateUserById = async (userId, updateBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
 
+  if (user.tutorId && updateBody.role && updateBody.role !== 'tutor') {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Linked tutor users must keep the tutor role');
+  }
+
   Object.assign(user, updateBody);
 
   await user.save();
+  await accountSyncService.syncTutorFromUser(user);
   return user;
 };
 
@@ -110,6 +115,7 @@ const changePassword = async (userId, updateBody) => {
   Object.assign(user, payload);
 
   await user.save();
+  await accountSyncService.syncTutorFromUser(user);
   return { message: 'Password updated successfully' };
 };
 
@@ -124,8 +130,9 @@ const generateTemporaryPassword = async (userId) => {
   try {
     const tempPassword = generateTempPassword(12);
     if (!tempPassword) throw new Error('Temp password generation failed');
-    user.password = await bcrypt.hash(tempPassword, 10);
+    user.password = tempPassword;
     await user.save();
+    await accountSyncService.syncTutorFromUser(user);
     try {
       await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
     } catch (err) {

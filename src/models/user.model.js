@@ -131,6 +131,12 @@ const userSchema = mongoose.Schema(
       trim: true,
       default: 'UTC+5:30',
     },
+    tutorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tutor',
+      index: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,

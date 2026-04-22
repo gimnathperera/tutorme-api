@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const logger = require('../config/logger');
 const emailService = require('./email.service');
+const accountSyncService = require('./accountSync.service');
 
 /**
  * Check if an email belongs to a suspended tutor.
@@ -97,6 +98,7 @@ const updateTutorById = async (tutorId, updateBody) => {
   }
   Object.assign(tutor, updateBody);
   await tutor.save();
+  await accountSyncService.syncUserFromTutor(tutor);
   return tutor;
 };
 
@@ -131,6 +133,7 @@ const changePassword = async (tutorId, updateBody) => {
   Object.assign(tutor, payload);
 
   await tutor.save();
+  await accountSyncService.syncUserFromTutor(tutor);
   return { message: 'Password updated successfully' };
 };
 /**
@@ -148,6 +151,7 @@ const generateTemporaryPassword = async (tutorId) => {
     const tempPassword = generateTempPassword();
     tutor.password = tempPassword;
     await tutor.save();
+    await accountSyncService.syncUserFromTutor(tutor);
     await emailService.sendTemporaryPasswordEmail(tutor.email, tutor.fullName, tempPassword);
     return { message: 'Temporary password generated and sent to email' };
   } catch (error) {
