@@ -431,9 +431,7 @@ const tutorUserProfileFields = {
   tutoringLevels: updateTutor.body.extract('tutoringLevels'),
   preferredLocations: updateTutor.body.extract('preferredLocations'),
   tutorMediums: updateTutor.body.extract('tutorMediums'),
-  tutorType: Joi.array().items(
-    Joi.string().valid('Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches')
-  ),
+  tutorType: updateTutor.body.extract('tutorType'),
   highestEducation: Joi.string().valid(
     'PhD',
     'Masters',

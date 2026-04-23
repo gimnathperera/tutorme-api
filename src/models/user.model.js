@@ -207,7 +207,22 @@ const userSchema = mongoose.Schema(
       type: [
         {
           type: String,
-          enum: ['Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches'],
+          enum: [
+            'Private Tutor',
+            'Government Teacher',
+            'University Student',
+            'Coach',
+            'International School Teacher',
+            'University Lecturer',
+            'Online Tutor',
+            'Others',
+            'Full-Time',
+            'Part-Time',
+            'Online',
+            'School Teacher Tutors',
+            'Group Tutors',
+            'Exam Coaches',
+          ],
           trim: true,
         },
       ],
