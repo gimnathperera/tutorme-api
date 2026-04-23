@@ -1,10 +1,9 @@
-const requestStatus = {
-  SUBMITTED: 'SUBMITTED',
-  IN_PROGRESS: 'IN_PROGRESS',
-  REJECTED: 'REJECTED',
-  RESOLVED: 'RESOLVED',
+const tutorStatus = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
 };
 
 module.exports = {
-  requestStatus,
+  tutorStatus,
 };

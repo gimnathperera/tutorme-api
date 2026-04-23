@@ -2,7 +2,22 @@ const httpStatus = require('http-status');
 const { Tutor } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const logger = require('../config/logger');
 const emailService = require('./email.service');
+const accountSyncService = require('./accountSync.service');
+
+/**
+ * Check if an email belongs to a suspended tutor.
+ * Throws 403 FORBIDDEN if suspended so they cannot re-register.
+ * @param {string} email
+ * @returns {Promise<void>}
+ */
+const checkEmailSuspended = async (email) => {
+  const existing = await Tutor.findOne({ email: email.toLowerCase().trim() }).select('status').lean();
+  if (existing && existing.status === 'suspended') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'This email has been suspended. Please contact admin.');
+  }
+};
 
 /**
  * Create a Tutor
@@ -10,8 +25,17 @@ const emailService = require('./email.service');
  * @returns {Promise<Tutor>}
  */
 const createTutor = async (tutorBody) => {
-  // Here you could add any business logic before saving
-  return Tutor.create(tutorBody);
+  // Block suspended emails from re-registering
+  await checkEmailSuspended(tutorBody.email);
+
+  const tutor = await Tutor.create({ ...tutorBody, status: 'pending' });
+  try {
+    await emailService.sendTutorRegistrationPendingEmail(tutor.email, tutor.fullName);
+  } catch (emailErr) {
+    // Log but don't fail registration if email fails
+    logger.warn(`Tutor registered but failed to send pending email to ${tutor.email}: ${emailErr.message}`);
+  }
+  return tutor;
 };
 
 /**
@@ -74,6 +98,7 @@ const updateTutorById = async (tutorId, updateBody) => {
   }
   Object.assign(tutor, updateBody);
   await tutor.save();
+  await accountSyncService.syncUserFromTutor(tutor);
   return tutor;
 };
 
@@ -108,6 +133,7 @@ const changePassword = async (tutorId, updateBody) => {
   Object.assign(tutor, payload);
 
   await tutor.save();
+  await accountSyncService.syncUserFromTutor(tutor);
   return { message: 'Password updated successfully' };
 };
 /**
@@ -125,6 +151,7 @@ const generateTemporaryPassword = async (tutorId) => {
     const tempPassword = generateTempPassword();
     tutor.password = tempPassword;
     await tutor.save();
+    await accountSyncService.syncUserFromTutor(tutor);
     await emailService.sendTemporaryPasswordEmail(tutor.email, tutor.fullName, tempPassword);
     return { message: 'Temporary password generated and sent to email' };
   } catch (error) {
@@ -154,4 +181,5 @@ module.exports = {
   changePassword,
   generateTemporaryPassword,
   findTutorsBySubjects,
+  checkEmailSuspended,
 };

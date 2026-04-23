@@ -1,10 +1,10 @@
 const httpStatus = require('http-status');
-const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const tokenService = require('./token.service');
 const emailService = require('./email.service');
+const accountSyncService = require('./accountSync.service');
 
 /**
  * Create a user
@@ -67,9 +67,14 @@ const updateUserById = async (userId, updateBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
 
+  if (user.tutorId && updateBody.role && updateBody.role !== 'tutor') {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Linked tutor users must keep the tutor role');
+  }
+
   Object.assign(user, updateBody);
 
   await user.save();
+  await accountSyncService.syncTutorFromUser(user);
   return user;
 };
 
@@ -88,6 +93,31 @@ const deleteUserById = async (userId) => {
 };
 
 /**
+ * Update password for an authenticated user
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<Object>}
+ */
+const changePassword = async (userId, updateBody) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!(await user.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
+
+  await user.save();
+  await accountSyncService.syncTutorFromUser(user);
+  return { message: 'Password updated successfully' };
+};
+
+/**
  * @param {ObjectId} userId
  * @returns {Promise<void>}
  */
@@ -98,8 +128,9 @@ const generateTemporaryPassword = async (userId) => {
   try {
     const tempPassword = generateTempPassword(12);
     if (!tempPassword) throw new Error('Temp password generation failed');
-    user.password = await bcrypt.hash(tempPassword, 10);
+    user.password = tempPassword;
     await user.save();
+    await accountSyncService.syncTutorFromUser(user);
     try {
       await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
     } catch (err) {
@@ -138,7 +169,13 @@ const createAdminUser = async (adminBody) => {
   return user;
 };
 
-const changePassword = async (userId, updateBody) => {
+/**
+ * Update password for an admin invite flow
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<Object>}
+ */
+const changeAdminPassword = async (userId, updateBody) => {
   const user = await getUserById(userId);
 
   if (!user) {
@@ -163,7 +200,8 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  changePassword,
   generateTemporaryPassword,
   createAdminUser,
-  changePassword,
+  changeAdminPassword,
 };
