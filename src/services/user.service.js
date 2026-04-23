@@ -52,13 +52,34 @@ const getUserByEmail = async (email) => {
   return User.findOne({ email });
 };
 
+const tutorProfileFields = [
+  'nationality',
+  'race',
+  'tutoringLevels',
+  'preferredLocations',
+  'tutorType',
+  'highestEducation',
+  'yearsExperience',
+  'tutorMediums',
+  'academicDetails',
+  'certificatesAndQualifications',
+  'availability',
+  'rate',
+  'language',
+  'timeZone',
+];
+
+const hasTutorProfileFields = (payload) =>
+  tutorProfileFields.some((field) => Object.prototype.hasOwnProperty.call(payload, field));
+
 /**
  * Update user by id
  * @param {ObjectId} userId
  * @param {Object} updateBody
+ * @param {Object} [actor]
  * @returns {Promise<User>}
  */
-const updateUserById = async (userId, updateBody) => {
+const updateUserById = async (userId, updateBody, actor) => {
   const normalizedUpdateBody = normalizeUserProfileFields(updateBody);
   const user = await getUserById(userId);
 
@@ -68,6 +89,14 @@ const updateUserById = async (userId, updateBody) => {
 
   if (normalizedUpdateBody.email && (await User.isEmailTaken(normalizedUpdateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  }
+
+  if (actor && actor.role !== 'admin' && actor.id !== user.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+  }
+
+  if (hasTutorProfileFields(normalizedUpdateBody) && user.role !== 'tutor') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Tutor profile fields can only be updated for tutor accounts');
   }
 
   Object.assign(user, normalizedUpdateBody);
