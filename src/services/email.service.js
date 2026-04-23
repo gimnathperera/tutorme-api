@@ -267,6 +267,62 @@ Tuition Lanka – Learn Better, Achieve More
     throw new Error('Acknowledgement email failed');
   }
 };
+/**
+ * Send admin invitation email
+ * @param {string} to
+ * @param {string} name
+ * @param {string} password
+ * @returns {Promise}
+ */
+const sendAdminInviteEmail = async (to, name, token) => {
+  try {
+    const adminWebsiteUrl = process.env.ADMIN_WEBSITE_URL || 'http://localhost:3000';
+    const resetUrl = `${adminWebsiteUrl}/reset-password?token=${token}`;
+    const subject = 'Set Up Your Admin Account';
+
+    const text = `
+Hello ${name},
+
+You have been added as an admin on TutorMe.
+
+Please set your password using this link:
+${resetUrl}
+
+This link can be used only once and will expire soon.
+
+Regards,
+TutorMe Team
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
+        <p>Hello <strong>${name}</strong>,</p>
+        <p>You have been added as an <strong>admin</strong> on <strong>TutorMe</strong>.</p>
+        <p>Please set your password by clicking the button below:</p>
+        <p>
+          <a href="${resetUrl}"
+             style="display:inline-block;background:#111827;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">
+            Set Password
+          </a>
+        </p>
+        <p>If the button does not work, copy and paste this link into your browser:</p>
+        <p style="word-break:break-all;">${resetUrl}</p>
+        <p>Regards,<br/>TutorMe Team</p>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error(`Failed to send admin invite email to ${to}:`, err);
+    throw new Error('Admin invite email failed');
+  }
+};
 
 module.exports = {
   transport,
@@ -275,4 +331,5 @@ module.exports = {
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
   sendAcknowledgement,
+  sendAdminInviteEmail,
 };

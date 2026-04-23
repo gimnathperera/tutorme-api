@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const tokenService = require('./token.service');
 const emailService = require('./email.service');
 
 /**
@@ -87,33 +88,6 @@ const deleteUserById = async (userId) => {
 };
 
 /**
- * Update user by id
- * @param {ObjectId} userId
- * @param {Object} updateBody
- * @returns {Promise<User>}
- */
-const changePassword = async (userId, updateBody) => {
-  const user = await getUserById(userId);
-
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-
-  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
-  }
-
-  const payload = {
-    password: updateBody.newPassword,
-  };
-
-  Object.assign(user, payload);
-
-  await user.save();
-  return { message: 'Password updated successfully' };
-};
-
-/**
  * @param {ObjectId} userId
  * @returns {Promise<void>}
  */
@@ -137,6 +111,50 @@ const generateTemporaryPassword = async (userId) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
   }
 };
+/**
+ * Create an admin user and email credentials
+ * @param {Object} adminBody
+ * @returns {Promise<User>}
+ */
+const createAdminUser = async (adminBody) => {
+  const { email, name, phoneNumber, password } = adminBody;
+
+  if (await User.isEmailTaken(email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please use a different email.');
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    phoneNumber,
+    password,
+    role: 'admin',
+    forcePasswordReset: true,
+  });
+
+  const resetToken = await tokenService.generateResetPasswordToken(user.email);
+  await emailService.sendAdminInviteEmail(user.email, user.name, resetToken);
+
+  return user;
+};
+
+const changePassword = async (userId, updateBody) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
+
+  await user.save();
+  return { message: 'Password updated successfully' };
+};
 
 module.exports = {
   createUser,
@@ -145,6 +163,7 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
-  changePassword,
   generateTemporaryPassword,
+  createAdminUser,
+  changePassword,
 };
