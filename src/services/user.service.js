@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const { normalizeUserProfileFields } = require('../utils/availability');
 const emailService = require('./email.service');
 
 /**
@@ -11,10 +12,12 @@ const emailService = require('./email.service');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  if (await User.isEmailTaken(userBody.email)) {
+  const normalizedUserBody = normalizeUserProfileFields(userBody);
+
+  if (await User.isEmailTaken(normalizedUserBody.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please sign in or use a different email.');
   }
-  return User.create(userBody);
+  return User.create(normalizedUserBody);
 };
 
 /**
@@ -56,17 +59,18 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User>}
  */
 const updateUserById = async (userId, updateBody) => {
+  const normalizedUpdateBody = normalizeUserProfileFields(updateBody);
   const user = await getUserById(userId);
 
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+  if (normalizedUpdateBody.email && (await User.isEmailTaken(normalizedUpdateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
 
-  Object.assign(user, updateBody);
+  Object.assign(user, normalizedUpdateBody);
 
   await user.save();
   return user;

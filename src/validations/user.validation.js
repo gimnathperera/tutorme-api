@@ -1,5 +1,106 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
+const { parseAvailabilityInput } = require('../utils/availability');
+
+const availabilityField = Joi.alternatives()
+  .try(
+    Joi.string(),
+    Joi.array().items(
+      Joi.object({
+        day: Joi.string().required(),
+        start: Joi.string().required(),
+        end: Joi.string().required(),
+      })
+    )
+  )
+  .custom((value, helpers) => {
+    try {
+      return parseAvailabilityInput(value);
+    } catch (error) {
+      return helpers.message(error.message);
+    }
+  }, 'availability normalization');
+
+const nationalityField = Joi.string().valid('Sri Lankan', 'Others');
+const raceField = Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others');
+const tutoringLevelsField = Joi.array().items(
+  Joi.string().valid(
+    'Pre-School / Montessori',
+    'Primary School (Grades 1-5)',
+    'Ordinary Level (O/L) (Grades 6-11)',
+    'Advanced Level (A/L) (Grades 12-13)',
+    'International Syllabus (Cambridge, Edexcel, IB)',
+    'Undergraduate',
+    'Diploma / Degree',
+    'Language (e.g., English, French, Japanese)',
+    'Computing (e.g., Programming, Graphic Design)',
+    'Music & Arts',
+    'Special Skills'
+  )
+);
+const preferredLocationsField = Joi.array().items(
+  Joi.string().valid(
+    'Kollupitiya (Colombo 3)',
+    'Bambalapitiya (Colombo 4)',
+    'Havelock Town (Colombo 5)',
+    'Wellawatte (Colombo 6)',
+    'Cinnamon Gardens (Colombo 7)',
+    'Borella (Colombo 8)',
+    'Dehiwala',
+    'Mount Lavinia',
+    'Nugegoda',
+    'Rajagiriya',
+    'Kotte',
+    'Battaramulla',
+    'Malabe',
+    'Moratuwa',
+    'Gampaha',
+    'Negombo',
+    'Kadawatha',
+    'Kiribathgoda',
+    'Kelaniya',
+    'Wattala',
+    'Ja-Ela',
+    'Kalutara',
+    'Panadura',
+    'Horana',
+    'Wadduwa',
+    'Kandy',
+    'Matale',
+    'Nuwara Eliya',
+    'Galle',
+    'Matara',
+    'Hambantota',
+    'Kurunegala',
+    'Puttalam',
+    'Chilaw',
+    'Ratnapura',
+    'Kegalle',
+    'Badulla',
+    'Bandarawela',
+    'Anuradhapura',
+    'Polonnaruwa',
+    'Jaffna',
+    'Vavuniya',
+    'Trincomalee',
+    'Batticaloa',
+    'No Preference'
+  )
+);
+const tutorMediumsField = Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil'));
+const tutorTypeField = Joi.array().items(
+  Joi.string().valid('Full-Time', 'Part-Time', 'Online', 'School Teacher Tutors', 'Group Tutors', 'Exam Coaches')
+);
+const highestEducationField = Joi.string().valid(
+  'PhD',
+  'Masters',
+  'Bachelor Degree',
+  'Undergraduate',
+  'Diploma and Professional',
+  'AL'
+);
+const academicDetailsField = Joi.string().max(500);
+const certificatesAndQualificationsField = Joi.array().items(Joi.string());
 
 const createUser = {
   body: Joi.object().keys({
@@ -16,13 +117,25 @@ const createUser = {
     zip: Joi.string().optional(),
     address: Joi.string().optional(),
     birthday: Joi.date().required(),
-    tutorType: Joi.valid('part-time', 'full-time', 'gov').optional(),
+    age: Joi.number().integer().min(0).max(120).optional(),
+    nationality: nationalityField.optional(),
+    race: raceField.optional(),
+    tutoringLevels: tutoringLevelsField.optional(),
+    preferredLocations: preferredLocationsField.optional(),
+    tutorMediums: tutorMediumsField.optional(),
+    tutorType: Joi.alternatives().try(Joi.valid('part-time', 'full-time', 'gov'), tutorTypeField).optional(),
+    highestEducation: highestEducationField.optional(),
+    yearsExperience: Joi.number().integer().min(0).max(50).optional(),
+    academicDetails: academicDetailsField.optional(),
+    certificatesAndQualifications: certificatesAndQualificationsField.optional(),
     gender: Joi.string().optional(),
     duration: Joi.string().optional(),
     frequency: Joi.string().optional(),
     timeZone: Joi.string().optional(),
     language: Joi.string().optional(),
     avatar: Joi.string().optional(),
+    rate: Joi.string().optional(),
+    availability: availabilityField.optional(),
   }),
 };
 
@@ -60,7 +173,17 @@ const updateUser = {
       zip: Joi.string(),
       address: Joi.string(),
       birthday: Joi.date(),
-      tutorType: Joi.valid('part-time', 'full-time', 'gov'),
+      age: Joi.number().integer().min(0).max(120),
+      nationality: nationalityField,
+      race: raceField,
+      tutoringLevels: tutoringLevelsField,
+      preferredLocations: preferredLocationsField,
+      tutorMediums: tutorMediumsField,
+      tutorType: Joi.alternatives().try(Joi.valid('part-time', 'full-time', 'gov'), tutorTypeField),
+      highestEducation: highestEducationField,
+      yearsExperience: Joi.number().integer().min(0).max(50),
+      academicDetails: academicDetailsField,
+      certificatesAndQualifications: certificatesAndQualificationsField,
       gender: Joi.string(),
       duration: Joi.string(),
       frequency: Joi.string(),
@@ -69,6 +192,8 @@ const updateUser = {
       timeZone: Joi.string(),
       language: Joi.string(),
       avatar: Joi.string(),
+      rate: Joi.string(),
+      availability: availabilityField,
     })
     .min(1),
 };

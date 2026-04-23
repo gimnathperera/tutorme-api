@@ -13,11 +13,32 @@ components:
         role:
           type: string
           enum: [user, admin]
+        rate:
+          type: string
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: string
+                enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+              start:
+                type: string
+                example: "19:30"
+              end:
+                type: string
+                example: "21:00"
       example:
         id: 5ebac534954b54139806c112
         email: fake@example.com
         name: fake name
         role: user
+        rate: "$95/Hour"
+        availability:
+          - day: Tuesday
+            start: "19:30"
+            end: "21:00"
 
     Token:
       type: object
