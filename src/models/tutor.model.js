@@ -60,7 +60,14 @@ const tutorSchema = mongoose.Schema(
     classType: [
       {
         type: String,
-        enum: ['Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'],
+        enum: [
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group',
+        ],
       },
     ],
 
@@ -160,6 +167,8 @@ const tutorSchema = mongoose.Schema(
         enum: [
           'Private Tutor',
           'Government Teacher',
+          'University Student',
+          'Coach',
           'International School Teacher',
           'University Lecturer',
           'Full-Time',

@@ -56,7 +56,16 @@ const createTutor = {
 
     // 2. Tutoring Preferences
     classType: Joi.array()
-      .items(Joi.string().valid('Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'))
+      .items(
+        Joi.string().valid(
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group'
+        )
+      )
       .min(1)
       .required(),
     tutoringLevels: Joi.array()
@@ -140,6 +149,8 @@ const createTutor = {
         Joi.string().valid(
           'Private Tutor',
           'Government Teacher',
+          'University Student',
+          'Coach',
           'International School Teacher',
           'University Lecturer',
           'Full-Time',
@@ -166,7 +177,7 @@ const createTutor = {
       .items(
         Joi.object().keys({
           type: Joi.string().required(),
-          url: Joi.string().uri().required(),
+          url: Joi.string().trim().min(1).required(),
         })
       )
       .min(1)
@@ -245,6 +256,8 @@ const updateTutor = {
         Joi.string().valid(
           'Online - Individual',
           'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
           'Home Visit - Individual',
           'Home Visit - Group',
           "At Tutor's Place - Individual",
@@ -325,6 +338,8 @@ const updateTutor = {
           Joi.string().valid(
             'Private Tutor',
             'Government Teacher',
+            'University Student',
+            'Coach',
             'International School Teacher',
             'University Lecturer',
             'Online Tutor',
@@ -361,7 +376,7 @@ const updateTutor = {
         Joi.object().keys({
           id: Joi.string().optional(),
           type: Joi.string().required(),
-          url: Joi.string().uri().required(),
+          url: Joi.string().trim().min(1).required(),
         })
       ),
 

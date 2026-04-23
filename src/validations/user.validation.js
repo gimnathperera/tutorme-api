@@ -47,7 +47,9 @@ const updateUser = {
     .keys({
       email: Joi.string().email(),
       name: Joi.string(),
+      fullName: Joi.string(),
       phoneNumber: Joi.string(),
+      contactNumber: Joi.string(),
       status: Joi.valid(...adminUserStatuses),
       country: Joi.string(),
       role: Joi.string().valid(...adminAssignableRoles),
@@ -57,6 +59,7 @@ const updateUser = {
       zip: Joi.string(),
       address: Joi.string(),
       birthday: Joi.date(),
+      dateOfBirth: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()),
       ...tutorUserProfileFields,
       gender: Joi.string(),
       grades: Joi.optional(),

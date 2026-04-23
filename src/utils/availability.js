@@ -96,18 +96,22 @@ const normalizeUserProfileFields = (payload) => {
 
   if (
     Object.prototype.hasOwnProperty.call(normalizedPayload, 'fullName') &&
-    typeof normalizedPayload.fullName === 'string' &&
-    !Object.prototype.hasOwnProperty.call(normalizedPayload, 'name')
+    typeof normalizedPayload.fullName === 'string'
   ) {
-    normalizedPayload.name = normalizedPayload.fullName;
+    if (!Object.prototype.hasOwnProperty.call(normalizedPayload, 'name')) {
+      normalizedPayload.name = normalizedPayload.fullName;
+    }
+    delete normalizedPayload.fullName;
   }
 
   if (
     Object.prototype.hasOwnProperty.call(normalizedPayload, 'contactNumber') &&
-    typeof normalizedPayload.contactNumber === 'string' &&
-    !Object.prototype.hasOwnProperty.call(normalizedPayload, 'phoneNumber')
+    typeof normalizedPayload.contactNumber === 'string'
   ) {
-    normalizedPayload.phoneNumber = normalizedPayload.contactNumber;
+    if (!Object.prototype.hasOwnProperty.call(normalizedPayload, 'phoneNumber')) {
+      normalizedPayload.phoneNumber = normalizedPayload.contactNumber;
+    }
+    delete normalizedPayload.contactNumber;
   }
 
   if (
@@ -116,6 +120,7 @@ const normalizeUserProfileFields = (payload) => {
   ) {
     normalizedPayload.birthday = normalizedPayload.dateOfBirth;
   }
+  delete normalizedPayload.dateOfBirth;
 
   if (Object.prototype.hasOwnProperty.call(normalizedPayload, 'rate') && typeof normalizedPayload.rate === 'string') {
     normalizedPayload.rate = normalizedPayload.rate.trim();
