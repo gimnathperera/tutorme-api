@@ -379,6 +379,10 @@ const updateTutor = {
           url: Joi.string().trim().min(1).required(),
         })
       ),
+      language: Joi.string(),
+      timeZone: Joi.string(),
+      rate: Joi.string(),
+      availability: availabilityField,
 
       // 5. Agreement
       agreeTerms: Joi.boolean(),
@@ -443,6 +447,8 @@ const tutorUserProfileFields = {
   yearsExperience: updateTutor.body.extract('yearsExperience'),
   academicDetails: Joi.string().allow('').max(500),
   certificatesAndQualifications: Joi.array().items(Joi.string()),
+  language: Joi.string(),
+  timeZone: Joi.string(),
   rate: Joi.string(),
   availability: availabilityField,
 };
