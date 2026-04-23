@@ -268,6 +268,198 @@ Tuition Lanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send email to requester when a tutor is assigned (TM-696)
+ * @param {Object} tutorRequest - the full tutor request document
+ * @param {Object} assignedBlock - the specific tutor block that was assigned
+ * @param {string} subjectName - resolved subject name
+ * @param {string} gradeName - resolved grade name
+ * @param {Object} tutorDoc - the assigned tutor document
+ */
+const sendTutorAssignedToRequester = async (tutorRequest, assignedBlock, subjectName, gradeName, tutorDoc) => {
+  try {
+    const { name, email } = tutorRequest;
+
+    const subject = 'Your Tutor Has Been Assigned – Tuition Lanka';
+
+    const tutorName = tutorDoc ? tutorDoc.fullName : 'N/A';
+    const tutorContact = tutorDoc ? tutorDoc.contactNumber : 'N/A';
+    const tutorEmail = tutorDoc ? tutorDoc.email : 'N/A';
+    const tutorTypes = tutorDoc && tutorDoc.tutorType ? tutorDoc.tutorType.join(', ') : 'N/A';
+    const tutorEducation = tutorDoc ? tutorDoc.highestEducation : 'N/A';
+    const tutorExperience = tutorDoc ? `${tutorDoc.yearsExperience} years` : 'N/A';
+    const tutorIntro = tutorDoc ? tutorDoc.teachingSummary : '';
+    const tutorAcademic = tutorDoc ? tutorDoc.academicDetails : '';
+    const tutorResults = tutorDoc ? tutorDoc.studentResults : '';
+
+    const text = `
+Dear ${name},
+
+Great news! A tutor has been assigned for your tuition request with Tuition Lanka.
+
+Assignment Details
+Grade: ${gradeName || 'N/A'}
+Subject: ${subjectName}
+Duration: ${assignedBlock.duration}
+Frequency: ${assignedBlock.frequency}
+Class Type: ${assignedBlock.preferredClassType}
+
+Your Assigned Tutor
+Name: ${tutorName}
+Contact: ${tutorContact}
+Email: ${tutorEmail}
+Tutor Type: ${tutorTypes}
+Highest Education: ${tutorEducation}
+Years of Experience: ${tutorExperience}
+${tutorIntro ? `\nIntroduction:\n${tutorIntro}` : ''}${
+      tutorAcademic ? `\nTeaching Experience & Achievements:\n${tutorAcademic}` : ''
+    }${tutorResults ? `\nStudent Results / Track Record:\n${tutorResults}` : ''}
+
+Your assigned tutor will be in contact with you shortly to arrange the first session.
+
+If you have any questions, feel free to reach out to us.
+
+Warm regards,
+Tuition Lanka Team
+Tuition Lanka – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
+        <p>Dear <strong>${name}</strong>,</p>
+        <p>Great news! A tutor has been assigned for your tuition request with <strong>Tuition Lanka</strong>.</p>
+
+        <h3>📋 Assignment Details</h3>
+        <ul>
+          <li><strong>Grade:</strong> ${gradeName || 'N/A'}</li>
+          <li><strong>Subject:</strong> ${subjectName}</li>
+          <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
+          <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
+          <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
+        </ul>
+
+        <h3>👤 Your Assigned Tutor</h3>
+        <ul>
+          <li><strong>Name:</strong> ${tutorName}</li>
+          <li><strong>Contact:</strong> ${tutorContact}</li>
+          <li><strong>Email:</strong> ${tutorEmail}</li>
+          <li><strong>Tutor Type:</strong> ${tutorTypes}</li>
+          <li><strong>Highest Education:</strong> ${tutorEducation}</li>
+          <li><strong>Years of Experience:</strong> ${tutorExperience}</li>
+        </ul>
+
+        <h3>📝 Teaching Profile</h3>
+        ${tutorIntro ? `<p><strong>Introduction:</strong><br/>${tutorIntro}</p>` : ''}
+        ${tutorAcademic ? `<p><strong>Teaching Experience &amp; Achievements:</strong><br/>${tutorAcademic}</p>` : ''}
+        ${tutorResults ? `<p><strong>Student Results / Track Record:</strong><br/>${tutorResults}</p>` : ''}
+
+        <p>Your assigned tutor will be in contact with you shortly to arrange the first session.</p>
+        <p>If you have any questions, feel free to reach out to us.</p>
+
+        <p>Warm regards,<br/>
+        <strong>Tuition Lanka Team</strong><br/>
+        Tuition Lanka – Learn Better, Achieve More</p>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to: email, subject, text, html });
+    logger.info(`TM-696: Tutor assigned email sent to requester: ${email}`);
+  } catch (err) {
+    logger.error('Failed to send tutor assigned email to requester:', err);
+  }
+};
+
+/**
+ * Send email to assigned tutor after assignment (TM-698)
+ * @param {Object} tutorUser - the tutor's User document (has name, email)
+ * @param {Object} tutorRequest - the full tutor request document
+ * @param {Object} assignedBlock - the specific tutor block that was assigned
+ * @param {string} subjectName - resolved subject name
+ * @param {string} gradeName - resolved grade name
+ */
+const sendTutorAssignedToTutor = async (tutorUser, tutorRequest, assignedBlock, subjectName, gradeName) => {
+  try {
+    const { name: tutorName, email: tutorEmail } = tutorUser;
+    const { name: studentName, email: studentEmail, phoneNumber, city, district, medium } = tutorRequest;
+
+    const subject = 'New Tuition Assignment – Tuition Lanka';
+
+    const text = `
+Dear ${tutorName},
+
+Congratulations! You have been assigned a new student through Tuition Lanka.
+
+Student Details
+Name: ${studentName}
+Email: ${studentEmail}
+Phone Number: ${phoneNumber}
+City: ${city}
+District: ${district}
+
+Assignment Details
+Grade: ${gradeName}
+Subject: ${subjectName}
+Medium: ${medium}
+Duration: ${assignedBlock.duration}
+Frequency: ${assignedBlock.frequency}
+Class Type: ${assignedBlock.preferredClassType}
+Preferred Tutor Type: ${assignedBlock.preferredTutorType}
+
+Next Steps
+Please reach out to the student directly using the contact details above to arrange the first session at a mutually convenient time.
+
+If you have any questions or need assistance, feel free to contact us.
+
+Warm regards,
+Tuition Lanka Team
+Tuition Lanka – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
+        <p>Dear <strong>${tutorName}</strong>,</p>
+        <p>Congratulations! You have been assigned a new student through <strong>Tuition Lanka</strong>.</p>
+
+        <h3>👤 Student Details</h3>
+        <ul>
+          <li><strong>Name:</strong> ${studentName}</li>
+          <li><strong>Email:</strong> ${studentEmail}</li>
+          <li><strong>Phone Number:</strong> ${phoneNumber}</li>
+          <li><strong>City:</strong> ${city}</li>
+          <li><strong>District:</strong> ${district}</li>
+        </ul>
+
+        <h3>📋 Assignment Details</h3>
+        <ul>
+          <li><strong>Grade:</strong> ${gradeName}</li>
+          <li><strong>Subject:</strong> ${subjectName}</li>
+          <li><strong>Medium:</strong> ${medium}</li>
+          <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
+          <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
+          <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
+          <li><strong>Preferred Tutor Type:</strong> ${assignedBlock.preferredTutorType}</li>
+        </ul>
+
+        <h3>✅ Next Steps</h3>
+        <p>
+          Please reach out to the student directly using the contact details above to arrange
+          the first session at a mutually convenient time.
+        </p>
+        <p>If you have any questions or need assistance, feel free to contact us.</p>
+
+        <p>Warm regards,<br/>
+        <strong>Tuition Lanka Team</strong><br/>
+        Tuition Lanka – Learn Better, Achieve More</p>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to: tutorEmail, subject, text, html });
+    logger.info(`TM-698: Assignment email sent to tutor: ${tutorEmail}`);
+  } catch (err) {
+    logger.error('Failed to send assignment email to tutor:', err);
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -275,4 +467,6 @@ module.exports = {
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
   sendAcknowledgement,
+  sendTutorAssignedToRequester,
+  sendTutorAssignedToTutor,
 };
