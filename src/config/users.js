@@ -1,7 +1,9 @@
 const userStatus = {
   ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  BLOCKED: 'blocked',
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  SUSPENDED: 'suspended',
 };
 
 const tutorTypes = {

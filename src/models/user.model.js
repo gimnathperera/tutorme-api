@@ -86,8 +86,8 @@ const userSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [userStatus.ACTIVE, userStatus.INACTIVE, userStatus.BLOCKED],
-      default: userStatus.ACTIVE,
+      enum: Object.values(userStatus),
+      default: userStatus.PENDING,
       required: true,
     },
     country: {
@@ -288,6 +288,12 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
       default: 'UTC+5:30',
+    },
+    tutorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tutor',
+      index: true,
+      sparse: true,
     },
   },
   {
