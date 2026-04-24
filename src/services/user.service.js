@@ -1,9 +1,11 @@
 const httpStatus = require('http-status');
-const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const tokenService = require('./token.service');
+const { normalizeUserProfileFields } = require('../utils/availability');
 const emailService = require('./email.service');
+const accountSyncService = require('./accountSync.service');
 
 /**
  * Create a user
@@ -11,10 +13,12 @@ const emailService = require('./email.service');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  if (await User.isEmailTaken(userBody.email)) {
+  const normalizedUserBody = normalizeUserProfileFields(userBody);
+
+  if (await User.isEmailTaken(normalizedUserBody.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please sign in or use a different email.');
   }
-  return User.create(userBody);
+  return User.create(normalizedUserBody);
 };
 
 /**
@@ -49,26 +53,61 @@ const getUserByEmail = async (email) => {
   return User.findOne({ email });
 };
 
+const tutorProfileFields = [
+  'nationality',
+  'race',
+  'tutoringLevels',
+  'preferredLocations',
+  'tutorType',
+  'highestEducation',
+  'yearsExperience',
+  'tutorMediums',
+  'academicDetails',
+  'certificatesAndQualifications',
+  'availability',
+  'rate',
+  'language',
+  'timeZone',
+];
+
+const hasTutorProfileFields = (payload) =>
+  tutorProfileFields.some((field) => Object.prototype.hasOwnProperty.call(payload, field));
+
 /**
  * Update user by id
  * @param {ObjectId} userId
  * @param {Object} updateBody
+ * @param {Object} [actor]
  * @returns {Promise<User>}
  */
-const updateUserById = async (userId, updateBody) => {
+const updateUserById = async (userId, updateBody, actor) => {
+  const normalizedUpdateBody = normalizeUserProfileFields(updateBody);
   const user = await getUserById(userId);
 
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+  if (normalizedUpdateBody.email && (await User.isEmailTaken(normalizedUpdateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
 
-  Object.assign(user, updateBody);
+  if (user.tutorId && updateBody.role && updateBody.role !== 'tutor') {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Linked tutor users must keep the tutor role');
+  }
+
+  if (actor && actor.role !== 'admin' && actor.id !== user.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+  }
+
+  if (hasTutorProfileFields(normalizedUpdateBody) && user.role !== 'tutor') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Tutor profile fields can only be updated for tutor accounts');
+  }
+
+  Object.assign(user, normalizedUpdateBody);
 
   await user.save();
+  await accountSyncService.syncTutorFromUser(user);
   return user;
 };
 
@@ -87,10 +126,10 @@ const deleteUserById = async (userId) => {
 };
 
 /**
- * Update user by id
+ * Update password for an authenticated user
  * @param {ObjectId} userId
  * @param {Object} updateBody
- * @returns {Promise<User>}
+ * @returns {Promise<Object>}
  */
 const changePassword = async (userId, updateBody) => {
   const user = await getUserById(userId);
@@ -99,17 +138,15 @@ const changePassword = async (userId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+  if (!(await user.isPasswordMatch(updateBody.currentPassword))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
   }
 
-  const payload = {
-    password: updateBody.newPassword,
-  };
-
-  Object.assign(user, payload);
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
 
   await user.save();
+  await accountSyncService.syncTutorFromUser(user);
   return { message: 'Password updated successfully' };
 };
 
@@ -124,8 +161,9 @@ const generateTemporaryPassword = async (userId) => {
   try {
     const tempPassword = generateTempPassword(12);
     if (!tempPassword) throw new Error('Temp password generation failed');
-    user.password = await bcrypt.hash(tempPassword, 10);
+    user.password = tempPassword;
     await user.save();
+    await accountSyncService.syncTutorFromUser(user);
     try {
       await emailService.sendTemporaryPasswordEmail(user.email, user.name, tempPassword);
     } catch (err) {
@@ -137,6 +175,56 @@ const generateTemporaryPassword = async (userId) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
   }
 };
+/**
+ * Create an admin user and email credentials
+ * @param {Object} adminBody
+ * @returns {Promise<User>}
+ */
+const createAdminUser = async (adminBody) => {
+  const { email, name, phoneNumber, password } = adminBody;
+
+  if (await User.isEmailTaken(email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please use a different email.');
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    phoneNumber,
+    password,
+    role: 'admin',
+    forcePasswordReset: true,
+  });
+
+  const resetToken = await tokenService.generateResetPasswordToken(user.email);
+  await emailService.sendAdminInviteEmail(user.email, user.name, resetToken);
+
+  return user;
+};
+
+/**
+ * Update password for an admin invite flow
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<Object>}
+ */
+const changeAdminPassword = async (userId, updateBody) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
+
+  await user.save();
+  return { message: 'Password updated successfully' };
+};
 
 module.exports = {
   createUser,
@@ -147,4 +235,6 @@ module.exports = {
   deleteUserById,
   changePassword,
   generateTemporaryPassword,
+  createAdminUser,
+  changeAdminPassword,
 };
