@@ -332,12 +332,12 @@ TutorMe Team
  */
 const sendTutorRegistrationPendingEmail = async (to, tutorName) => {
   try {
-    const subject = 'Your Tutor Registration is Pending Review – TutorMe';
+    const subject = 'Your Tutor Registration is Pending Review – TuitionLanka';
 
     const text = `
 Dear ${tutorName},
 
-Thank you for registering as a tutor on TutorMe!
+Thank you for registering as a tutor on TuitionLanka!
 
 We have successfully received your registration and it is currently under review by our team.
 
@@ -348,11 +348,11 @@ What happens next?
 
 If you have any questions in the meantime, please don't hesitate to contact our support team.
 
-Thank you for your patience and for choosing TutorMe.
+Thank you for your patience and for choosing TuitionLanka.
 
 Warm regards,
-The TutorMe Team
-TutorMe – Learn Better, Achieve More
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
 `;
 
     const html = `
@@ -362,7 +362,7 @@ TutorMe – Learn Better, Achieve More
         </div>
         <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
           <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Thank you for registering as a tutor on <strong>TutorMe</strong>!</p>
+          <p>Thank you for registering as a tutor on <strong>TuitionLanka</strong>!</p>
           <p>We have successfully received your registration and it is currently <strong>under review</strong> by our team.</p>
 
           <div style="background-color: #EFF6FF; border-left: 4px solid #4F46E5; padding: 16px 20px; border-radius: 4px; margin: 20px 0;">
@@ -375,12 +375,12 @@ TutorMe – Learn Better, Achieve More
           </div>
 
           <p>If you have any questions in the meantime, please don't hesitate to contact our support team.</p>
-          <p>Thank you for your patience and for choosing TutorMe.</p>
+          <p>Thank you for your patience and for choosing TuitionLanka.</p>
 
           <p style="margin-top: 28px;">
             Warm regards,<br/>
-            <strong>The TutorMe Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+            <strong>The TuitionLanka Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
           </p>
         </div>
       </div>
@@ -407,22 +407,22 @@ TutorMe – Learn Better, Achieve More
  */
 const sendTutorApprovedEmail = async (to, tutorName) => {
   try {
-    const subject = 'Your Tutor Registration is Approved – TutorMe';
-    const signInUrl = 'https://www.tuitionlanka.com/sign-in';
+    const subject = 'Your Tutor Registration is Approved – TuitionLanka';
+    const signInUrl = 'https://www.tuitionlanka.com?login=true';
 
     const text = `
 Dear ${tutorName},
 
-Great news! Your tutor registration on TutorMe has been approved.
+Great news! Your tutor registration on TuitionLanka has been approved.
 
 You can now log in to the platform using the link below:
 ${signInUrl}
 
-Thank you for joining TutorMe. We look forward to connecting you with students!
+Thank you for joining TuitionLanka. We look forward to connecting you with students!
 
 Warm regards,
-The TutorMe Team
-TutorMe – Learn Better, Achieve More
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
 `;
 
     const html = `
@@ -432,14 +432,14 @@ TutorMe – Learn Better, Achieve More
         </div>
         <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
           <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Great news! Your tutor registration on <strong>TutorMe</strong> has been <strong style="color: #16a34a;">approved</strong>.</p>
+          <p>Great news! Your tutor registration on <strong>TuitionLanka</strong> has been <strong style="color: #16a34a;">approved</strong>.</p>
           <p>You can now log in to the platform and start connecting with students.</p>
 
           <p style="text-align: center; margin: 28px 0;">
             <a href="${signInUrl}"
                style="background-color: #4F46E5; color: #fff; padding: 13px 28px;
                       border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
-              Log In to TutorMe
+              Log In to TuitionLanka
             </a>
           </p>
 
@@ -447,12 +447,12 @@ TutorMe – Learn Better, Achieve More
             <a href="${signInUrl}" style="color: #4F46E5;">${signInUrl}</a>
           </p>
 
-          <p>Thank you for joining TutorMe. We look forward to connecting you with students!</p>
+          <p>Thank you for joining TuitionLanka. We look forward to connecting you with students!</p>
 
           <p style="margin-top: 28px;">
             Warm regards,<br/>
-            <strong>The TutorMe Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+            <strong>The TuitionLanka Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
           </p>
         </div>
       </div>
