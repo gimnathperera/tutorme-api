@@ -1,35 +1,21 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
+const tuitionRateRange = Joi.array().items(
+  Joi.object().keys({
+    minimumRate: Joi.string().required(),
+    maximumRate: Joi.string().required(),
+  })
+);
+
 // Create tuition rate validation
 const createTuitionRate = {
   body: Joi.object().keys({
     subject: Joi.string().required(),
     grade: Joi.string().required(),
-    onlineIndividualTuitionRate: Joi.array().items(
-      Joi.object().keys({
-        minimumRate: Joi.string().required(),
-        maximumRate: Joi.string().required(),
-      })
-    ),
-    onlineGroupTuitionRate: Joi.array().items(
-      Joi.object().keys({
-        minimumRate: Joi.string().required(),
-        maximumRate: Joi.string().required(),
-      })
-    ),
-    physicalIndividualTuitionRate: Joi.array().items(
-      Joi.object().keys({
-        minimumRate: Joi.string().required(),
-        maximumRate: Joi.string().required(),
-      })
-    ),
-    physicalGroupTuitionRate: Joi.array().items(
-      Joi.object().keys({
-        minimumRate: Joi.string().required(),
-        maximumRate: Joi.string().required(),
-      })
-    ),
+    partTimeTuitionRate: tuitionRateRange,
+    fullTimeTuitionRate: tuitionRateRange,
+    govTuitionRate: tuitionRateRange,
   }),
 };
 
@@ -70,30 +56,9 @@ const updateTuitionRates = {
     .keys({
       subject: Joi.string(),
       grade: Joi.string(),
-      onlineIndividualTuitionRate: Joi.array().items(
-        Joi.object().keys({
-          minimumRate: Joi.string().required(),
-          maximumRate: Joi.string().required(),
-        })
-      ),
-      onlineGroupTuitionRate: Joi.array().items(
-        Joi.object().keys({
-          minimumRate: Joi.string().required(),
-          maximumRate: Joi.string().required(),
-        })
-      ),
-      physicalIndividualTuitionRate: Joi.array().items(
-        Joi.object().keys({
-          minimumRate: Joi.string().required(),
-          maximumRate: Joi.string().required(),
-        })
-      ),
-      physicalGroupTuitionRate: Joi.array().items(
-        Joi.object().keys({
-          minimumRate: Joi.string().required(),
-          maximumRate: Joi.string().required(),
-        })
-      ),
+      partTimeTuitionRate: tuitionRateRange,
+      fullTimeTuitionRate: tuitionRateRange,
+      govTuitionRate: tuitionRateRange,
     })
     .min(1),
 };

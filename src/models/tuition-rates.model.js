@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
 
+const tuitionRateRangeSchema = mongoose.Schema({
+  maximumRate: {
+    type: String,
+    required: true,
+  },
+  minimumRate: {
+    type: String,
+    required: true,
+  },
+});
+
 const tuitionRatesSchema = mongoose.Schema(
   {
     subject: {
@@ -11,54 +22,9 @@ const tuitionRatesSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Grade',
     },
-    onlineIndividualTuitionRate: [
-      {
-        maximumRate: {
-          type: String,
-          required: true,
-        },
-        minimumRate: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    onlineGroupTuitionRate: [
-      {
-        maximumRate: {
-          type: String,
-          required: true,
-        },
-        minimumRate: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    physicalIndividualTuitionRate: [
-      {
-        maximumRate: {
-          type: String,
-          required: true,
-        },
-        minimumRate: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    physicalGroupTuitionRate: [
-      {
-        maximumRate: {
-          type: String,
-          required: true,
-        },
-        minimumRate: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    partTimeTuitionRate: [tuitionRateRangeSchema],
+    fullTimeTuitionRate: [tuitionRateRangeSchema],
+    govTuitionRate: [tuitionRateRangeSchema],
   },
   {
     timestamps: true,
