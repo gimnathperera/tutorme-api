@@ -1,6 +1,40 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
+const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
+
+const availabilitySlotSchema = new mongoose.Schema(
+  {
+    day: {
+      type: String,
+      enum: WEEK_DAYS,
+      required: true,
+      trim: true,
+    },
+    start: {
+      type: String,
+      required: true,
+      trim: true,
+      match: TIME_PATTERN,
+    },
+    end: {
+      type: String,
+      required: true,
+      trim: true,
+      match: TIME_PATTERN,
+      validate: {
+        validator(value) {
+          return typeof this.start === 'string' && toMinutes(value) > toMinutes(this.start);
+        },
+        message: 'Availability end time must be later than start time',
+      },
+    },
+  },
+  {
+    _id: false,
+    id: false,
+  }
+);
 
 const tutorSchema = mongoose.Schema(
   {
@@ -60,7 +94,14 @@ const tutorSchema = mongoose.Schema(
     classType: [
       {
         type: String,
-        enum: ['Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'],
+        enum: [
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group',
+        ],
       },
     ],
 
@@ -160,6 +201,8 @@ const tutorSchema = mongoose.Schema(
         enum: [
           'Private Tutor',
           'Government Teacher',
+          'University Student',
+          'Coach',
           'International School Teacher',
           'University Lecturer',
           'Full-Time',
@@ -230,6 +273,23 @@ const tutorSchema = mongoose.Schema(
         },
       },
     ],
+    language: {
+      type: String,
+      trim: true,
+    },
+    timeZone: {
+      type: String,
+      trim: true,
+    },
+    rate: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    availability: {
+      type: [availabilitySlotSchema],
+      default: [],
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

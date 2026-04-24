@@ -1,8 +1,10 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
+const { tutorUserProfileFields } = require('./tutor.validation');
+const { userStatus } = require('../config/users');
 
 const adminAssignableRoles = ['tutor', 'admin'];
-const adminUserStatuses = ['pending', 'approved', 'rejected', 'suspended'];
+const adminUserStatuses = Object.values(userStatus);
 
 const createUser = {
   body: Joi.object()
@@ -45,7 +47,9 @@ const updateUser = {
     .keys({
       email: Joi.string().email(),
       name: Joi.string(),
+      fullName: Joi.string(),
       phoneNumber: Joi.string(),
+      contactNumber: Joi.string(),
       status: Joi.valid(...adminUserStatuses),
       country: Joi.string(),
       role: Joi.string().valid(...adminAssignableRoles),
@@ -55,7 +59,13 @@ const updateUser = {
       zip: Joi.string(),
       address: Joi.string(),
       birthday: Joi.date(),
+      dateOfBirth: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()),
+      ...tutorUserProfileFields,
       gender: Joi.string(),
+      grades: Joi.optional(),
+      subjects: Joi.optional(),
+      timeZone: Joi.string(),
+      language: Joi.string(),
       avatar: Joi.string(),
     })
     .unknown(false)

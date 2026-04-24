@@ -1,4 +1,5 @@
 const userStatus = {
+  ACTIVE: 'active',
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
