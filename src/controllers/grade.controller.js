@@ -37,6 +37,14 @@ const getSubjectsForGrades = catchAsync(async (req, res) => {
   });
 });
 
+const getGradesWithCounts = catchAsync(async (req, res) => {
+  const grades = await gradeService.getGradesWithTuitionRateCounts();
+  res.send({
+    count: grades.length,
+    grades,
+  });
+});
+
 const updateGrade = catchAsync(async (req, res) => {
   const grade = await gradeService.updateGradeById(req.params.gradeId, req.body);
   res.send(grade);
@@ -52,6 +60,7 @@ module.exports = {
   getGrades,
   getGrade,
   getSubjectsForGrades,
+  getGradesWithCounts,
   updateGrade,
   deleteGrade,
 };

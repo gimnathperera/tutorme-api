@@ -30,6 +30,23 @@ const getTuitionRates = {
   }),
 };
 
+const getTuitionRatesByGrade = {
+  params: Joi.object().keys({
+    gradeId: Joi.string().custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.message('Invalid ID');
+      }
+      return value;
+    }),
+  }),
+  query: Joi.object().keys({
+    subject: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
+};
+
 // Get a single tuition rate validation
 const getTuitionRate = {
   params: Joi.object().keys({
@@ -78,6 +95,7 @@ const deleteTuitionRates = {
 module.exports = {
   createTuitionRate,
   getTuitionRates,
+  getTuitionRatesByGrade,
   getTuitionRate,
   deleteTuitionRates,
   updateTuitionRates,
