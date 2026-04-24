@@ -106,6 +106,11 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    forcePasswordReset: {
+      type: Boolean,
+      default: false,
+    },
+
     zip: {
       type: String,
       trim: true,

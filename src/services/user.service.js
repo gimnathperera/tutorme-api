@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
+const tokenService = require('./token.service');
 const { normalizeUserProfileFields } = require('../utils/availability');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
@@ -125,10 +126,10 @@ const deleteUserById = async (userId) => {
 };
 
 /**
- * Update user by id
+ * Update password for an authenticated user
  * @param {ObjectId} userId
  * @param {Object} updateBody
- * @returns {Promise<User>}
+ * @returns {Promise<Object>}
  */
 const changePassword = async (userId, updateBody) => {
   const user = await getUserById(userId);
@@ -137,15 +138,12 @@ const changePassword = async (userId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+  if (!(await user.isPasswordMatch(updateBody.currentPassword))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
   }
 
-  const payload = {
-    password: updateBody.newPassword,
-  };
-
-  Object.assign(user, payload);
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
 
   await user.save();
   await accountSyncService.syncTutorFromUser(user);
@@ -177,6 +175,56 @@ const generateTemporaryPassword = async (userId) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate temporary password');
   }
 };
+/**
+ * Create an admin user and email credentials
+ * @param {Object} adminBody
+ * @returns {Promise<User>}
+ */
+const createAdminUser = async (adminBody) => {
+  const { email, name, phoneNumber, password } = adminBody;
+
+  if (await User.isEmailTaken(email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This email is already in use. Please use a different email.');
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    phoneNumber,
+    password,
+    role: 'admin',
+    forcePasswordReset: true,
+  });
+
+  const resetToken = await tokenService.generateResetPasswordToken(user.email);
+  await emailService.sendAdminInviteEmail(user.email, user.name, resetToken);
+
+  return user;
+};
+
+/**
+ * Update password for an admin invite flow
+ * @param {ObjectId} userId
+ * @param {Object} updateBody
+ * @returns {Promise<Object>}
+ */
+const changeAdminPassword = async (userId, updateBody) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!user || !(await user.isPasswordMatch(updateBody.currentPassword))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect current password');
+  }
+
+  user.password = updateBody.newPassword;
+  user.forcePasswordReset = false;
+
+  await user.save();
+  return { message: 'Password updated successfully' };
+};
 
 module.exports = {
   createUser,
@@ -187,4 +235,6 @@ module.exports = {
   deleteUserById,
   changePassword,
   generateTemporaryPassword,
+  createAdminUser,
+  changeAdminPassword,
 };

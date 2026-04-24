@@ -2,12 +2,29 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
+const { userService, tokenService, emailService } = require('../services');
 const { serializeUserProfile } = require('../utils/availability');
-const { userService } = require('../services');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   res.status(httpStatus.CREATED).send(serializeUserProfile(user));
+});
+
+const createAdmin = catchAsync(async (req, res) => {
+  const adminBody = {
+    name: req.body.name,
+    email: req.body.email,
+    phoneNumber: req.body.phoneNumber,
+    password: req.body.password,
+    role: 'admin',
+    forcePasswordReset: true,
+  };
+
+  const user = await userService.createUser(adminBody);
+  const resetToken = await tokenService.generateResetPasswordToken(user.email);
+  await emailService.sendAdminInviteEmail(user.email, user.name, resetToken);
+
+  res.status(httpStatus.CREATED).send(user);
 });
 
 const getUsers = catchAsync(async (req, res) => {
@@ -73,6 +90,7 @@ const generateTempPassword = catchAsync(async (req, res) => {
 
 module.exports = {
   createUser,
+  createAdmin,
   getUsers,
   getUser,
   updateUser,

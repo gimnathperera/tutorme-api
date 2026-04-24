@@ -96,6 +96,15 @@ const generateTempPassword = {
   }),
 };
 
+const createAdmin = {
+  body: Joi.object().keys({
+    name: Joi.string().required(),
+    email: Joi.string().required().email(),
+    phoneNumber: Joi.string().required(),
+    password: Joi.string().required().custom(password),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -104,4 +113,5 @@ module.exports = {
   deleteUser,
   changePassword,
   generateTempPassword,
+  createAdmin,
 };

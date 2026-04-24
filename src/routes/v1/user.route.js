@@ -5,11 +5,13 @@ const userValidation = require('../../validations/user.validation');
 const userController = require('../../controllers/user.controller');
 
 const router = express.Router();
-// 🌸TODO: This should be changed in the future. The corrected lines are commented below
+
 router
   .route('/')
   .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
   .get(auth('getUsers'), validate(userValidation.getUsers), userController.getUsers);
+
+router.route('/admins').post(auth('manageUsers'), validate(userValidation.createAdmin), userController.createAdmin);
 
 router
   .route('/:userId')
