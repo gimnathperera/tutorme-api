@@ -17,6 +17,11 @@ const getTutors = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const getTutorEmailAvailability = catchAsync(async (req, res) => {
+  const result = await tutorService.getEmailAvailability(req.query.email);
+  res.send(result);
+});
+
 const getTutor = catchAsync(async (req, res) => {
   const tutor = await tutorService.getTutorById(req.params.tutorId);
   if (!tutor) {
@@ -90,6 +95,7 @@ const matchTutorsBySubjects = catchAsync(async (req, res) => {
 module.exports = {
   createTutor,
   getTutors,
+  getTutorEmailAvailability,
   getTutor,
   updateTutor,
   deleteTutor,

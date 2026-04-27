@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Tutor } = require('../models');
+const { Tutor, User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const logger = require('../config/logger');
@@ -20,6 +20,51 @@ const checkEmailSuspended = async (email) => {
 };
 
 /**
+ * Check whether a tutor registration email can be used.
+ * @param {string} email
+ * @returns {Promise<{available: boolean, message: string}>}
+ */
+const getEmailAvailability = async (email) => {
+  const normalizedEmail = email.toLowerCase().trim();
+  const [existingUser, existingTutor] = await Promise.all([
+    User.findOne({ email: normalizedEmail }).select('_id').lean(),
+    Tutor.findOne({ email: normalizedEmail }).select('_id status').lean(),
+  ]);
+
+  if (existingTutor && existingTutor.status === 'suspended') {
+    return {
+      available: false,
+      message: 'This email has been suspended. Please contact admin.',
+    };
+  }
+
+  if (existingUser || existingTutor) {
+    return {
+      available: false,
+      message: 'Email already exists',
+    };
+  }
+
+  return {
+    available: true,
+    message: 'Email is available',
+  };
+};
+
+/**
+ * Ensure the tutor registration email is not already used by a user or tutor.
+ * Throws 400 BAD_REQUEST before any tutor record or notification email is created.
+ * @param {string} email
+ * @returns {Promise<void>}
+ */
+const checkEmailAvailable = async (email) => {
+  const availability = await getEmailAvailability(email);
+  if (!availability.available) {
+    throw new ApiError(httpStatus.BAD_REQUEST, availability.message);
+  }
+};
+
+/**
  * Create a Tutor
  * @param {Object} tutorBody
  * @returns {Promise<Tutor>}
@@ -27,6 +72,7 @@ const checkEmailSuspended = async (email) => {
 const createTutor = async (tutorBody) => {
   // Block suspended emails from re-registering
   await checkEmailSuspended(tutorBody.email);
+  await checkEmailAvailable(tutorBody.email);
 
   const tutor = await Tutor.create({ ...tutorBody, status: 'pending' });
   try {
@@ -182,4 +228,6 @@ module.exports = {
   generateTemporaryPassword,
   findTutorsBySubjects,
   checkEmailSuspended,
+  checkEmailAvailable,
+  getEmailAvailability,
 };

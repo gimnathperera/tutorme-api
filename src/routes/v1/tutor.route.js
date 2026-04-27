@@ -12,6 +12,10 @@ router
   .get(validate(tutorValidation.getTutors), tutorController.getTutors);
 
 router
+  .route('/email-availability')
+  .get(validate(tutorValidation.getTutorEmailAvailability), tutorController.getTutorEmailAvailability);
+
+router
   .route('/:tutorId')
   .get(validate(tutorValidation.getTutor), tutorController.getTutor)
   .patch(auth('manageUsers'), validate(tutorValidation.updateTutor), tutorController.updateTutor)

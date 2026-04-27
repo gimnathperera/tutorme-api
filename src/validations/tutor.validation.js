@@ -206,6 +206,12 @@ const getTutors = {
   }),
 };
 
+const getTutorEmailAvailability = {
+  query: Joi.object().keys({
+    email: Joi.string().email().required(),
+  }),
+};
+
 const getTutor = {
   params: Joi.object().keys({
     tutorId: Joi.string().custom((value, helpers) => {
@@ -456,6 +462,7 @@ const tutorUserProfileFields = {
 module.exports = {
   createTutor,
   getTutors,
+  getTutorEmailAvailability,
   getTutor,
   updateTutor,
   deleteTutor,
