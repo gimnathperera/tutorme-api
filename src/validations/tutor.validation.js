@@ -158,7 +158,12 @@ const createTutor = {
           'Online',
           'School Teacher Tutors',
           'Group Tutors',
-          'Exam Coaches'
+          'Exam Coaches',
+          'Advanced Level',
+          'Diploma Holders',
+          'Ex-MOE (Ministry of Education)',
+          'Part-time Tutors',
+          'Full-time Tutors'
         )
       )
       .min(1)
@@ -355,7 +360,12 @@ const updateTutor = {
             'Online',
             'School Teacher Tutors',
             'Group Tutors',
-            'Exam Coaches'
+            'Exam Coaches',
+            'Advanced Level',
+            'Diploma Holders',
+            'Ex-MOE (Ministry of Education)',
+            'Part-time Tutors',
+            'Full-time Tutors'
           )
         )
         .optional(),
