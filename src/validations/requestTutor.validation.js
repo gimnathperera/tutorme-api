@@ -45,7 +45,25 @@ const createRequestTutor = {
           }),
           assignedTutor: Joi.string().trim().allow('', null).optional(),
           preferredTutorType: Joi.string()
-            .valid('Private Tutor', 'Government Teacher', 'University Student', 'Coach')
+            .valid(
+              'Private Tutor',
+              'Government Teacher',
+              'University Student',
+              'Coach',
+              'International School Teacher',
+              'University Lecturer',
+              'Full-Time',
+              'Part-Time',
+              'Online',
+              'School Teacher Tutors',
+              'Group Tutors',
+              'Exam Coaches',
+              'Advanced Level',
+              'Diploma Holders',
+              'Ex-MOE (Ministry of Education)',
+              'Part-time Tutors',
+              'Full-time Tutors'
+            )
             .required()
             .messages({
               'any.only': 'Preferred Tutor Type must be one of the allowed values',
