@@ -29,6 +29,7 @@ const createAdmin = catchAsync(async (req, res) => {
 
 const getUsers = catchAsync(async (req, res) => {
   const filter = pick(req.query, [
+    'search',
     'id',
     'email',
     'phoneNumber',
