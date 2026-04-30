@@ -32,13 +32,13 @@ const sendEmail = async (to, subject, text) => {
  */
 const sendResetPasswordEmail = async (to, token) => {
   try {
-    const subject = 'Reset Your TutorMe Password';
+    const subject = 'Reset Your TuitionLanka Password';
     const resetPasswordUrl = `https://tuitionlanka.com/reset-password?token=${token}`;
 
     const text = `
 Hello,
 
-We received a request to reset the password for your TutorMe account.
+We received a request to reset the password for your TuitionLanka account.
 
 Reset your password using the link below:
 ${resetPasswordUrl}
@@ -49,7 +49,7 @@ If you didn’t request this, please ignore this email.
     const html = `
       <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.6;">
         <p>Hello,</p>
-        <p>We received a request to reset the password for your <strong>TutorMe</strong> account.</p>
+        <p>We received a request to reset the password for your <strong>TuitionLanka</strong> account.</p>
         <p>You can reset your password by clicking the button below:</p>
         <p style="text-align: center; margin: 25px 0;">
           <a href="${resetPasswordUrl}" 
@@ -61,7 +61,7 @@ If you didn’t request this, please ignore this email.
         <p>If the button above doesn’t work, you can copy and paste this link into your browser:</p>
         <p style="word-break: break-all; color: #1d4ed8;">${resetPasswordUrl}</p>
         <p>If you did not request a password reset, please ignore this message.</p>
-        <p>Thank you,<br><strong>The TutorMe Support Team</strong></p>
+        <p>Thank you,<br><strong>The TuitionLanka Support Team</strong></p>
       </div>
     `;
 
@@ -103,7 +103,7 @@ If you did not create an account, then ignore this email.`;
  */
 const sendTemporaryPasswordEmail = async (to, username, tempPassword) => {
   try {
-    const subject = 'Your Temporary Password for TutorMe';
+    const subject = 'Your Temporary Password for TuitionLanka';
     const text = `
 Dear ${username},
 
@@ -120,7 +120,7 @@ Security Notice:
 If you did not request this, please contact support.
 
 Thanks, 
-The TutorMe support team.`;
+The TuitionLanka support team.`;
 
     await sendEmail(to, subject, text);
   } catch (err) {
@@ -474,13 +474,13 @@ TuitionLanka – Learn Better, Achieve More
  */
 const sendTutorRejectedEmail = async (to, tutorName, customMessage) => {
   try {
-    const subject = 'Your Tutor Registration was Not Approved – TutorMe';
+    const subject = 'Your Tutor Registration was Not Approved – TuitionLanka';
     const messageBlock = customMessage ? `\nReason provided by our team:\n${customMessage}\n` : '';
 
     const text = `
 Dear ${tutorName},
 
-Thank you for your interest in joining TutorMe as a tutor.
+Thank you for your interest in joining TuitionLanka as a tutor.
 
 After careful review, we regret to inform you that your registration has not been approved at this time.
 ${messageBlock}
@@ -489,8 +489,8 @@ If you have any questions or would like to discuss further, please contact our s
 Thank you for your understanding.
 
 Warm regards,
-The TutorMe Team
-TutorMe – Learn Better, Achieve More
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
 `;
 
     const messageHtml = customMessage
@@ -507,7 +507,7 @@ TutorMe – Learn Better, Achieve More
         </div>
         <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
           <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Thank you for your interest in joining <strong>TutorMe</strong> as a tutor.</p>
+          <p>Thank you for your interest in joining <strong>TuitionLanka</strong> as a tutor.</p>
           <p>After careful review, we regret to inform you that your registration has <strong style="color: #dc2626;">not been approved</strong> at this time.</p>
 
           ${messageHtml}
@@ -517,8 +517,8 @@ TutorMe – Learn Better, Achieve More
 
           <p style="margin-top: 28px;">
             Warm regards,<br/>
-            <strong>The TutorMe Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+            <strong>The TuitionLanka Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
           </p>
         </div>
       </div>
@@ -539,12 +539,12 @@ TutorMe – Learn Better, Achieve More
  */
 const sendTutorSuspendedEmail = async (to, tutorName) => {
   try {
-    const subject = 'Your Tutor Account has been Suspended – TutorMe';
+    const subject = 'Your Tutor Account has been Suspended – TuitionLanka';
 
     const text = `
 Dear ${tutorName},
 
-We are writing to inform you that your TutorMe tutor account has been suspended.
+We are writing to inform you that your TuitionLanka tutor account has been suspended.
 
 During the suspension period, you will not be able to log in or access the platform.
 
@@ -553,8 +553,8 @@ If you believe this is a mistake or would like to appeal, please contact our sup
 Thank you for your understanding.
 
 Warm regards,
-The TutorMe Team
-TutorMe – Learn Better, Achieve More
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
 `;
 
     const html = `
@@ -564,7 +564,7 @@ TutorMe – Learn Better, Achieve More
         </div>
         <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
           <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>We are writing to inform you that your <strong>TutorMe</strong> tutor account has been <strong style="color: #4b5563;">suspended</strong>.</p>
+          <p>We are writing to inform you that your <strong>TuitionLanka</strong> tutor account has been <strong style="color: #4b5563;">suspended</strong>.</p>
 
           <div style="background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 14px 18px; border-radius: 4px; margin: 20px 0;">
             <p style="margin: 0; color: #374151;">During the suspension period, you will not be able to log in or access the platform.</p>
@@ -575,8 +575,8 @@ TutorMe – Learn Better, Achieve More
 
           <p style="margin-top: 28px;">
             Warm regards,<br/>
-            <strong>The TutorMe Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TutorMe – Learn Better, Achieve More</span>
+            <strong>The TuitionLanka Team</strong><br/>
+            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
           </p>
         </div>
       </div>
