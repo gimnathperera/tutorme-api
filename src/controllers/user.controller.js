@@ -2,10 +2,28 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { userService } = require('../services');
+const { userService, tokenService, emailService } = require('../services');
+const { serializeUserProfile } = require('../utils/availability');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
+  res.status(httpStatus.CREATED).send(serializeUserProfile(user));
+});
+
+const createAdmin = catchAsync(async (req, res) => {
+  const adminBody = {
+    name: req.body.name,
+    email: req.body.email,
+    phoneNumber: req.body.phoneNumber,
+    password: req.body.password,
+    role: 'admin',
+    forcePasswordReset: true,
+  };
+
+  const user = await userService.createUser(adminBody);
+  const resetToken = await tokenService.generateResetPasswordToken(user.email);
+  await emailService.sendAdminInviteEmail(user.email, user.name, resetToken);
+
   res.status(httpStatus.CREATED).send(user);
 });
 
@@ -47,12 +65,12 @@ const getUser = catchAsync(async (req, res) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  res.send(user);
+  res.send(serializeUserProfile(user));
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const user = await userService.updateUserById(req.params.userId, req.body);
-  res.send(user);
+  const user = await userService.updateUserById(req.params.userId, req.body, req.user);
+  res.send(serializeUserProfile(user));
 });
 
 const deleteUser = catchAsync(async (req, res) => {
@@ -72,6 +90,7 @@ const generateTempPassword = catchAsync(async (req, res) => {
 
 module.exports = {
   createUser,
+  createAdmin,
   getUsers,
   getUser,
   updateUser,

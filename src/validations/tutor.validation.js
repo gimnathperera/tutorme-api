@@ -1,6 +1,26 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const { password, objectId } = require('./custom.validation');
+const { parseAvailabilityInput } = require('../utils/availability');
+
+const availabilityField = Joi.alternatives()
+  .try(
+    Joi.string(),
+    Joi.array().items(
+      Joi.object({
+        day: Joi.string().required(),
+        start: Joi.string().required(),
+        end: Joi.string().required(),
+      })
+    )
+  )
+  .custom((value, helpers) => {
+    try {
+      return parseAvailabilityInput(value);
+    } catch (error) {
+      return helpers.message(error.message);
+    }
+  }, 'availability normalization');
 
 const createTutor = {
   body: Joi.object().keys({
@@ -36,7 +56,16 @@ const createTutor = {
 
     // 2. Tutoring Preferences
     classType: Joi.array()
-      .items(Joi.string().valid('Online - Individual', 'Online - Group', 'In-Person - Individual', 'In-Person - Group'))
+      .items(
+        Joi.string().valid(
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group'
+        )
+      )
       .min(1)
       .required(),
     tutoringLevels: Joi.array()
@@ -120,6 +149,8 @@ const createTutor = {
         Joi.string().valid(
           'Private Tutor',
           'Government Teacher',
+          'University Student',
+          'Coach',
           'International School Teacher',
           'University Lecturer',
           'Full-Time',
@@ -146,7 +177,7 @@ const createTutor = {
       .items(
         Joi.object().keys({
           type: Joi.string().required(),
-          url: Joi.string().uri().required(),
+          url: Joi.string().trim().min(1).required(),
         })
       )
       .min(1)
@@ -172,6 +203,12 @@ const getTutors = {
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
+  }),
+};
+
+const getTutorEmailAvailability = {
+  query: Joi.object().keys({
+    email: Joi.string().email().required(),
   }),
 };
 
@@ -225,6 +262,8 @@ const updateTutor = {
         Joi.string().valid(
           'Online - Individual',
           'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
           'Home Visit - Individual',
           'Home Visit - Group',
           "At Tutor's Place - Individual",
@@ -305,6 +344,8 @@ const updateTutor = {
           Joi.string().valid(
             'Private Tutor',
             'Government Teacher',
+            'University Student',
+            'Coach',
             'International School Teacher',
             'University Lecturer',
             'Online Tutor',
@@ -341,9 +382,13 @@ const updateTutor = {
         Joi.object().keys({
           id: Joi.string().optional(),
           type: Joi.string().required(),
-          url: Joi.string().uri().required(),
+          url: Joi.string().trim().min(1).required(),
         })
       ),
+      language: Joi.string(),
+      timeZone: Joi.string(),
+      rate: Joi.string(),
+      availability: availabilityField,
 
       // 5. Agreement
       agreeTerms: Joi.boolean(),
@@ -389,13 +434,40 @@ const matchTutorsBySubjects = {
   }),
 };
 
+const tutorUserProfileFields = {
+  age: Joi.number().integer().min(0).max(120),
+  nationality: updateTutor.body.extract('nationality'),
+  race: updateTutor.body.extract('race'),
+  tutoringLevels: updateTutor.body.extract('tutoringLevels'),
+  preferredLocations: updateTutor.body.extract('preferredLocations'),
+  tutorMediums: updateTutor.body.extract('tutorMediums'),
+  tutorType: updateTutor.body.extract('tutorType'),
+  highestEducation: Joi.string().valid(
+    'PhD',
+    'Masters',
+    'Bachelor Degree',
+    'Undergraduate',
+    'Diploma and Professional',
+    'AL'
+  ),
+  yearsExperience: updateTutor.body.extract('yearsExperience'),
+  academicDetails: Joi.string().allow('').max(500),
+  certificatesAndQualifications: Joi.array().items(Joi.string()),
+  language: Joi.string(),
+  timeZone: Joi.string(),
+  rate: Joi.string(),
+  availability: availabilityField,
+};
+
 module.exports = {
   createTutor,
   getTutors,
+  getTutorEmailAvailability,
   getTutor,
   updateTutor,
   deleteTutor,
   changePassword,
   generateTempPassword,
   matchTutorsBySubjects,
+  tutorUserProfileFields,
 };

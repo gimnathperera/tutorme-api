@@ -3,6 +3,41 @@ const { User, Tutor } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const shouldSyncTutorToUser = (tutor) => tutor.status === 'approved' || Boolean(tutor.userId);
+const tutorStatuses = ['pending', 'approved', 'rejected', 'suspended'];
+
+const getTutorStatusFromUser = (status) => {
+  if (status === 'active') {
+    return 'approved';
+  }
+
+  return tutorStatuses.includes(status) ? status : undefined;
+};
+
+const getTutorCertificatesFromUser = (user, tutor) => {
+  if (!Array.isArray(user.certificatesAndQualifications)) {
+    return undefined;
+  }
+
+  const existingCertificates = Array.isArray(tutor.certificatesAndQualifications) ? tutor.certificatesAndQualifications : [];
+
+  return user.certificatesAndQualifications.map((certificateUrl) => {
+    const existingCertificate = existingCertificates.find((certificate) => certificate.url === certificateUrl);
+
+    return {
+      type: (existingCertificate && existingCertificate.type) || 'Certificate',
+      url: certificateUrl,
+    };
+  });
+};
+
+const removeUndefinedValues = (payload) =>
+  Object.entries(payload).reduce((cleanPayload, [key, value]) => {
+    if (value !== undefined) {
+      return { ...cleanPayload, [key]: value };
+    }
+
+    return cleanPayload;
+  }, {});
 
 const getTutorLinkedUser = async (tutor) => {
   if (tutor.userId) {
@@ -85,11 +120,30 @@ const syncTutorFromUser = async (user) => {
     password: user.password,
     fullName: user.name,
     contactNumber: user.phoneNumber,
-    status: user.status,
+    status: getTutorStatusFromUser(user.status),
     userId: user._id,
+    dateOfBirth: user.birthday ? new Date(user.birthday) : undefined,
+    gender: user.gender,
+    age: user.age,
+    nationality: user.nationality,
+    race: user.race,
+    tutoringLevels: user.tutoringLevels,
+    preferredLocations: user.preferredLocations,
+    tutorMediums: user.tutorMediums,
+    grades: user.grades,
+    subjects: user.subjects,
+    tutorType: user.tutorType,
+    highestEducation: user.highestEducation,
+    yearsExperience: user.yearsExperience,
+    academicDetails: user.academicDetails,
+    certificatesAndQualifications: getTutorCertificatesFromUser(user, tutor),
+    language: user.language,
+    timeZone: user.timeZone,
+    rate: user.rate,
+    availability: user.availability,
   };
 
-  await Tutor.updateOne({ _id: tutor._id }, { $set: tutorPayload }, { runValidators: true });
+  await Tutor.updateOne({ _id: tutor._id }, { $set: removeUndefinedValues(tutorPayload) }, { runValidators: true });
 
   if (!user.tutorId || user.tutorId.toString() !== tutor.id) {
     await User.updateOne({ _id: user._id }, { $set: { tutorId: tutor._id } }, { runValidators: true });
