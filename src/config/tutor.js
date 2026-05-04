@@ -10,11 +10,8 @@ const tutorTypes = [
   'University Student',
   'A/L Student',
   'Diploma Holder',
-  'Degree Holder',
   'Part-time Tutor',
   'Full-time Tutor',
-  'International Retired Teacher',
-  'Government Retired Teacher',
 ];
 
 module.exports = {
