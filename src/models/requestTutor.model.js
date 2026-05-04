@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const {
+  tutorTypes,
+  tutorMediums,
+  requestTutorClassTypes,
+  requestTutorStatuses,
+  sessionDurations,
+  sessionFrequencies,
+} = require('../config/enums');
 
 const requestTutorSchema = mongoose.Schema(
   {
@@ -31,12 +39,12 @@ const requestTutorSchema = mongoose.Schema(
     },
     medium: {
       type: String,
-      enum: ['Sinhala', 'English', 'Tamil'],
+      enum: tutorMediums,
       required: true,
     },
     status: {
       type: String,
-      enum: ['Pending', 'Approved', 'Tutor Assigned'],
+      enum: requestTutorStatuses,
       required: true,
     },
     phoneNumber: {
@@ -59,40 +67,22 @@ const requestTutorSchema = mongoose.Schema(
         },
         preferredTutorType: {
           type: String,
-          enum: [
-            'Private Tutor',
-            'Government Teacher',
-            'University Student',
-            'Coach',
-            'International School Teacher',
-            'University Lecturer',
-            'Full-Time',
-            'Part-Time',
-            'Online',
-            'School Teacher Tutors',
-            'Group Tutors',
-            'Exam Coaches',
-            'Advanced Level',
-            'Diploma Holders',
-            'Ex-MOE (Ministry of Education)',
-            'Part-time Tutors',
-            'Full-time Tutors',
-          ],
+          enum: tutorTypes,
           required: true,
         },
         preferredClassType: {
           type: String,
-          enum: ['Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group'],
+          enum: requestTutorClassTypes,
           required: true,
         },
         duration: {
           type: String,
-          enum: ['30 Minutes', 'One Hour', 'Two Hours'],
+          enum: sessionDurations,
           required: true,
         },
         frequency: {
           type: String,
-          enum: ['Once a Week', 'Twice a Week', 'Daily'],
+          enum: sessionFrequencies,
           required: true,
         },
       },

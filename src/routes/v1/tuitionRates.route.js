@@ -11,6 +11,12 @@ router
   .post(auth(), validate(tuitionRateValidation.createTuitionRate), tuitionRateController.createTuitionRate)
   .get(validate(tuitionRateValidation.getTuitionRates), tuitionRateController.queryTuitionRates);
 
+router.get(
+  '/by-grade/:gradeId',
+  validate(tuitionRateValidation.getTuitionRatesByGrade),
+  tuitionRateController.getTuitionRatesByGrade
+);
+
 router
   .route('/:tuitionRatesId')
   .get(validate(tuitionRateValidation.getTuitionRate), tuitionRateController.getTuitionRate)

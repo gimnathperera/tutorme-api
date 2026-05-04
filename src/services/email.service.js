@@ -103,7 +103,7 @@ If you did not create an account, then ignore this email.`;
  */
 const sendTemporaryPasswordEmail = async (to, username, tempPassword) => {
   try {
-    const subject = 'Your Temporary Password for TutorMe';
+    const subject = 'Your Temporary Password for TuitionLanka';
     const text = `
 Dear ${username},
 
@@ -120,7 +120,7 @@ Security Notice:
 If you did not request this, please contact support.
 
 Thanks, 
-The TutorMe support team.`;
+The TuitionLanka support team.`;
 
     await sendEmail(to, subject, text);
   } catch (err) {

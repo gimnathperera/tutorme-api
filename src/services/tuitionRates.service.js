@@ -25,6 +25,20 @@ const queryTuitionRates = async (filter, options) => {
   return tuitionRates;
 };
 
+const getTuitionRatesByGradeId = async (gradeId, filter, options) => {
+  const query = {
+    grade: gradeId,
+    ...filter,
+  };
+
+  const tuitionRates = await TuitionRates.paginate(query, {
+    ...options,
+    populate: 'grade subject',
+  });
+
+  return tuitionRates;
+};
+
 /**
  * Get Tuition Rates by id
  * @param {ObjectId} id
@@ -67,6 +81,7 @@ const deleteTuitionRateById = async (tuitionRatesId) => {
 module.exports = {
   createTuitionRate,
   queryTuitionRates,
+  getTuitionRatesByGradeId,
   getTuitionRateById,
   updateTuitionRatesById,
   deleteTuitionRateById,

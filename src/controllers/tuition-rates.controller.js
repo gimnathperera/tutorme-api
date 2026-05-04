@@ -20,6 +20,16 @@ const queryTuitionRates = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const getTuitionRatesByGrade = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['subject']);
+  const options = {
+    ...pick(req.query, ['sortBy', 'limit', 'page']),
+  };
+
+  const result = await tuitionRateService.getTuitionRatesByGradeId(req.params.gradeId, filter, options);
+  res.send(result);
+});
+
 const getTuitionRate = catchAsync(async (req, res) => {
   const tuitionRate = await tuitionRateService.getTuitionRateById(req.params.tuitionRatesId);
   if (!tuitionRate) {
@@ -41,6 +51,7 @@ const deleteTuitionRate = catchAsync(async (req, res) => {
 module.exports = {
   createTuitionRate,
   queryTuitionRates,
+  getTuitionRatesByGrade,
   getTuitionRate,
   updateTuitionRatesById,
   deleteTuitionRate,

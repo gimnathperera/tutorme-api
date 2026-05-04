@@ -1,6 +1,7 @@
 const request = require('supertest');
 const faker = require('faker');
 const httpStatus = require('http-status');
+const mongoose = require('mongoose');
 const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { User } = require('../../src/models');
@@ -224,6 +225,62 @@ describe('User routes', () => {
       expect(res.body.results).toHaveLength(2);
       expect(res.body.results[0].id).toBe(userOne._id.toHexString());
       expect(res.body.results[1].id).toBe(userTwo._id.toHexString());
+    });
+
+    test('should correctly search users by partial name or email', async () => {
+      const tutorUser = {
+        _id: mongoose.Types.ObjectId(),
+        name: 'Searchable Tutor',
+        email: 'searchable.tutor@example.com',
+        password: 'password1',
+        role: 'tutor',
+        isEmailVerified: false,
+      };
+
+      await insertUsers([userOne, userTwo, admin, tutorUser]);
+
+      const res = await request(app)
+        .get('/v1/users')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .query({ search: 'searchable.tutor' })
+        .send()
+        .expect(httpStatus.OK);
+
+      expect(res.body.totalResults).toBe(1);
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(tutorUser._id.toHexString());
+    });
+
+    test('should combine search and role filters', async () => {
+      const tutorUser = {
+        _id: mongoose.Types.ObjectId(),
+        name: 'Taylor Match',
+        email: 'taylor.tutor@example.com',
+        password: 'password1',
+        role: 'tutor',
+        isEmailVerified: false,
+      };
+      const adminUser = {
+        _id: mongoose.Types.ObjectId(),
+        name: 'Taylor Admin',
+        email: 'taylor.admin@example.com',
+        password: 'password1',
+        role: 'admin',
+        isEmailVerified: false,
+      };
+
+      await insertUsers([userOne, userTwo, tutorUser, adminUser]);
+
+      const res = await request(app)
+        .get('/v1/users')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .query({ search: 'Taylor', role: 'tutor' })
+        .send()
+        .expect(httpStatus.OK);
+
+      expect(res.body.totalResults).toBe(1);
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(tutorUser._id.toHexString());
     });
 
     test('should correctly sort the returned array if descending sort param is specified', async () => {

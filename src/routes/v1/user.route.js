@@ -98,6 +98,11 @@ module.exports = router;
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Case-insensitive search across user name and email
+ *       - in: query
  *         name: name
  *         schema:
  *           type: string

@@ -36,6 +36,18 @@ const getTuitionRates = {
   }),
 };
 
+const getTuitionRatesByGrade = {
+  params: Joi.object().keys({
+    tuitionRatesId: idValidator,
+  }),
+  query: Joi.object().keys({
+    subject: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
+};
+
 // Get a single tuition rate validation
 const getTuitionRate = {
   params: Joi.object().keys({
@@ -70,6 +82,7 @@ const deleteTuitionRates = {
 module.exports = {
   createTuitionRate,
   getTuitionRates,
+  getTuitionRatesByGrade,
   getTuitionRate,
   deleteTuitionRates,
   updateTuitionRates,
