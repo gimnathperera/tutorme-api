@@ -6,6 +6,9 @@ const logger = require('../config/logger');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const toArray = (value) => (Array.isArray(value) ? value : [value]);
+
 /**
  * Check if an email belongs to a suspended tutor.
  * Throws 403 FORBIDDEN if suspended so they cannot re-register.
@@ -92,12 +95,15 @@ const createTutor = async (tutorBody) => {
  */
 const queryTutors = async (filter, options) => {
   const query = { ...filter };
+  const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
+
+  delete query.search;
 
   if (filter.preferredLocations) {
-    query.preferredLocations = { $in: filter.preferredLocations };
+    query.preferredLocations = { $in: toArray(filter.preferredLocations) };
   }
   if (filter.tutorType) {
-    query.tutorType = filter.tutorType;
+    query.tutorType = Array.isArray(filter.tutorType) ? { $in: filter.tutorType } : filter.tutorType;
   }
 
   // Filter tutors that support the requested grade
@@ -110,6 +116,11 @@ const queryTutors = async (filter, options) => {
   if (filter.subjectId) {
     query.subjects = { $in: [filter.subjectId] };
     delete query.subjectId;
+  }
+
+  if (searchTerm) {
+    const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+    query.$or = [{ fullName: searchRegex }, { email: searchRegex }, { contactNumber: searchRegex }];
   }
 
   const sortOptions = { ...options };

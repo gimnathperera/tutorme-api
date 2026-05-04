@@ -197,7 +197,10 @@ const createTutor = {
 
 const getTutors = {
   query: Joi.object().keys({
-    title: Joi.string(),
+    search: Joi.string().allow(''),
+    status: Joi.string().valid('pending', 'approved', 'rejected', 'suspended'),
+    tutorType: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    preferredLocations: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     gradeId: Joi.string().custom(objectId).optional(),
     subjectId: Joi.string().custom(objectId).optional(),
     sortBy: Joi.string(),
