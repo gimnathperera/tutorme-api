@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
+const { tutorTypes } = require('../config/tutor');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -198,25 +199,7 @@ const tutorSchema = mongoose.Schema(
     tutorType: [
       {
         type: String,
-        enum: [
-          'Private Tutor',
-          'Government Teacher',
-          'University Student',
-          'Coach',
-          'International School Teacher',
-          'University Lecturer',
-          'Full-Time',
-          'Part-Time',
-          'Online',
-          'School Teacher Tutors',
-          'Group Tutors',
-          'Exam Coaches',
-          'Advanced Level',
-          'Diploma Holders',
-          'Ex-MOE (Ministry of Education)',
-          'Part-time Tutors',
-          'Full-time Tutors',
-        ],
+        enum: tutorTypes,
         required: true,
       },
     ],

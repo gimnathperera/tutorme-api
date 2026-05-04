@@ -2,6 +2,7 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 const { password, objectId } = require('./custom.validation');
 const { parseAvailabilityInput } = require('../utils/availability');
+const { tutorTypes } = require('../config/tutor');
 
 const availabilityField = Joi.alternatives()
   .try(
@@ -145,27 +146,7 @@ const createTutor = {
     grades: Joi.array().items(Joi.string()).min(1).required(),
     subjects: Joi.array().items(Joi.string()).min(1).required(),
     tutorType: Joi.array()
-      .items(
-        Joi.string().valid(
-          'Private Tutor',
-          'Government Teacher',
-          'University Student',
-          'Coach',
-          'International School Teacher',
-          'University Lecturer',
-          'Full-Time',
-          'Part-Time',
-          'Online',
-          'School Teacher Tutors',
-          'Group Tutors',
-          'Exam Coaches',
-          'Advanced Level',
-          'Diploma Holders',
-          'Ex-MOE (Ministry of Education)',
-          'Part-time Tutors',
-          'Full-time Tutors'
-        )
-      )
+      .items(Joi.string().valid(...tutorTypes))
       .min(1)
       .required(),
     yearsExperience: Joi.number().integer().min(0).max(50).required(),
@@ -348,29 +329,7 @@ const updateTutor = {
 
       // 3. Academic Qualifications & Experience
       tutorType: Joi.array()
-        .items(
-          Joi.string().valid(
-            'Private Tutor',
-            'Government Teacher',
-            'University Student',
-            'Coach',
-            'International School Teacher',
-            'University Lecturer',
-            'Online Tutor',
-            'Others',
-            'Full-Time',
-            'Part-Time',
-            'Online',
-            'School Teacher Tutors',
-            'Group Tutors',
-            'Exam Coaches',
-            'Advanced Level',
-            'Diploma Holders',
-            'Ex-MOE (Ministry of Education)',
-            'Part-time Tutors',
-            'Full-time Tutors'
-          )
-        )
+        .items(Joi.string().valid(...tutorTypes))
         .optional(),
       yearsExperience: Joi.number().integer().min(0).max(50),
       highestEducation: Joi.string().valid(

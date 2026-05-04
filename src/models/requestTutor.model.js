@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { tutorTypes } = require('../config/tutor');
 
 const requestTutorSchema = mongoose.Schema(
   {
@@ -59,25 +60,7 @@ const requestTutorSchema = mongoose.Schema(
         },
         preferredTutorType: {
           type: String,
-          enum: [
-            'Private Tutor',
-            'Government Teacher',
-            'University Student',
-            'Coach',
-            'International School Teacher',
-            'University Lecturer',
-            'Full-Time',
-            'Part-Time',
-            'Online',
-            'School Teacher Tutors',
-            'Group Tutors',
-            'Exam Coaches',
-            'Advanced Level',
-            'Diploma Holders',
-            'Ex-MOE (Ministry of Education)',
-            'Part-time Tutors',
-            'Full-time Tutors',
-          ],
+          enum: tutorTypes,
           required: true,
         },
         preferredClassType: {

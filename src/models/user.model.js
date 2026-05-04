@@ -5,6 +5,7 @@ const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 const { userStatus } = require('../config/users');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
+const { tutorTypes } = require('../config/tutor');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -212,27 +213,7 @@ const userSchema = mongoose.Schema(
       type: [
         {
           type: String,
-          enum: [
-            'Private Tutor',
-            'Government Teacher',
-            'University Student',
-            'Coach',
-            'International School Teacher',
-            'University Lecturer',
-            'Online Tutor',
-            'Others',
-            'Full-Time',
-            'Part-Time',
-            'Online',
-            'School Teacher Tutors',
-            'Group Tutors',
-            'Exam Coaches',
-            'Advanced Level',
-            'Diploma Holders',
-            'Ex-MOE (Ministry of Education)',
-            'Part-time Tutors',
-            'Full-time Tutors',
-          ],
+          enum: tutorTypes,
           trim: true,
         },
       ],
