@@ -5,15 +5,7 @@ const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 const { userStatus } = require('../config/users');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
-const {
-  tutorTypes,
-  nationalities,
-  races,
-  tutoringLevels,
-  preferredLocations,
-  tutorMediums,
-  highestEducationLevels,
-} = require('../config/enums');
+const { tutorTypes } = require('../config/tutor');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -139,24 +131,82 @@ const userSchema = mongoose.Schema(
     },
     nationality: {
       type: String,
-      enum: nationalities,
+      enum: ['Sri Lankan', 'Others'],
       trim: true,
     },
     race: {
       type: String,
-      enum: races,
+      enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
       trim: true,
     },
     tutoringLevels: [
       {
         type: String,
-        enum: tutoringLevels,
+        enum: [
+          'Pre-School / Montessori',
+          'Primary School (Grades 1-5)',
+          'Ordinary Level (O/L) (Grades 6-11)',
+          'Advanced Level (A/L) (Grades 12-13)',
+          'International Syllabus (Cambridge, Edexcel, IB)',
+          'Undergraduate',
+          'Diploma / Degree',
+          'Language (e.g., English, French, Japanese)',
+          'Computing (e.g., Programming, Graphic Design)',
+          'Music & Arts',
+          'Special Skills',
+        ],
       },
     ],
     preferredLocations: [
       {
         type: String,
-        enum: preferredLocations,
+        enum: [
+          'Kollupitiya (Colombo 3)',
+          'Bambalapitiya (Colombo 4)',
+          'Havelock Town (Colombo 5)',
+          'Wellawatte (Colombo 6)',
+          'Cinnamon Gardens (Colombo 7)',
+          'Borella (Colombo 8)',
+          'Dehiwala',
+          'Mount Lavinia',
+          'Nugegoda',
+          'Rajagiriya',
+          'Kotte',
+          'Battaramulla',
+          'Malabe',
+          'Moratuwa',
+          'Gampaha',
+          'Negombo',
+          'Kadawatha',
+          'Kiribathgoda',
+          'Kelaniya',
+          'Wattala',
+          'Ja-Ela',
+          'Kalutara',
+          'Panadura',
+          'Horana',
+          'Wadduwa',
+          'Kandy',
+          'Matale',
+          'Nuwara Eliya',
+          'Galle',
+          'Matara',
+          'Hambantota',
+          'Kurunegala',
+          'Puttalam',
+          'Chilaw',
+          'Ratnapura',
+          'Kegalle',
+          'Badulla',
+          'Bandarawela',
+          'Anuradhapura',
+          'Polonnaruwa',
+          'Jaffna',
+          'Vavuniya',
+          'Trincomalee',
+          'Batticaloa',
+          'No Preference',
+        ],
       },
     ],
     tutorType: {
@@ -171,7 +221,7 @@ const userSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: highestEducationLevels,
+      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL'],
       trim: true,
     },
     yearsExperience: {
@@ -224,7 +274,7 @@ const userSchema = mongoose.Schema(
     },
     tutorMediums: {
       type: [String],
-      enum: tutorMediums,
+      enum: ['Sinhala', 'English', 'Tamil'],
       default: undefined,
     },
     avatar: {
