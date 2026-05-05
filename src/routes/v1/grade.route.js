@@ -12,6 +12,7 @@ router
   .get(validate(gradeValidation.getGrades), gradeController.getGrades);
 
 router.post('/subjects-by-grades', validate(gradeValidation.getSubjectsForGrades), gradeController.getSubjectsForGrades);
+router.get('/with-counts', gradeController.getGradesWithCounts);
 
 router
   .route('/:gradeId')

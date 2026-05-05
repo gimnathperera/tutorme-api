@@ -58,6 +58,36 @@ const getSubjectsForGrades = async (gradeIds) => {
   return Array.from(subjectMap.values());
 };
 
+const getGradesWithTuitionRateCounts = async () => {
+  const grades = await Grade.aggregate([
+    {
+      $lookup: {
+        from: 'tuitionrates',
+        localField: '_id',
+        foreignField: 'grade',
+        as: 'tuitionRates',
+      },
+    },
+    {
+      $addFields: {
+        tuitionRateCount: { $size: '$tuitionRates' },
+      },
+    },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        tuitionRateCount: 1,
+      },
+    },
+    {
+      $sort: { title: 1 },
+    },
+  ]);
+
+  return grades;
+};
+
 /**
  * Update grade by id
  * @param {ObjectId} gradeId
@@ -96,6 +126,7 @@ module.exports = {
   queryGrades,
   getGradeById,
   getSubjectsForGrades,
+  getGradesWithTuitionRateCounts,
   updateGradeById,
   deleteGradeById,
 };

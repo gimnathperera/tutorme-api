@@ -2,6 +2,18 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
+const {
+  tutorTypes,
+  genders,
+  nationalities,
+  races,
+  tutorStatuses,
+  classTypes,
+  tutoringLevels,
+  preferredLocations,
+  tutorMediums,
+  highestEducationLevels,
+} = require('../config/enums');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -67,7 +79,7 @@ const tutorSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ['Male', 'Female'],
+      enum: genders,
       required: true,
     },
     age: {
@@ -76,110 +88,45 @@ const tutorSchema = mongoose.Schema(
     },
     nationality: {
       type: String,
-      enum: ['Sri Lankan', 'Others'],
+      enum: nationalities,
       required: true,
     },
     race: {
       type: String,
-      enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
+      enum: races,
       required: true,
     },
 
     status: {
       type: String,
-      enum: ['pending', 'approved', 'rejected', 'suspended'],
+      enum: tutorStatuses,
       default: 'pending',
     },
 
     classType: [
       {
         type: String,
-        enum: [
-          'Online - Individual',
-          'Online - Group',
-          'Physical - Individual',
-          'Physical - Group',
-          'In-Person - Individual',
-          'In-Person - Group',
-        ],
+        enum: classTypes,
       },
     ],
 
     tutoringLevels: [
       {
         type: String,
-        enum: [
-          'Pre-School / Montessori',
-          'Primary School (Grades 1-5)',
-          'Ordinary Level (O/L) (Grades 6-11)',
-          'Advanced Level (A/L) (Grades 12-13)',
-          'International Syllabus (Cambridge, Edexcel, IB)',
-          'Undergraduate',
-          'Diploma / Degree',
-          'Language (e.g., English, French, Japanese)',
-          'Computing (e.g., Programming, Graphic Design)',
-          'Music & Arts',
-          'Special Skills',
-        ],
+        enum: tutoringLevels,
       },
     ],
 
     preferredLocations: [
       {
         type: String,
-        enum: [
-          'Kollupitiya (Colombo 3)',
-          'Bambalapitiya (Colombo 4)',
-          'Havelock Town (Colombo 5)',
-          'Wellawatte (Colombo 6)',
-          'Cinnamon Gardens (Colombo 7)',
-          'Borella (Colombo 8)',
-          'Dehiwala',
-          'Mount Lavinia',
-          'Nugegoda',
-          'Rajagiriya',
-          'Kotte',
-          'Battaramulla',
-          'Malabe',
-          'Moratuwa',
-          'Gampaha',
-          'Negombo',
-          'Kadawatha',
-          'Kiribathgoda',
-          'Kelaniya',
-          'Wattala',
-          'Ja-Ela',
-          'Kalutara',
-          'Panadura',
-          'Horana',
-          'Wadduwa',
-          'Kandy',
-          'Matale',
-          'Nuwara Eliya',
-          'Galle',
-          'Matara',
-          'Hambantota',
-          'Kurunegala',
-          'Puttalam',
-          'Chilaw',
-          'Ratnapura',
-          'Kegalle',
-          'Badulla',
-          'Bandarawela',
-          'Anuradhapura',
-          'Polonnaruwa',
-          'Jaffna',
-          'Vavuniya',
-          'Trincomalee',
-          'Batticaloa',
-          'No Preference',
-        ],
+        enum: preferredLocations,
         required: true,
       },
     ],
     tutorMediums: {
       type: [String],
-      enum: ['Sinhala', 'English', 'Tamil'],
+      enum: tutorMediums,
       required: true,
     },
     subjects: [
@@ -198,20 +145,7 @@ const tutorSchema = mongoose.Schema(
     tutorType: [
       {
         type: String,
-        enum: [
-          'Private Tutor',
-          'Government Teacher',
-          'University Student',
-          'Coach',
-          'International School Teacher',
-          'University Lecturer',
-          'Full-Time',
-          'Part-Time',
-          'Online',
-          'School Teacher Tutors',
-          'Group Tutors',
-          'Exam Coaches',
-        ],
+        enum: tutorTypes,
         required: true,
       },
     ],
@@ -224,7 +158,7 @@ const tutorSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL'],
+      enum: highestEducationLevels,
       required: true,
     },
     academicDetails: {

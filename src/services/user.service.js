@@ -7,6 +7,26 @@ const { normalizeUserProfileFields } = require('../utils/availability');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildUserSearchFilter = (filter = {}) => {
+  const normalizedFilter = { ...filter };
+  const searchTerm = typeof normalizedFilter.search === 'string' ? normalizedFilter.search.trim() : '';
+
+  delete normalizedFilter.search;
+
+  if (!searchTerm) {
+    return normalizedFilter;
+  }
+
+  const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+
+  return {
+    ...normalizedFilter,
+    $or: [{ name: searchRegex }, { email: searchRegex }],
+  };
+};
+
 /**
  * Create a user
  * @param {Object} userBody
@@ -31,7 +51,7 @@ const createUser = async (userBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryUsers = async (filter, options) => {
-  const users = await User.paginate(filter, options);
+  const users = await User.paginate(buildUserSearchFilter(filter), options);
   return users;
 };
 

@@ -1,3 +1,5 @@
+const { tutorTypes } = require('./enums');
+
 const tutorStatus = {
   PENDING: 'pending',
   APPROVED: 'approved',
@@ -6,4 +8,5 @@ const tutorStatus = {
 
 module.exports = {
   tutorStatus,
+  tutorTypes,
 };

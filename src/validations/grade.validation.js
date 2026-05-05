@@ -18,6 +18,10 @@ const getGrades = {
   }),
 };
 
+const getGradesWithCounts = {
+  query: Joi.object().keys({}),
+};
+
 const getGrade = {
   params: Joi.object().keys({
     gradeId: Joi.string().custom((value, helpers) => {
@@ -77,6 +81,7 @@ const deleteGrade = {
 module.exports = {
   createGrade,
   getGrades,
+  getGradesWithCounts,
   getGrade,
   getSubjectsForGrades,
   updateGrade,
