@@ -14,7 +14,7 @@ const getTutorStatusFromUser = (status) => {
 };
 
 const getTutorCertificatesFromUser = (user, tutor) => {
-  if (!Array.isArray(user.certificatesAndQualifications)) {
+  if (!Array.isArray(user.certificatesAndQualifications) || user.certificatesAndQualifications.length === 0) {
     return undefined;
   }
 
@@ -30,6 +30,16 @@ const getTutorCertificatesFromUser = (user, tutor) => {
   });
 };
 
+const getUserCertificatesFromTutor = (tutor) => {
+  if (!Array.isArray(tutor.certificatesAndQualifications)) {
+    return undefined;
+  }
+
+  return tutor.certificatesAndQualifications
+    .map((certificate) => (typeof certificate === 'string' ? certificate : certificate.url))
+    .filter(Boolean);
+};
+
 const removeUndefinedValues = (payload) =>
   Object.entries(payload).reduce((cleanPayload, [key, value]) => {
     if (value !== undefined) {
@@ -38,6 +48,25 @@ const removeUndefinedValues = (payload) =>
 
     return cleanPayload;
   }, {});
+
+const getFilledArray = (value) => (Array.isArray(value) && value.length > 0 ? value : undefined);
+
+const getFilledString = (value) => (typeof value === 'string' && value.trim().length > 0 ? value : undefined);
+
+const hasOnlineClassType = (classType) =>
+  Array.isArray(classType) && classType.some((type) => typeof type === 'string' && type.startsWith('Online'));
+
+const getPreferredLocationsFromUser = (user) => {
+  if (!Array.isArray(user.preferredLocations)) {
+    return undefined;
+  }
+
+  if (user.preferredLocations.length > 0 || hasOnlineClassType(user.classType)) {
+    return user.preferredLocations;
+  }
+
+  return undefined;
+};
 
 const getTutorLinkedUser = async (tutor) => {
   if (tutor.userId) {
@@ -68,6 +97,29 @@ const syncUserFromTutor = async (tutor) => {
     phoneNumber: tutor.contactNumber,
     status: tutor.status,
     tutorId: tutor._id,
+    birthday: tutor.dateOfBirth,
+    age: tutor.age,
+    gender: tutor.gender,
+    nationality: tutor.nationality,
+    race: tutor.race,
+    classType: tutor.classType,
+    tutoringLevels: tutor.tutoringLevels,
+    preferredLocations: tutor.preferredLocations,
+    tutorMediums: tutor.tutorMediums,
+    grades: tutor.grades,
+    subjects: tutor.subjects,
+    tutorType: tutor.tutorType,
+    highestEducation: tutor.highestEducation,
+    yearsExperience: tutor.yearsExperience,
+    academicDetails: tutor.academicDetails,
+    teachingSummary: tutor.teachingSummary,
+    studentResults: tutor.studentResults,
+    sellingPoints: tutor.sellingPoints,
+    certificatesAndQualifications: getUserCertificatesFromTutor(tutor),
+    language: tutor.language,
+    timeZone: tutor.timeZone,
+    rate: tutor.rate,
+    availability: tutor.availability,
   };
 
   let user;
@@ -127,15 +179,19 @@ const syncTutorFromUser = async (user) => {
     age: user.age,
     nationality: user.nationality,
     race: user.race,
-    tutoringLevels: user.tutoringLevels,
-    preferredLocations: user.preferredLocations,
-    tutorMediums: user.tutorMediums,
-    grades: user.grades,
-    subjects: user.subjects,
-    tutorType: user.tutorType,
+    classType: getFilledArray(user.classType),
+    tutoringLevels: getFilledArray(user.tutoringLevels),
+    preferredLocations: getPreferredLocationsFromUser(user),
+    tutorMediums: getFilledArray(user.tutorMediums),
+    grades: getFilledArray(user.grades),
+    subjects: getFilledArray(user.subjects),
+    tutorType: getFilledArray(user.tutorType),
     highestEducation: user.highestEducation,
     yearsExperience: user.yearsExperience,
-    academicDetails: user.academicDetails,
+    academicDetails: getFilledString(user.academicDetails),
+    teachingSummary: getFilledString(user.teachingSummary),
+    studentResults: getFilledString(user.studentResults),
+    sellingPoints: getFilledString(user.sellingPoints),
     certificatesAndQualifications: getTutorCertificatesFromUser(user, tutor),
     language: user.language,
     timeZone: user.timeZone,

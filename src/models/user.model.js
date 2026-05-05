@@ -156,6 +156,12 @@ const userSchema = mongoose.Schema(
         ],
       },
     ],
+    classType: [
+      {
+        type: String,
+        enum: ['Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group'],
+      },
+    ],
     preferredLocations: [
       {
         type: String,
@@ -247,6 +253,24 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 500,
+      default: '',
+    },
+    teachingSummary: {
+      type: String,
+      trim: true,
+      maxlength: 750,
+      default: '',
+    },
+    studentResults: {
+      type: String,
+      trim: true,
+      maxlength: 750,
+      default: '',
+    },
+    sellingPoints: {
+      type: String,
+      trim: true,
+      maxlength: 750,
       default: '',
     },
     certificatesAndQualifications: {
