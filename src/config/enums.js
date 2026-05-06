@@ -19,7 +19,7 @@ const races = ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'];
 
 const tutorStatuses = ['pending', 'approved', 'rejected', 'suspended'];
 
-const requestTutorStatuses = ['Pending', 'Approved', 'Tutor Assigned'];
+const requestTutorStatuses = ['Pending', 'Rejected'];
 
 const classTypes = [
   'Online - Individual',

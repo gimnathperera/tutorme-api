@@ -46,6 +46,7 @@ const requestTutorSchema = mongoose.Schema(
       type: String,
       enum: requestTutorStatuses,
       required: true,
+      default: 'Pending',
     },
     phoneNumber: {
       type: String,
