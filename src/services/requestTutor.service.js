@@ -1,8 +1,10 @@
 const httpStatus = require('http-status');
+const mongoose = require('mongoose');
 const { RequestTutor, Tutor, Grade, Subject } = require('../models');
 const ApiError = require('../utils/ApiError');
 const emailService = require('./email.service');
 const logger = require('../config/logger');
+const config = require('../config/config');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const toArray = (value) => (Array.isArray(value) ? value : [value]);
@@ -125,6 +127,316 @@ const buildTutorRequestQuery = (filter = {}) => {
   return query;
 };
 
+const formatAvailabilitySlot = (slot) => `${slot.day}: ${slot.start} - ${slot.end}`;
+
+const resolveGradeDoc = async (gradeValue) => {
+  if (!gradeValue) {
+    return null;
+  }
+
+  if (mongoose.Types.ObjectId.isValid(gradeValue)) {
+    const byId = await Grade.findById(gradeValue).select('title').lean();
+    if (byId) {
+      return byId;
+    }
+  }
+
+  return Grade.findOne({ title: gradeValue }).select('title').lean();
+};
+
+const resolveSubjectDoc = async (subjectValue) => {
+  if (!subjectValue) {
+    return null;
+  }
+
+  if (mongoose.Types.ObjectId.isValid(subjectValue)) {
+    const byId = await Subject.findById(subjectValue).select('title').lean();
+    if (byId) {
+      return byId;
+    }
+  }
+
+  return Subject.findOne({ title: subjectValue }).select('title').lean();
+};
+
+const buildTutorMatchQuery = (gradeDoc, subjectDoc, requestTutor, tutorBlock) => {
+  const query = {
+    status: 'approved',
+  };
+
+  if (gradeDoc) {
+    query.grades = gradeDoc._id;
+  }
+
+  if (requestTutor.medium) {
+    query.tutorMediums = requestTutor.medium;
+  }
+
+  if (subjectDoc) {
+    query.subjects = subjectDoc._id;
+  }
+
+  if (tutorBlock.preferredTutorType) {
+    query.tutorType = tutorBlock.preferredTutorType;
+  }
+
+  if (tutorBlock.preferredClassType) {
+    query.classType = tutorBlock.preferredClassType;
+  }
+
+  return query;
+};
+
+const buildTutorSummary = (tutor) => {
+  const availability = Array.isArray(tutor.availability) ? tutor.availability : [];
+
+  return {
+    id: tutor._id,
+    fullName: tutor.fullName,
+    contactNumber: tutor.contactNumber,
+    email: tutor.email,
+    tutorType: tutor.tutorType || [],
+    tutorMediums: tutor.tutorMediums || [],
+    preferredLocations: tutor.preferredLocations || [],
+    yearsExperience: tutor.yearsExperience,
+    highestEducation: tutor.highestEducation,
+    academicDetails: tutor.academicDetails || '',
+    teachingSummary: tutor.teachingSummary || '',
+    studentResults: tutor.studentResults || '',
+    sellingPoints: tutor.sellingPoints || '',
+    language: tutor.language || '',
+    timeZone: tutor.timeZone || '',
+    rate: tutor.rate || '',
+    subjects: Array.isArray(tutor.subjects) ? tutor.subjects.map((subject) => subject.title || subject) : [],
+    grades: Array.isArray(tutor.grades) ? tutor.grades.map((grade) => grade.title || grade) : [],
+    availability: availability.map(formatAvailabilitySlot),
+    availabilityCount: availability.length,
+  };
+};
+
+const buildTutorRequestMatchReport = async (requestTutor) => {
+  const [gradeDoc, blockSubjectDocs] = await Promise.all([
+    resolveGradeDoc(requestTutor.grade),
+    Promise.all(
+      (requestTutor.tutors || []).map(async (tutorBlock) => {
+        const subjectDoc = await resolveSubjectDoc(tutorBlock.subject);
+        return {
+          tutorBlock,
+          subjectTitle: subjectDoc ? subjectDoc.title : tutorBlock.subject || 'N/A',
+          subjectDoc,
+        };
+      })
+    ),
+  ]);
+
+  const gradeTitle = gradeDoc ? gradeDoc.title : requestTutor.grade || 'N/A';
+
+  const blocks = await Promise.all(
+    blockSubjectDocs.map(async ({ tutorBlock, subjectTitle, subjectDoc }) => {
+      const tutors = await Tutor.find(buildTutorMatchQuery(gradeDoc, subjectDoc, requestTutor, tutorBlock))
+        .populate('grades', 'title')
+        .populate('subjects', 'title')
+        .select(
+          'fullName contactNumber email tutorType tutorMediums preferredLocations yearsExperience highestEducation academicDetails teachingSummary studentResults sellingPoints language timeZone rate availability grades subjects'
+        )
+        .lean();
+
+      const matchedTutors = tutors
+        .map((tutor) => buildTutorSummary(tutor))
+        .sort((left, right) => {
+          if (right.availabilityCount !== left.availabilityCount) {
+            return right.availabilityCount - left.availabilityCount;
+          }
+
+          return (right.yearsExperience || 0) - (left.yearsExperience || 0);
+        });
+
+      return {
+        subject: subjectTitle,
+        preferredTutorType: tutorBlock.preferredTutorType,
+        preferredClassType: tutorBlock.preferredClassType,
+        duration: tutorBlock.duration,
+        frequency: tutorBlock.frequency,
+        matchedTutors,
+      };
+    })
+  );
+
+  const adminEmail = config.email.admin;
+  const requestSummary = {
+    name: requestTutor.name,
+    email: requestTutor.email,
+    phoneNumber: requestTutor.phoneNumber,
+    city: requestTutor.city,
+    district: requestTutor.district,
+    medium: requestTutor.medium,
+    grade: gradeTitle,
+    status: requestTutor.status,
+  };
+  const escapeHtml = (value) =>
+    String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  const escapeMultiline = (value) => escapeHtml(value).replace(/\n/g, '<br/>').replace(/\r/g, '');
+
+  const formatArrayCell = (values) => {
+    const items = Array.isArray(values) ? values : [];
+    return items.length ? items.map((item) => escapeHtml(item)).join('<br/>') : 'N/A';
+  };
+
+  const tutorRow = (tutor, index) => `
+    <tr>
+      <td>
+        <div class="tutor-name">${index + 1}. ${escapeHtml(tutor.fullName)}</div>
+        <div class="muted">${escapeHtml(tutor.rate || 'N/A')}</div>
+      </td>
+      <td>${escapeHtml(tutor.contactNumber || 'N/A')}</td>
+      <td>${escapeHtml(tutor.email || 'N/A')}</td>
+      <td>${formatArrayCell(tutor.tutorType)}</td>
+      <td>${formatArrayCell(tutor.tutorMediums)}</td>
+      <td>${escapeHtml(tutor.highestEducation || 'N/A')}</td>
+      <td>${escapeHtml(tutor.yearsExperience)}</td>
+      <td>${formatArrayCell(tutor.preferredLocations)}</td>
+      <td>${formatArrayCell(tutor.grades)}</td>
+      <td>${formatArrayCell(tutor.subjects)}</td>
+      <td>${formatArrayCell(tutor.availability)}</td>
+      <td>${escapeMultiline(tutor.academicDetails || 'N/A')}</td>
+      <td>${escapeMultiline(tutor.teachingSummary || 'N/A')}</td>
+      <td>${escapeMultiline(tutor.studentResults || 'N/A')}</td>
+      <td>${escapeMultiline(tutor.sellingPoints || 'N/A')}</td>
+      <td>${escapeHtml(tutor.language || 'N/A')}</td>
+      <td>${escapeHtml(tutor.timeZone || 'N/A')}</td>
+    </tr>
+  `;
+
+  const blockSection = (block, index) => `
+    <section class="block-card">
+      <div class="block-header">
+        <div>
+          <div class="eyebrow">Request Block ${index + 1}</div>
+          <h2>${escapeHtml(block.subject)}</h2>
+        </div>
+        <div class="pill">${block.matchedTutors.length} matched tutor(s)</div>
+      </div>
+      <div class="grid compact">
+        <div><span class="label">Preferred Tutor Type</span><div>${escapeHtml(block.preferredTutorType)}</div></div>
+        <div><span class="label">Preferred Class Type</span><div>${escapeHtml(block.preferredClassType)}</div></div>
+        <div><span class="label">Duration</span><div>${escapeHtml(block.duration)}</div></div>
+        <div><span class="label">Frequency</span><div>${escapeHtml(block.frequency)}</div></div>
+      </div>
+      ${
+        block.matchedTutors.length
+          ? `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tutor</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Tutor Type</th>
+                    <th>Mediums</th>
+                    <th>Highest Education</th>
+                    <th>Experience</th>
+                    <th>Locations</th>
+                    <th>Grades</th>
+                    <th>Subjects</th>
+                    <th>Availability</th>
+                    <th>Academic Details</th>
+                    <th>Teaching Summary</th>
+                    <th>Student Results</th>
+                    <th>Selling Points</th>
+                    <th>Language</th>
+                    <th>Time Zone</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${block.matchedTutors.map((tutor, tutorIndex) => tutorRow(tutor, tutorIndex)).join('')}
+                </tbody>
+              </table>
+            </div>
+          `
+          : '<div class="empty-state">No tutors matched this block.</div>'
+      }
+    </section>
+  `;
+
+  const html = `
+    <div style="background:#f5f7fb;padding:32px 0;font-family:Arial,sans-serif;color:#111827;">
+      <style>
+        .report-shell { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+        .report-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); }
+        .report-header { background: linear-gradient(135deg,#111827,#334155); color: #fff; padding: 28px 32px; }
+        .report-header h1 { margin: 8px 0 0; font-size: 28px; line-height: 1.2; }
+        .report-body { padding: 28px 32px; background: #fff; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 16px; margin-bottom: 28px; }
+        .block-card { border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-top: 20px; background: #fafafa; }
+        .block-header { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 16px; }
+        .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #6b7280; }
+        .pill { background: #111827; color: #fff; border-radius: 999px; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+        .grid.compact { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin-bottom: 16px; }
+        .label { display:block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+        .muted { color: #6b7280; font-size: 12px; }
+        .empty-state { padding: 16px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; color: #9a3412; }
+        .table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; }
+        table { width: 100%; border-collapse: collapse; min-width: 1500px; }
+        thead th { background: #f8fafc; position: sticky; top: 0; z-index: 1; }
+        th, td { border-bottom: 1px solid #e5e7eb; padding: 12px 14px; vertical-align: top; text-align: left; font-size: 13px; line-height: 1.5; }
+        th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
+        tbody tr:nth-child(even) { background: #fcfcfd; }
+        .tutor-name { font-weight: 700; color: #111827; }
+      </style>
+      <div class="report-shell">
+        <div class="report-card">
+          <div class="report-header">
+            <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;">Tutor Request Match Report</div>
+            <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;">${escapeHtml(requestSummary.name)}</h1>
+            <p style="margin:10px 0 0;opacity:.85;">Automatically matched tutors based on request criteria and tutor profile availability.</p>
+          </div>
+          <div class="report-body">
+            <div class="summary-grid">
+              <div><div class="label">Request ID</div><div>${escapeHtml(requestTutor.id || requestTutor._id)}</div></div>
+              <div><div class="label">Requester Email</div><div>${escapeHtml(requestSummary.email)}</div></div>
+              <div><div class="label">Phone</div><div>${escapeHtml(requestSummary.phoneNumber)}</div></div>
+              <div><div class="label">Location</div><div>${escapeHtml(
+                `${requestSummary.city}, ${requestSummary.district}`
+              )}</div></div>
+              <div><div class="label">Medium</div><div>${escapeHtml(requestSummary.medium)}</div></div>
+              <div><div class="label">Grade</div><div>${escapeHtml(requestSummary.grade)}</div></div>
+            </div>
+
+            ${blocks.map((block, index) => blockSection(block, index)).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const text = [
+    'Tutor Request Match Report',
+    `Request ID: ${requestTutor.id || requestTutor._id}`,
+    `Requester: ${requestSummary.name}`,
+    `Email: ${requestSummary.email}`,
+    `Phone: ${requestSummary.phoneNumber}`,
+    `Location: ${requestSummary.city}, ${requestSummary.district}`,
+    `Medium: ${requestSummary.medium}`,
+    `Grade: ${requestSummary.grade}`,
+    `Status: ${requestSummary.status}`,
+  ].join('\n');
+
+  return {
+    adminEmail,
+    requestSummary,
+    blocks,
+    text,
+    html,
+  };
+};
+
 const sendAcknowledgement = async (requestTutorBody) => {
   try {
     await emailService.sendAcknowledgement(requestTutorBody);
@@ -191,6 +503,29 @@ const queryTutorsRequests = async (filter, options) => {
  */
 const getRequestTutorById = async (id) => {
   return RequestTutor.findById(id);
+};
+
+const sendTutorMatchReportToAdmin = async (requestTutorId) => {
+  const requestTutorDoc = await getRequestTutorById(requestTutorId);
+
+  if (!requestTutorDoc) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+  }
+
+  const report = await buildTutorRequestMatchReport(requestTutorDoc);
+  const subject = `Tutor Request Match Report - ${report.requestSummary.name}`;
+
+  await emailService.sendEmail(report.adminEmail, subject, report.text, report.html);
+
+  return {
+    message: 'Tutor request match report sent to admin',
+    adminEmail: report.adminEmail,
+    requestTutorId: requestTutorDoc.id,
+    matchedBlocks: report.blocks.map((block) => ({
+      subject: block.subject,
+      matchedTutors: block.matchedTutors.length,
+    })),
+  };
 };
 
 /**
@@ -287,4 +622,5 @@ module.exports = {
   deleteTutorRequestById,
   updateStatusById,
   updateAssignedTutor,
+  sendTutorMatchReportToAdmin,
 };

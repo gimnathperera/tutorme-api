@@ -64,6 +64,11 @@ const updateAssignedTutor = catchAsync(async (req, res) => {
   res.send(updated);
 });
 
+const sendTutorMatchReport = catchAsync(async (req, res) => {
+  const result = await requestTutorService.sendTutorMatchReportToAdmin(req.params.requestTutorId);
+  res.send(result);
+});
+
 module.exports = {
   createTutorRequest,
   getTutorRequests,
@@ -71,4 +76,5 @@ module.exports = {
   deleteTutor,
   updateStatus,
   updateAssignedTutor,
+  sendTutorMatchReport,
 };

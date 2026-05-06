@@ -207,6 +207,19 @@ const updateAssignedTutor = {
   }),
 };
 
+const sendTutorMatchReport = {
+  params: Joi.object().keys({
+    requestTutorId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid request tutor ID');
+        }
+        return value;
+      })
+      .required(),
+  }),
+};
+
 module.exports = {
   createRequestTutor,
   getTutors,
@@ -214,4 +227,5 @@ module.exports = {
   deleteTutor,
   updateStatus,
   updateAssignedTutor,
+  sendTutorMatchReport,
 };

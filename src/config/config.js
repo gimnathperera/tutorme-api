@@ -23,6 +23,7 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    ADMIN_EMAIL: Joi.string().email().description('the admin email that receives tutor request match reports'),
   })
   .unknown();
 
@@ -65,5 +66,6 @@ module.exports = {
       },
     },
     from: `"Tuition Lanka" <${process.env.EMAIL_FROM}>`,
+    admin: envVars.ADMIN_EMAIL || envVars.EMAIL_FROM,
   },
 };
