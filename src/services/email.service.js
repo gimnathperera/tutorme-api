@@ -19,10 +19,18 @@ if (config.env !== 'test') {
  * @param {string} text
  * @returns {Promise}
  */
-const sendEmail = async (to, subject, text) => {
-  const msg = { from: config.email.from, to, subject, text };
+const sendEmail = async (to, subject, text, html) => {
+  const msg = { from: config.email.from, to, subject, text, html };
   await transport.sendMail(msg);
 };
+
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 /**
  * Send reset password email (HTML + Text)
@@ -265,6 +273,88 @@ Tuition Lanka – Learn Better, Achieve More
   } catch (err) {
     logger.error('Failed to send acknowledgement email:', err);
     throw new Error('Acknowledgement email failed');
+  }
+};
+
+/**
+ * Send tutor request rejection email
+ * @param {string} to - Requester's email address
+ * @param {string} requesterName - Requester's name
+ * @param {string} rejectionReason - Admin rejection reason
+ * @param {Object} requestTutorBody - Original request payload
+ * @returns {Promise}
+ */
+const sendRequestTutorRejectedEmail = async (to, requesterName, rejectionReason, requestTutorBody) => {
+  try {
+    const subject = 'Update on Your Tutor Request â€“ TuitionLanka';
+    const safeName = escapeHtml(requesterName || 'there');
+    const safeReason = escapeHtml(rejectionReason || 'No reason provided');
+    const safeCity = escapeHtml(requestTutorBody && requestTutorBody.city ? requestTutorBody.city : 'N/A');
+    const safeDistrict = escapeHtml(requestTutorBody && requestTutorBody.district ? requestTutorBody.district : 'N/A');
+    const safeGrade = escapeHtml(requestTutorBody && requestTutorBody.grade ? requestTutorBody.grade : 'N/A');
+
+    const text = `
+Dear ${requesterName || 'there'},
+
+We reviewed your tutor request and unfortunately we were unable to approve it at this time.
+
+Reason:
+${rejectionReason}
+
+Request details
+Name: ${requesterName || 'N/A'}
+City: ${requestTutorBody && requestTutorBody.city ? requestTutorBody.city : 'N/A'}
+District: ${requestTutorBody && requestTutorBody.district ? requestTutorBody.district : 'N/A'}
+Grade: ${requestTutorBody && requestTutorBody.grade ? requestTutorBody.grade : 'N/A'}
+
+If you would like to submit a new request in the future, you are welcome to do so with updated details.
+
+Regards,
+Tuition Lanka Team
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.7; max-width:600px; margin:0 auto;">
+        <div style="background-color:#dc2626; padding:24px 32px; border-radius:8px 8px 0 0;">
+          <h2 style="color:#ffffff; margin:0; font-size:22px;">Tutor Request Rejected</h2>
+        </div>
+        <div style="background-color:#f9fafb; padding:28px 32px; border:1px solid #e5e7eb; border-top:none; border-radius:0 0 8px 8px;">
+          <p>Dear <strong>${safeName}</strong>,</p>
+          <p>We reviewed your tutor request and unfortunately we were unable to approve it at this time.</p>
+
+          <div style="background-color:#fef2f2; border-left:4px solid #ef4444; padding:16px 20px; border-radius:4px; margin:20px 0;">
+            <p style="margin:0 0 8px 0; color:#7f1d1d;"><strong>Reason provided by our team:</strong></p>
+            <p style="margin:0; color:#991b1b; white-space:pre-wrap;">${safeReason}</p>
+          </div>
+
+          <h3 style="margin-top:24px;">Request details</h3>
+          <ul>
+            <li><strong>Name:</strong> ${safeName}</li>
+            <li><strong>City:</strong> ${safeCity}</li>
+            <li><strong>District:</strong> ${safeDistrict}</li>
+            <li><strong>Grade:</strong> ${safeGrade}</li>
+          </ul>
+
+          <p>If you would like to submit a new request in the future, you are welcome to do so with updated details.</p>
+
+          <p style="margin-top:28px;">
+            Regards,<br/>
+            <strong>Tuition Lanka Team</strong>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transport.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    logger.error(`Failed to send tutor request rejected email to ${to}:`, err);
+    throw new Error('Tutor request rejected email failed');
   }
 };
 /**
@@ -788,6 +878,7 @@ module.exports = {
   sendVerificationEmail,
   sendTemporaryPasswordEmail,
   sendAcknowledgement,
+  sendRequestTutorRejectedEmail,
   sendTutorAssignedToRequester,
   sendTutorAssignedToTutor,
   sendTutorRegistrationPendingEmail,

@@ -28,4 +28,12 @@ router
     requestTutorController.updateAssignedTutor
   );
 
+router
+  .route('/match-tutors/:requestTutorId')
+  .post(
+    auth('manageUsers'),
+    validate(requestTutorValidation.sendTutorMatchReport),
+    requestTutorController.sendTutorMatchReport
+  );
+
 module.exports = router;
