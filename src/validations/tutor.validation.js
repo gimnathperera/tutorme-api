@@ -86,58 +86,7 @@ const createTutor = {
         )
       )
       .optional(),
-    preferredLocations: Joi.array()
-      .items(
-        Joi.string().valid(
-          'Kollupitiya (Colombo 3)',
-          'Bambalapitiya (Colombo 4)',
-          'Havelock Town (Colombo 5)',
-          'Wellawatte (Colombo 6)',
-          'Cinnamon Gardens (Colombo 7)',
-          'Borella (Colombo 8)',
-          'Dehiwala',
-          'Mount Lavinia',
-          'Nugegoda',
-          'Rajagiriya',
-          'Kotte',
-          'Battaramulla',
-          'Malabe',
-          'Moratuwa',
-          'Gampaha',
-          'Negombo',
-          'Kadawatha',
-          'Kiribathgoda',
-          'Kelaniya',
-          'Wattala',
-          'Ja-Ela',
-          'Kalutara',
-          'Panadura',
-          'Horana',
-          'Wadduwa',
-          'Kandy',
-          'Matale',
-          'Nuwara Eliya',
-          'Galle',
-          'Matara',
-          'Hambantota',
-          'Kurunegala',
-          'Puttalam',
-          'Chilaw',
-          'Ratnapura',
-          'Kegalle',
-          'Badulla',
-          'Bandarawela',
-          'Anuradhapura',
-          'Polonnaruwa',
-          'Jaffna',
-          'Vavuniya',
-          'Trincomalee',
-          'Batticaloa',
-          'No Preference'
-        )
-      )
-      .min(1)
-      .required(),
+    preferredLocations: Joi.array().items(Joi.string()).min(1).required(),
 
     // 3. Academic Qualifications & Experience
     tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1).required().messages({
@@ -277,55 +226,7 @@ const updateTutor = {
         )
       ),
 
-      preferredLocations: Joi.array().items(
-        Joi.string().valid(
-          'Kollupitiya (Colombo 3)',
-          'Bambalapitiya (Colombo 4)',
-          'Havelock Town (Colombo 5)',
-          'Wellawatte (Colombo 6)',
-          'Cinnamon Gardens (Colombo 7)',
-          'Borella (Colombo 8)',
-          'Dehiwala',
-          'Mount Lavinia',
-          'Nugegoda',
-          'Rajagiriya',
-          'Kotte',
-          'Battaramulla',
-          'Malabe',
-          'Moratuwa',
-          'Gampaha',
-          'Negombo',
-          'Kadawatha',
-          'Kiribathgoda',
-          'Kelaniya',
-          'Wattala',
-          'Ja-Ela',
-          'Kalutara',
-          'Panadura',
-          'Horana',
-          'Wadduwa',
-          'Kandy',
-          'Matale',
-          'Nuwara Eliya',
-          'Galle',
-          'Matara',
-          'Hambantota',
-          'Kurunegala',
-          'Puttalam',
-          'Chilaw',
-          'Ratnapura',
-          'Kegalle',
-          'Badulla',
-          'Bandarawela',
-          'Anuradhapura',
-          'Polonnaruwa',
-          'Jaffna',
-          'Vavuniya',
-          'Trincomalee',
-          'Batticaloa',
-          'No Preference'
-        )
-      ),
+      preferredLocations: Joi.array().items(Joi.string()),
 
       // 3. Academic Qualifications & Experience
       tutorType: Joi.array()
