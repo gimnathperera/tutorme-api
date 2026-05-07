@@ -373,7 +373,7 @@ const sendAdminInviteEmail = async (to, name, token) => {
     const text = `
 Hello ${name},
 
-You have been added as an admin on TutorMe.
+You have been added as an admin on TuitionLanka.
 
 Please set your password using this link:
 ${resetUrl}
@@ -381,13 +381,13 @@ ${resetUrl}
 This link can be used only once and will expire soon.
 
 Regards,
-TutorMe Team
+TuitionLanka Team
 `;
 
     const html = `
       <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
         <p>Hello <strong>${name}</strong>,</p>
-        <p>You have been added as an <strong>admin</strong> on <strong>TutorMe</strong>.</p>
+        <p>You have been added as an <strong>admin</strong> on <strong>TuitionLanka</strong>.</p>
         <p>Please set your password by clicking the button below:</p>
         <p>
           <a href="${resetUrl}"
@@ -397,7 +397,7 @@ TutorMe Team
         </p>
         <p>If the button does not work, copy and paste this link into your browser:</p>
         <p style="word-break:break-all;">${resetUrl}</p>
-        <p>Regards,<br/>TutorMe Team</p>
+        <p>Regards,<br/>TuitionLanka Team</p>
       </div>
     `;
 
