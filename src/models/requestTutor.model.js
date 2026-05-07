@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
-const { tutorTypes } = require('../config/tutor');
 const { requestTutorStatuses } = require('../config/enums');
 
 const requestTutorSchema = mongoose.Schema(
@@ -62,7 +61,6 @@ const requestTutorSchema = mongoose.Schema(
         },
         preferredTutorType: {
           type: String,
-          enum: tutorTypes,
           required: true,
         },
         preferredClassType: {

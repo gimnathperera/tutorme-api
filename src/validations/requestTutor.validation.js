@@ -1,6 +1,5 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
-const { tutorTypes } = require('../config/tutor');
 const {
   requestTutorClassTypes,
   requestTutorStatuses,
@@ -54,13 +53,9 @@ const createRequestTutor = {
             'any.required': 'Subject is required',
           }),
           assignedTutor: Joi.string().trim().allow('', null).optional(),
-          preferredTutorType: Joi.string()
-            .valid(...tutorTypes)
-            .required()
-            .messages({
-              'any.only': 'Preferred Tutor Type must be one of the allowed values',
-              'any.required': 'Preferred Tutor Type is required',
-            }),
+          preferredTutorType: Joi.string().required().messages({
+            'any.required': 'Preferred Tutor Type is required',
+          }),
           preferredClassType: Joi.string()
             .valid('Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group')
             .required()
@@ -105,10 +100,7 @@ const getTutors = {
     phoneNumber: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     subject: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     assignedTutor: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
-    preferredTutorType: Joi.alternatives().try(
-      Joi.string().valid(...tutorTypes),
-      Joi.array().items(Joi.string().valid(...tutorTypes))
-    ),
+    preferredTutorType: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     preferredClassType: Joi.alternatives().try(
       Joi.string().valid(...requestTutorClassTypes),
       Joi.array().items(Joi.string().valid(...requestTutorClassTypes))

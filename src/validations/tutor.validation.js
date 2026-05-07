@@ -2,7 +2,6 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 const { password, objectId } = require('./custom.validation');
 const { parseAvailabilityInput } = require('../utils/availability');
-const { tutorTypes } = require('../config/tutor');
 
 const availabilityField = Joi.alternatives()
   .try(
@@ -94,14 +93,9 @@ const createTutor = {
     }),
     grades: Joi.array().items(Joi.string()).min(1).required(),
     subjects: Joi.array().items(Joi.string()).min(1).required(),
-    tutorType: Joi.array()
-      .items(Joi.string().valid(...tutorTypes))
-      .min(1)
-      .required(),
+    tutorType: Joi.array().items(Joi.string()).min(1).required(),
     yearsExperience: Joi.number().integer().min(0).max(50).required(),
-    highestEducation: Joi.string()
-      .valid('PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL')
-      .required(),
+    highestEducation: Joi.string().required(),
     academicDetails: Joi.string().allow('').max(1000),
 
     // 4. Tutor's Profile
@@ -229,22 +223,9 @@ const updateTutor = {
       preferredLocations: Joi.array().items(Joi.string()),
 
       // 3. Academic Qualifications & Experience
-      tutorType: Joi.array()
-        .items(Joi.string().valid(...tutorTypes))
-        .optional(),
+      tutorType: Joi.array().items(Joi.string()).optional(),
       yearsExperience: Joi.number().integer().min(0).max(50),
-      highestEducation: Joi.string().valid(
-        'PhD',
-        'Diploma',
-        'Masters',
-        'Bachelor Degree',
-        'Undergraduate',
-        'Diploma and Professional',
-        'JC/A Levels',
-        'Poly',
-        'AL',
-        'Others'
-      ),
+      highestEducation: Joi.string(),
       academicDetails: Joi.string().allow('').max(1000),
 
       // 4. Tutor's Profile

@@ -5,7 +5,6 @@ const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 const { userStatus } = require('../config/users');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
-const { tutorTypes } = require('../config/tutor');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -219,7 +218,6 @@ const userSchema = mongoose.Schema(
       type: [
         {
           type: String,
-          enum: tutorTypes,
           trim: true,
         },
       ],
@@ -227,7 +225,6 @@ const userSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL'],
       trim: true,
     },
     yearsExperience: {
