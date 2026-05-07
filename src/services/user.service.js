@@ -19,7 +19,10 @@ const buildUserSearchFilter = (filter = {}) => {
     return normalizedFilter;
   }
 
-  const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+  const searchRegex = {
+    $regex: escapeRegex(searchTerm),
+    $options: 'i',
+  };
 
   return {
     ...normalizedFilter,
@@ -76,13 +79,19 @@ const getUserByEmail = async (email) => {
 const tutorProfileFields = [
   'nationality',
   'race',
+  'classType',
   'tutoringLevels',
   'preferredLocations',
   'tutorType',
   'highestEducation',
   'yearsExperience',
   'tutorMediums',
+  'grades',
+  'subjects',
   'academicDetails',
+  'teachingSummary',
+  'studentResults',
+  'sellingPoints',
   'certificatesAndQualifications',
   'availability',
   'rate',

@@ -1,6 +1,13 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const { tutorTypes } = require('../config/tutor');
+const {
+  requestTutorClassTypes,
+  requestTutorStatuses,
+  sessionDurations,
+  sessionFrequencies,
+  tutorMediums,
+} = require('../config/enums');
 
 const createRequestTutor = {
   body: Joi.object().keys({
@@ -24,13 +31,15 @@ const createRequestTutor = {
         'string.pattern.base': 'Phone number must be digits only (7–15 characters)',
         'string.empty': 'Phone Number is required',
       }),
-    medium: Joi.string().valid('Sinhala', 'Tamil', 'English').required().messages({
-      'any.only': 'Medium must be one of the allowed values',
-      'any.required': 'Medium is required',
-    }),
-    status: Joi.string().valid('Pending', 'Approved', 'Tutor Assigned').required().messages({
-      'any.only': 'Status must be one of the allowed values',
-      'any.required': 'Status is required',
+    medium: Joi.string()
+      .valid(...tutorMediums)
+      .required()
+      .messages({
+        'any.only': 'Medium must be one of the allowed values',
+        'any.required': 'Medium is required',
+      }),
+    status: Joi.string().valid('Pending').default('Pending').messages({
+      'any.only': 'Status must be Pending',
     }),
     grade: Joi.string().trim().required().messages({
       'string.empty': 'Grade is required',
@@ -79,7 +88,39 @@ const createRequestTutor = {
 
 const getTutors = {
   query: Joi.object().keys({
-    name: Joi.string(),
+    search: Joi.string(),
+    name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    email: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    city: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    district: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    grade: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    medium: Joi.alternatives().try(
+      Joi.string().valid(...tutorMediums),
+      Joi.array().items(Joi.string().valid(...tutorMediums))
+    ),
+    status: Joi.alternatives().try(
+      Joi.string().valid(...requestTutorStatuses),
+      Joi.array().items(Joi.string().valid(...requestTutorStatuses))
+    ),
+    phoneNumber: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    subject: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    assignedTutor: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+    preferredTutorType: Joi.alternatives().try(
+      Joi.string().valid(...tutorTypes),
+      Joi.array().items(Joi.string().valid(...tutorTypes))
+    ),
+    preferredClassType: Joi.alternatives().try(
+      Joi.string().valid(...requestTutorClassTypes),
+      Joi.array().items(Joi.string().valid(...requestTutorClassTypes))
+    ),
+    duration: Joi.alternatives().try(
+      Joi.string().valid(...sessionDurations),
+      Joi.array().items(Joi.string().valid(...sessionDurations))
+    ),
+    frequency: Joi.alternatives().try(
+      Joi.string().valid(...sessionFrequencies),
+      Joi.array().items(Joi.string().valid(...sessionFrequencies))
+    ),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -110,10 +151,23 @@ const deleteTutor = {
 
 const updateStatus = {
   body: Joi.object().keys({
-    status: Joi.string().valid('Pending', 'Approved', 'Tutor Assigned').required().messages({
-      'any.only': 'Status must be one of the allowed values',
-      'any.required': 'Status is required',
-    }),
+    status: Joi.string()
+      .valid(...requestTutorStatuses)
+      .required()
+      .messages({
+        'any.only': 'Status must be one of the allowed values',
+        'any.required': 'Status is required',
+      }),
+    rejectionReason: Joi.string()
+      .trim()
+      .when('status', {
+        is: 'Rejected',
+        then: Joi.required().messages({
+          'string.empty': 'Rejection reason is required when rejecting a tutor request',
+          'any.required': 'Rejection reason is required when rejecting a tutor request',
+        }),
+        otherwise: Joi.optional().allow('', null),
+      }),
   }),
 };
 
@@ -147,6 +201,19 @@ const updateAssignedTutor = {
   }),
 };
 
+const sendTutorMatchReport = {
+  params: Joi.object().keys({
+    requestTutorId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid request tutor ID');
+        }
+        return value;
+      })
+      .required(),
+  }),
+};
+
 module.exports = {
   createRequestTutor,
   getTutors,
@@ -154,4 +221,5 @@ module.exports = {
   deleteTutor,
   updateStatus,
   updateAssignedTutor,
+  sendTutorMatchReport,
 };

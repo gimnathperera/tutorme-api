@@ -10,7 +10,23 @@ const createTutorRequest = catchAsync(async (req, res) => {
 });
 
 const getTutorRequests = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name']);
+  const filter = pick(req.query, [
+    'search',
+    'name',
+    'email',
+    'city',
+    'district',
+    'grade',
+    'medium',
+    'status',
+    'phoneNumber',
+    'subject',
+    'assignedTutor',
+    'preferredTutorType',
+    'preferredClassType',
+    'duration',
+    'frequency',
+  ]);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };
@@ -33,9 +49,9 @@ const deleteTutor = catchAsync(async (req, res) => {
 
 const updateStatus = catchAsync(async (req, res) => {
   const { requestTutorId } = req.params;
-  const { status } = req.body;
+  const { status, rejectionReason } = req.body;
 
-  const updated = await requestTutorService.updateStatusById(requestTutorId, status);
+  const updated = await requestTutorService.updateStatusById(requestTutorId, status, rejectionReason);
   res.send(updated);
 });
 
@@ -48,6 +64,11 @@ const updateAssignedTutor = catchAsync(async (req, res) => {
   res.send(updated);
 });
 
+const sendTutorMatchReport = catchAsync(async (req, res) => {
+  const result = await requestTutorService.sendTutorMatchReportToAdmin(req.params.requestTutorId);
+  res.send(result);
+});
+
 module.exports = {
   createTutorRequest,
   getTutorRequests,
@@ -55,4 +76,5 @@ module.exports = {
   deleteTutor,
   updateStatus,
   updateAssignedTutor,
+  sendTutorMatchReport,
 };
