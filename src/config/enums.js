@@ -109,20 +109,16 @@ const preferredLocations = [
 
 const tutorMediums = ['Sinhala', 'English', 'Tamil'];
 
-const highestEducationLevels = ['PhD', 'Masters', 'Bachelor Degree', 'Undergraduate', 'Diploma and Professional', 'AL'];
-
-const highestEducationLevelsExtended = [
+const highestEducationLevels = [
   'PhD',
-  'Diploma',
-  'Masters',
-  'Bachelor Degree',
+  'Masters Degree',
   'Undergraduate',
+  'Bachelor Degree',
   'Diploma and Professional',
-  'JC/A Levels',
-  'Poly',
-  'AL',
-  'Others',
+  'Advanced Level (A/L)',
 ];
+
+const highestEducationLevelsExtended = highestEducationLevels;
 
 const sessionDurations = ['30 Minutes', 'One Hour', 'Two Hours'];
 
