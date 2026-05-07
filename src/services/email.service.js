@@ -391,7 +391,7 @@ TuitionLanka Team
         <p>Please set your password by clicking the button below:</p>
         <p>
           <a href="${resetUrl}"
-             style="display:inline-block;background:#111827;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">
+             style="display:inline-block;background:#4F46E5;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">
             Set Password
           </a>
         </p>
