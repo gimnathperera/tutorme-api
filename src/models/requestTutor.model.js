@@ -1,13 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
-const {
-  tutorTypes,
-  tutorMediums,
-  requestTutorClassTypes,
-  requestTutorStatuses,
-  sessionDurations,
-  sessionFrequencies,
-} = require('../config/enums');
+const { requestTutorStatuses } = require('../config/enums');
 
 const requestTutorSchema = mongoose.Schema(
   {
@@ -39,7 +32,7 @@ const requestTutorSchema = mongoose.Schema(
     },
     medium: {
       type: String,
-      enum: tutorMediums,
+      enum: ['Sinhala', 'English', 'Tamil'],
       required: true,
     },
     status: {
@@ -68,22 +61,21 @@ const requestTutorSchema = mongoose.Schema(
         },
         preferredTutorType: {
           type: String,
-          enum: tutorTypes,
           required: true,
         },
         preferredClassType: {
           type: String,
-          enum: requestTutorClassTypes,
+          enum: ['Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group'],
           required: true,
         },
         duration: {
           type: String,
-          enum: sessionDurations,
+          enum: ['30 Minutes', 'One Hour', 'Two Hours'],
           required: true,
         },
         frequency: {
           type: String,
-          enum: sessionFrequencies,
+          enum: ['Once a Week', 'Twice a Week', 'Daily'],
           required: true,
         },
       },

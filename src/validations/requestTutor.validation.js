@@ -1,12 +1,11 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const {
-  tutorTypes,
-  tutorMediums,
   requestTutorClassTypes,
   requestTutorStatuses,
   sessionDurations,
   sessionFrequencies,
+  tutorMediums,
 } = require('../config/enums');
 
 const createRequestTutor = {
@@ -54,34 +53,24 @@ const createRequestTutor = {
             'any.required': 'Subject is required',
           }),
           assignedTutor: Joi.string().trim().allow('', null).optional(),
-          preferredTutorType: Joi.string()
-            .valid(...tutorTypes)
-            .required()
-            .messages({
-              'any.only': 'Preferred Tutor Type must be one of the allowed values',
-              'any.required': 'Preferred Tutor Type is required',
-            }),
+          preferredTutorType: Joi.string().required().messages({
+            'any.required': 'Preferred Tutor Type is required',
+          }),
           preferredClassType: Joi.string()
-            .valid(...requestTutorClassTypes)
+            .valid('Online - Individual', 'Online - Group', 'Physical - Individual', 'Physical - Group')
             .required()
             .messages({
               'any.only': 'Preferred Class Type must be one of the allowed values',
               'any.required': 'Preferred Class Type is required',
             }),
-          duration: Joi.string()
-            .valid(...sessionDurations)
-            .required()
-            .messages({
-              'any.only': 'Duration must be 30 Minutes, One Hour, or Two Hours',
-              'any.required': 'Duration is required',
-            }),
-          frequency: Joi.string()
-            .valid(...sessionFrequencies)
-            .required()
-            .messages({
-              'any.only': 'Frequency must be Once a Week, Twice a Week, or Daily',
-              'any.required': 'Frequency is required',
-            }),
+          duration: Joi.string().valid('30 Minutes', 'One Hour', 'Two Hours').required().messages({
+            'any.only': 'Duration must be 30 Minutes, One Hour, or Two Hours',
+            'any.required': 'Duration is required',
+          }),
+          frequency: Joi.string().valid('Once a Week', 'Twice a Week', 'Daily').required().messages({
+            'any.only': 'Frequency must be Once a Week, Twice a Week, or Daily',
+            'any.required': 'Frequency is required',
+          }),
         })
       )
       .min(1)
@@ -111,10 +100,7 @@ const getTutors = {
     phoneNumber: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     subject: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     assignedTutor: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
-    preferredTutorType: Joi.alternatives().try(
-      Joi.string().valid(...tutorTypes),
-      Joi.array().items(Joi.string().valid(...tutorTypes))
-    ),
+    preferredTutorType: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     preferredClassType: Joi.alternatives().try(
       Joi.string().valid(...requestTutorClassTypes),
       Joi.array().items(Joi.string().valid(...requestTutorClassTypes))

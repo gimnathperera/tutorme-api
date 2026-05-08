@@ -2,18 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { WEEK_DAYS, TIME_PATTERN, toMinutes } = require('../utils/availability');
-const {
-  tutorTypes,
-  genders,
-  nationalities,
-  races,
-  tutorStatuses,
-  classTypes,
-  tutoringLevels,
-  preferredLocations,
-  tutorMediums,
-  highestEducationLevels,
-} = require('../config/enums');
 
 const availabilitySlotSchema = new mongoose.Schema(
   {
@@ -79,7 +67,7 @@ const tutorSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: genders,
+      enum: ['Male', 'Female'],
       required: true,
     },
     age: {
@@ -88,45 +76,63 @@ const tutorSchema = mongoose.Schema(
     },
     nationality: {
       type: String,
-      enum: nationalities,
+      enum: ['Sri Lankan', 'Others'],
       required: true,
     },
     race: {
       type: String,
-      enum: races,
+      enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
       required: true,
     },
 
     status: {
       type: String,
-      enum: tutorStatuses,
+      enum: ['pending', 'approved', 'rejected', 'suspended'],
       default: 'pending',
     },
 
     classType: [
       {
         type: String,
-        enum: classTypes,
+        enum: [
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group',
+        ],
       },
     ],
 
     tutoringLevels: [
       {
         type: String,
-        enum: tutoringLevels,
+        enum: [
+          'Pre-School / Montessori',
+          'Primary School (Grades 1-5)',
+          'Ordinary Level (O/L) (Grades 6-11)',
+          'Advanced Level (A/L) (Grades 12-13)',
+          'International Syllabus (Cambridge, Edexcel, IB)',
+          'Undergraduate',
+          'Diploma / Degree',
+          'Language (e.g., English, French, Japanese)',
+          'Computing (e.g., Programming, Graphic Design)',
+          'Music & Arts',
+          'Special Skills',
+        ],
       },
     ],
 
     preferredLocations: [
       {
         type: String,
-        enum: preferredLocations,
         required: true,
       },
     ],
     tutorMediums: {
       type: [String],
-      enum: tutorMediums,
+      enum: ['Sinhala', 'English', 'Tamil'],
       required: true,
     },
     subjects: [
@@ -145,7 +151,6 @@ const tutorSchema = mongoose.Schema(
     tutorType: [
       {
         type: String,
-        enum: tutorTypes,
         required: true,
       },
     ],
@@ -158,7 +163,6 @@ const tutorSchema = mongoose.Schema(
     },
     highestEducation: {
       type: String,
-      enum: highestEducationLevels,
       required: true,
     },
     academicDetails: {

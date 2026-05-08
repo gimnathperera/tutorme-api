@@ -2,20 +2,6 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 const { password, objectId } = require('./custom.validation');
 const { parseAvailabilityInput } = require('../utils/availability');
-const {
-  tutorTypes,
-  genders,
-  nationalities,
-  races,
-  tutorStatuses,
-  classTypes,
-  classTypesExtended,
-  tutoringLevels,
-  preferredLocations,
-  tutorMediums,
-  highestEducationLevels,
-  highestEducationLevelsExtended,
-} = require('../config/enums');
 
 const availabilityField = Joi.alternatives()
   .try(
@@ -57,55 +43,59 @@ const createTutor = {
       'string.isoDate': 'Date of Birth must be in ISO format (YYYY-MM-DD)',
       'any.required': 'Date of Birth is required',
     }),
-    gender: Joi.string()
-      .valid(...genders)
-      .required()
-      .messages({
-        'any.only': 'Gender must be Male or Female',
-        'any.required': 'Gender is required',
-      }),
+    gender: Joi.string().valid('Male', 'Female').required().messages({
+      'any.only': 'Gender must be Male or Female',
+      'any.required': 'Gender is required',
+    }),
     age: Joi.number().integer().min(1).required().messages({
       'number.base': 'Age must be a number',
       'any.required': 'Age is required',
     }),
-    nationality: Joi.string()
-      .valid(...nationalities)
-      .required(),
-    race: Joi.string()
-      .valid(...races)
-      .required(),
+    nationality: Joi.string().valid('Sri Lankan', 'Others').required(),
+    race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').required(),
 
     // 2. Tutoring Preferences
     classType: Joi.array()
-      .items(Joi.string().valid(...classTypes))
+      .items(
+        Joi.string().valid(
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'In-Person - Individual',
+          'In-Person - Group'
+        )
+      )
       .min(1)
       .required(),
     tutoringLevels: Joi.array()
-      .items(Joi.string().valid(...tutoringLevels))
+      .items(
+        Joi.string().valid(
+          'Pre-School / Montessori',
+          'Primary School (Grades 1-5)',
+          'Ordinary Level (O/L) (Grades 6-11)',
+          'Advanced Level (A/L) (Grades 12-13)',
+          'International Syllabus (Cambridge, Edexcel, IB)',
+          'Undergraduate',
+          'Diploma / Degree',
+          'Language (e.g., English, French, Japanese)',
+          'Computing (e.g., Programming, Graphic Design)',
+          'Music & Arts',
+          'Special Skills'
+        )
+      )
       .optional(),
-    preferredLocations: Joi.array()
-      .items(Joi.string().valid(...preferredLocations))
-      .min(1)
-      .required(),
+    preferredLocations: Joi.array().items(Joi.string()).min(1).required(),
 
     // 3. Academic Qualifications & Experience
-    tutorMediums: Joi.array()
-      .items(Joi.string().valid(...tutorMediums))
-      .min(1)
-      .required()
-      .messages({
-        'array.min': 'Please select at least one medium.',
-      }),
+    tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1).required().messages({
+      'array.min': 'Please select at least one medium.',
+    }),
     grades: Joi.array().items(Joi.string()).min(1).required(),
     subjects: Joi.array().items(Joi.string()).min(1).required(),
-    tutorType: Joi.array()
-      .items(Joi.string().valid(...tutorTypes))
-      .min(1)
-      .required(),
+    tutorType: Joi.array().items(Joi.string()).min(1).required(),
     yearsExperience: Joi.number().integer().min(0).max(50).required(),
-    highestEducation: Joi.string()
-      .valid(...highestEducationLevels)
-      .required(),
+    highestEducation: Joi.string().required(),
     academicDetails: Joi.string().allow('').max(1000),
 
     // 4. Tutor's Profile
@@ -137,7 +127,7 @@ const createTutor = {
 const getTutors = {
   query: Joi.object().keys({
     search: Joi.string().allow(''),
-    status: Joi.string().valid(...tutorStatuses),
+    status: Joi.string().valid('pending', 'approved', 'rejected', 'suspended'),
     tutorType: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     preferredLocations: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
     gradeId: Joi.string().custom(objectId).optional(),
@@ -180,9 +170,7 @@ const updateTutor = {
       adminId: Joi.string().optional(),
 
       // 0. Status (admin-only)
-      status: Joi.string()
-        .valid(...tutorStatuses)
-        .optional(),
+      status: Joi.string().valid('pending', 'approved', 'rejected', 'suspended').optional(),
 
       // Custom rejection message (used when status is 'rejected')
       rejectionMessage: Joi.string().allow('').max(1000).optional(),
@@ -192,29 +180,52 @@ const updateTutor = {
       contactNumber: Joi.string().pattern(/^\d+$/).min(7).max(15),
       email: Joi.string().email(),
       dateOfBirth: Joi.string().isoDate(),
-      gender: Joi.string().valid(...genders),
+      gender: Joi.string().valid('Male', 'Female'),
       age: Joi.number().integer().min(1),
-      nationality: Joi.string().valid(...nationalities),
-      race: Joi.string().valid(...races),
+      nationality: Joi.string().valid('Sri Lankan', 'Others'),
+      race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'),
 
-      tutorMediums: Joi.array()
-        .items(Joi.string().valid(...tutorMediums))
-        .min(1),
+      tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1),
       grades: Joi.array().items(Joi.string()),
       subjects: Joi.array().items(Joi.string()),
 
       // 2. Tutoring Preferences
-      classType: Joi.array().items(Joi.string().valid(...classTypesExtended)),
-      tutoringLevels: Joi.array().items(Joi.string().valid(...tutoringLevels)),
+      classType: Joi.array().items(
+        Joi.string().valid(
+          'Online - Individual',
+          'Online - Group',
+          'Physical - Individual',
+          'Physical - Group',
+          'Home Visit - Individual',
+          'Home Visit - Group',
+          "At Tutor's Place - Individual",
+          "At Tutor's Place - Group",
+          'In-Person - Individual',
+          'In-Person - Group'
+        )
+      ),
+      tutoringLevels: Joi.array().items(
+        Joi.string().valid(
+          'Pre-School / Montessori',
+          'Primary School (Grades 1-5)',
+          'Ordinary Level (O/L) (Grades 6-11)',
+          'Advanced Level (A/L) (Grades 12-13)',
+          'International Syllabus (Cambridge, Edexcel, IB)',
+          'Undergraduate',
+          'Diploma / Degree',
+          'Language (e.g., English, French, Japanese)',
+          'Computing (e.g., Programming, Graphic Design)',
+          'Music & Arts',
+          'Special Skills'
+        )
+      ),
 
-      preferredLocations: Joi.array().items(Joi.string().valid(...preferredLocations)),
+      preferredLocations: Joi.array().items(Joi.string()),
 
       // 3. Academic Qualifications & Experience
-      tutorType: Joi.array()
-        .items(Joi.string().valid(...tutorTypes))
-        .optional(),
+      tutorType: Joi.array().items(Joi.string()).optional(),
       yearsExperience: Joi.number().integer().min(0).max(50),
-      highestEducation: Joi.string().valid(...highestEducationLevelsExtended),
+      highestEducation: Joi.string(),
       academicDetails: Joi.string().allow('').max(1000),
 
       // 4. Tutor's Profile

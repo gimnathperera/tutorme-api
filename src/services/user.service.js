@@ -19,7 +19,10 @@ const buildUserSearchFilter = (filter = {}) => {
     return normalizedFilter;
   }
 
-  const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+  const searchRegex = {
+    $regex: escapeRegex(searchTerm),
+    $options: 'i',
+  };
 
   return {
     ...normalizedFilter,
