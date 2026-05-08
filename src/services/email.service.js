@@ -32,6 +32,19 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const resolveGradeName = async (gradeValue) => {
+  if (!gradeValue) {
+    return 'N/A';
+  }
+
+  if (typeof gradeValue === 'object' && gradeValue.title) {
+    return gradeValue.title;
+  }
+
+  const gradeDoc = await Grade.findById(gradeValue).select('title').lean();
+  return gradeDoc ? gradeDoc.title : gradeValue;
+};
+
 /**
  * Send reset password email (HTML + Text)
  * @param {string} to
@@ -290,12 +303,14 @@ const sendRequestTutorRejectedEmail = async (to, requesterName, rejectionReason,
 
     const safeName = escapeHtml(requesterName || 'there');
     const safeReason = escapeHtml(rejectionReason || 'No reason provided');
+    const safeEmail = escapeHtml((requestTutorBody && requestTutorBody.email) || to || 'N/A');
+    const gradeName = await resolveGradeName(requestTutorBody && requestTutorBody.grade);
 
     const safeCity = escapeHtml((requestTutorBody && requestTutorBody.city) || 'N/A');
 
     const safeDistrict = escapeHtml((requestTutorBody && requestTutorBody.district) || 'N/A');
 
-    const safeGrade = escapeHtml((requestTutorBody && requestTutorBody.grade) || 'N/A');
+    const safeGrade = escapeHtml(gradeName);
 
     const text = `
 Dear ${requesterName || 'there'},
@@ -309,9 +324,10 @@ ${rejectionReason || 'No reason provided'}
 
 Request Details:
 Name: ${requesterName || 'N/A'}
+Email: ${(requestTutorBody && requestTutorBody.email) || to || 'N/A'}
 City: ${(requestTutorBody && requestTutorBody.city) || 'N/A'}
 District: ${(requestTutorBody && requestTutorBody.district) || 'N/A'}
-Grade: ${(requestTutorBody && requestTutorBody.grade) || 'N/A'}
+Grade: ${gradeName}
 
 You are welcome to submit a new tutor request in the future with updated details if needed.
 
@@ -354,6 +370,7 @@ TuitionLanka Team
 
           <ul style="padding-left:20px;">
             <li><strong>Name:</strong> ${safeName}</li>
+            <li><strong>Email:</strong> ${safeEmail}</li>
             <li><strong>City:</strong> ${safeCity}</li>
             <li><strong>District:</strong> ${safeDistrict}</li>
             <li><strong>Grade:</strong> ${safeGrade}</li>
