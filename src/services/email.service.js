@@ -59,7 +59,7 @@ If you didn’t request this, please ignore this email.
         <p>Hello,</p>
         <p>We received a request to reset the password for your <strong>TuitionLanka</strong> account.</p>
         <p>You can reset your password by clicking the button below:</p>
-        <p style="text-align: center; margin: 25px 0;">
+        <p style="text-align: left; margin: 25px 0;">
           <a href="${resetPasswordUrl}"
              style="background-color: #4F46E5; color: #fff; padding: 12px 24px;
                     border-radius: 8px; text-decoration: none; font-weight: bold;">
