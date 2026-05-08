@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User } = require('../models');
+const { User, Tutor } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const tokenService = require('./token.service');
@@ -150,6 +150,15 @@ const deleteUserById = async (userId) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+
+  const linkedTutor = user.tutorId
+    ? await Tutor.findById(user.tutorId)
+    : await Tutor.findOne({ $or: [{ userId: user._id }, { email: user.email }] });
+
+  if (linkedTutor) {
+    await linkedTutor.remove();
+  }
+
   await user.remove();
   return user;
 };
