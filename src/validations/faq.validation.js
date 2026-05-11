@@ -1,8 +1,12 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { faqCategories, defaultFaqCategory } = require('../config/enums');
 
 const createFaq = {
   body: Joi.object().keys({
+    category: Joi.string()
+      .valid(...faqCategories)
+      .default(defaultFaqCategory),
     question: Joi.string().required(),
     answer: Joi.string().required(),
   }),
@@ -10,6 +14,7 @@ const createFaq = {
 
 const getFaqs = {
   query: Joi.object().keys({
+    category: Joi.string().valid(...faqCategories),
     question: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
@@ -39,6 +44,7 @@ const updateFaq = {
   }),
   body: Joi.object()
     .keys({
+      category: Joi.string().valid(...faqCategories),
       question: Joi.string(),
       answer: Joi.string(),
     })
