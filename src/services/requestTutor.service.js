@@ -214,6 +214,20 @@ const buildTutorSummary = (tutor) => {
   };
 };
 
+async function serializeRequestTutorWithGradeName(requestTutorDoc) {
+  if (!requestTutorDoc) {
+    return null;
+  }
+
+  const requestTutorJson = requestTutorDoc.toJSON ? requestTutorDoc.toJSON() : { ...requestTutorDoc };
+  const gradeDoc = await resolveGradeDoc(requestTutorJson.grade);
+
+  return {
+    ...requestTutorJson,
+    grade: gradeDoc ? gradeDoc.title : requestTutorJson.grade,
+  };
+}
+
 const buildTutorRequestMatchReport = async (requestTutor) => {
   const [gradeDoc, blockSubjectDocs] = await Promise.all([
     resolveGradeDoc(requestTutor.grade),
@@ -495,7 +509,15 @@ const queryTutorsRequests = async (filter, options) => {
   const requestTutors = await RequestTutor.paginate(buildTutorRequestQuery(filter), {
     ...options,
   });
-  return requestTutors;
+
+  const results = await Promise.all(
+    requestTutors.results.map((requestTutorDoc) => serializeRequestTutorWithGradeName(requestTutorDoc))
+  );
+
+  return {
+    ...requestTutors,
+    results,
+  };
 };
 
 /**
@@ -503,6 +525,11 @@ const queryTutorsRequests = async (filter, options) => {
  */
 const getRequestTutorById = async (id) => {
   return RequestTutor.findById(id);
+};
+
+const getRequestTutorByIdWithGradeName = async (id) => {
+  const requestTutorDoc = await RequestTutor.findById(id);
+  return serializeRequestTutorWithGradeName(requestTutorDoc);
 };
 
 const sendTutorMatchReportToAdmin = async (requestTutorId) => {
@@ -619,6 +646,7 @@ module.exports = {
   requestTutor,
   queryTutorsRequests,
   getRequestTutorById,
+  getRequestTutorByIdWithGradeName,
   deleteTutorRequestById,
   updateStatusById,
   updateAssignedTutor,

@@ -4,6 +4,7 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
+const { userStatus } = require('../config/users');
 
 /**
  * Login with username and password
@@ -15,6 +16,12 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await userService.getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+  }
+  if ((user.role === 'admin' || user.role === 'tutor') && user.status === userStatus.REJECTED) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Your account has been rejected. Please contact support.');
+  }
+  if ((user.role === 'admin' || user.role === 'tutor') && user.status === userStatus.SUSPENDED) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Your account has been suspended. Please contact support.');
   }
   if (user.forcePasswordReset) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Password reset required. Please change your password.');

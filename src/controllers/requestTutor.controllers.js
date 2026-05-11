@@ -35,7 +35,7 @@ const getTutorRequests = catchAsync(async (req, res) => {
 });
 
 const getTutorById = catchAsync(async (req, res) => {
-  const requestTutors = await requestTutorService.getRequestTutorById(req.params.requestTutorId);
+  const requestTutors = await requestTutorService.getRequestTutorByIdWithGradeName(req.params.requestTutorId);
   if (!requestTutors) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
   }

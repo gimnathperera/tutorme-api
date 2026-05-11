@@ -169,6 +169,15 @@ const deleteTutorById = async (tutorId) => {
   if (!tutor) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
+
+  const linkedUser = tutor.userId
+    ? await User.findById(tutor.userId)
+    : await User.findOne({ $or: [{ tutorId: tutor._id }, { email: tutor.email }] });
+
+  if (linkedUser) {
+    await linkedUser.remove();
+  }
+
   await tutor.remove();
   return tutor;
 };

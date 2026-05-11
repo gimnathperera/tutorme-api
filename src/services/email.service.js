@@ -32,6 +32,19 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const resolveGradeName = async (gradeValue) => {
+  if (!gradeValue) {
+    return 'N/A';
+  }
+
+  if (typeof gradeValue === 'object' && gradeValue.title) {
+    return gradeValue.title;
+  }
+
+  const gradeDoc = await Grade.findById(gradeValue).select('title').lean();
+  return gradeDoc ? gradeDoc.title : gradeValue;
+};
+
 /**
  * Send reset password email (HTML + Text)
  * @param {string} to
@@ -59,7 +72,7 @@ If you didn’t request this, please ignore this email.
         <p>Hello,</p>
         <p>We received a request to reset the password for your <strong>TuitionLanka</strong> account.</p>
         <p>You can reset your password by clicking the button below:</p>
-        <p style="text-align: center; margin: 25px 0;">
+        <p style="text-align: left; margin: 25px 0;">
           <a href="${resetPasswordUrl}"
              style="background-color: #4F46E5; color: #fff; padding: 12px 24px;
                     border-radius: 8px; text-decoration: none; font-weight: bold;">
@@ -286,61 +299,92 @@ Tuition Lanka – Learn Better, Achieve More
  */
 const sendRequestTutorRejectedEmail = async (to, requesterName, rejectionReason, requestTutorBody) => {
   try {
-    const subject = 'Update on Your Tutor Request â€“ TuitionLanka';
+    const subject = 'Update on Your Tutor Request - TuitionLanka';
+
     const safeName = escapeHtml(requesterName || 'there');
     const safeReason = escapeHtml(rejectionReason || 'No reason provided');
-    const safeCity = escapeHtml(requestTutorBody && requestTutorBody.city ? requestTutorBody.city : 'N/A');
-    const safeDistrict = escapeHtml(requestTutorBody && requestTutorBody.district ? requestTutorBody.district : 'N/A');
-    const safeGrade = escapeHtml(requestTutorBody && requestTutorBody.grade ? requestTutorBody.grade : 'N/A');
+    const safeEmail = escapeHtml((requestTutorBody && requestTutorBody.email) || to || 'N/A');
+    const gradeName = await resolveGradeName(requestTutorBody && requestTutorBody.grade);
+
+    const safeCity = escapeHtml((requestTutorBody && requestTutorBody.city) || 'N/A');
+
+    const safeDistrict = escapeHtml((requestTutorBody && requestTutorBody.district) || 'N/A');
+
+    const safeGrade = escapeHtml(gradeName);
 
     const text = `
 Dear ${requesterName || 'there'},
 
-We reviewed your tutor request and unfortunately we were unable to approve it at this time.
+Thank you for submitting your tutor request to TuitionLanka.
+
+We reviewed your tutor request and unfortunately we were unable to find a suitable match at this time.
 
 Reason:
-${rejectionReason}
+${rejectionReason || 'No reason provided'}
 
-Request details
+Request Details:
 Name: ${requesterName || 'N/A'}
-City: ${requestTutorBody && requestTutorBody.city ? requestTutorBody.city : 'N/A'}
-District: ${requestTutorBody && requestTutorBody.district ? requestTutorBody.district : 'N/A'}
-Grade: ${requestTutorBody && requestTutorBody.grade ? requestTutorBody.grade : 'N/A'}
+Email: ${(requestTutorBody && requestTutorBody.email) || to || 'N/A'}
+City: ${(requestTutorBody && requestTutorBody.city) || 'N/A'}
+District: ${(requestTutorBody && requestTutorBody.district) || 'N/A'}
+Grade: ${gradeName}
 
-If you would like to submit a new request in the future, you are welcome to do so with updated details.
+You are welcome to submit a new tutor request in the future with updated details if needed.
 
-Regards,
-Tuition Lanka Team
+Best regards,
+TuitionLanka Team
 `;
 
     const html = `
       <div style="font-family: Arial, sans-serif; color:#222; line-height:1.7; max-width:600px; margin:0 auto;">
+
         <div style="background-color:#dc2626; padding:24px 32px; border-radius:8px 8px 0 0;">
-          <h2 style="color:#ffffff; margin:0; font-size:22px;">Tutor Request Rejected</h2>
+          <h2 style="color:#ffffff; margin:0; font-size:22px;">
+            Tutor Request Update
+          </h2>
         </div>
+
         <div style="background-color:#f9fafb; padding:28px 32px; border:1px solid #e5e7eb; border-top:none; border-radius:0 0 8px 8px;">
+
           <p>Dear <strong>${safeName}</strong>,</p>
-          <p>We reviewed your tutor request and unfortunately we were unable to approve it at this time.</p>
+
+          <p>
+            Thank you for submitting your tutor request to TuitionLanka.
+          </p>
+
+          <p>
+            We reviewed your tutor request and unfortunately we were unable to find a suitable match at this time.
+          </p>
 
           <div style="background-color:#fef2f2; border-left:4px solid #ef4444; padding:16px 20px; border-radius:4px; margin:20px 0;">
-            <p style="margin:0 0 8px 0; color:#7f1d1d;"><strong>Reason provided by our team:</strong></p>
-            <p style="margin:0; color:#991b1b; white-space:pre-wrap;">${safeReason}</p>
+            <p style="margin:0 0 8px 0; color:#7f1d1d;">
+              <strong>Reason provided by our team:</strong>
+            </p>
+
+            <p style="margin:0; color:#991b1b; white-space:pre-wrap;">
+              ${safeReason}
+            </p>
           </div>
 
-          <h3 style="margin-top:24px;">Request details</h3>
-          <ul>
+          <h3 style="margin-top:24px;">Request Details</h3>
+
+          <ul style="padding-left:20px;">
             <li><strong>Name:</strong> ${safeName}</li>
+            <li><strong>Email:</strong> ${safeEmail}</li>
             <li><strong>City:</strong> ${safeCity}</li>
             <li><strong>District:</strong> ${safeDistrict}</li>
             <li><strong>Grade:</strong> ${safeGrade}</li>
           </ul>
 
-          <p>If you would like to submit a new request in the future, you are welcome to do so with updated details.</p>
+          <p>
+            You are welcome to submit a new tutor request in the future with updated details if needed.
+          </p>
 
           <p style="margin-top:28px;">
-            Regards,<br/>
-            <strong>Tuition Lanka Team</strong>
+            Best regards,<br />
+            <strong>TuitionLanka Team</strong>
           </p>
+
         </div>
       </div>
     `;
@@ -354,6 +398,7 @@ Tuition Lanka Team
     });
   } catch (err) {
     logger.error(`Failed to send tutor request rejected email to ${to}:`, err);
+
     throw new Error('Tutor request rejected email failed');
   }
 };
