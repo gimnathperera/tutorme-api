@@ -239,13 +239,28 @@ describe('Auth routes', () => {
       jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue();
     });
 
-    test('should return 204 and send reset password email to the user', async () => {
+    test('should return 204 and send reset password email to the user portal by default', async () => {
       await insertUsers([userOne]);
       const sendResetPasswordEmailSpy = jest.spyOn(emailService, 'sendResetPasswordEmail');
 
       await request(app).post('/v1/auth/forgot-password').send({ email: userOne.email }).expect(httpStatus.NO_CONTENT);
 
-      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
+      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String), config.app.userUrl);
+      const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
+      const dbResetPasswordTokenDoc = await Token.findOne({ token: resetPasswordToken, user: userOne._id });
+      expect(dbResetPasswordTokenDoc).toBeDefined();
+    });
+
+    test('should return 204 and send reset password email to the admin portal when requested', async () => {
+      await insertUsers([userOne]);
+      const sendResetPasswordEmailSpy = jest.spyOn(emailService, 'sendResetPasswordEmail');
+
+      await request(app)
+        .post('/v1/auth/forgot-password')
+        .send({ email: userOne.email, portal: 'admin' })
+        .expect(httpStatus.NO_CONTENT);
+
+      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String), config.app.adminUrl);
       const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
       const dbResetPasswordTokenDoc = await Token.findOne({ token: resetPasswordToken, user: userOne._id });
       expect(dbResetPasswordTokenDoc).toBeDefined();
