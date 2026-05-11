@@ -24,6 +24,8 @@ const sendEmail = async (to, subject, text, html) => {
   await transport.sendMail(msg);
 };
 
+const normalizeBaseUrl = (url) => String(url || '').replace(/\/+$/, '');
+
 const escapeHtml = (value) =>
   String(value)
     .replace(/&/g, '&amp;')
@@ -51,10 +53,10 @@ const resolveGradeName = async (gradeValue) => {
  * @param {string} token
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to, token) => {
+const sendResetPasswordEmail = async (to, token, appUrl = config.app.userUrl) => {
   try {
     const subject = 'Reset Your TuitionLanka Password';
-    const resetPasswordUrl = `https://tuitionlanka.com/reset-password?token=${token}`;
+    const resetPasswordUrl = `${normalizeBaseUrl(appUrl)}/reset-password?token=${token}`;
 
     const text = `
 Hello,
