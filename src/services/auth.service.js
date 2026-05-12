@@ -79,9 +79,9 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
       user.forcePasswordReset = false;
       await user.save();
     }
-    await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    await tokenService.invalidateTokens(user.id, tokenTypes.RESET_PASSWORD);
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'This reset link has expired or already been used');
   }
 };
 

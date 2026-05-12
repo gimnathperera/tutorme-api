@@ -46,6 +46,16 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 };
 
 /**
+ * Invalidate all tokens of a type for a user
+ * @param {ObjectId} userId
+ * @param {string} type
+ * @returns {Promise}
+ */
+const invalidateTokens = async (userId, type) => {
+  await Token.deleteMany({ user: userId, type });
+};
+
+/**
  * Verify token and return token doc (or throw an error if it is not valid)
  * @param {string} token
  * @param {string} type
@@ -116,6 +126,7 @@ const generateVerifyEmailToken = async (user) => {
 module.exports = {
   generateToken,
   saveToken,
+  invalidateTokens,
   verifyToken,
   generateAuthTokens,
   generateResetPasswordToken,
