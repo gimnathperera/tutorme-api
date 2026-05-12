@@ -239,28 +239,13 @@ describe('Auth routes', () => {
       jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue();
     });
 
-    test('should return 204 and send reset password email to the user portal by default', async () => {
+    test('should return 204 and send reset password email to the user', async () => {
       await insertUsers([userOne]);
       const sendResetPasswordEmailSpy = jest.spyOn(emailService, 'sendResetPasswordEmail');
 
       await request(app).post('/v1/auth/forgot-password').send({ email: userOne.email }).expect(httpStatus.NO_CONTENT);
 
-      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String), config.app.userUrl);
-      const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
-      const dbResetPasswordTokenDoc = await Token.findOne({ token: resetPasswordToken, user: userOne._id });
-      expect(dbResetPasswordTokenDoc).toBeDefined();
-    });
-
-    test('should return 204 and send reset password email to the admin portal when requested', async () => {
-      await insertUsers([userOne]);
-      const sendResetPasswordEmailSpy = jest.spyOn(emailService, 'sendResetPasswordEmail');
-
-      await request(app)
-        .post('/v1/auth/forgot-password')
-        .send({ email: userOne.email, portal: 'admin' })
-        .expect(httpStatus.NO_CONTENT);
-
-      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String), config.app.adminUrl);
+      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
       const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
       const dbResetPasswordTokenDoc = await Token.findOne({ token: resetPasswordToken, user: userOne._id });
       expect(dbResetPasswordTokenDoc).toBeDefined();
@@ -296,6 +281,25 @@ describe('Auth routes', () => {
 
       const dbResetPasswordTokenCount = await Token.countDocuments({ user: userOne._id, type: tokenTypes.RESET_PASSWORD });
       expect(dbResetPasswordTokenCount).toBe(0);
+    });
+
+    test('should expire the reset password token after successful use', async () => {
+      await insertUsers([userOne]);
+      const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+      const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD);
+      await tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD);
+
+      await request(app)
+        .post('/v1/auth/reset-password')
+        .query({ token: resetPasswordToken })
+        .send({ password: 'password2' })
+        .expect(httpStatus.NO_CONTENT);
+
+      await request(app)
+        .post('/v1/auth/reset-password')
+        .query({ token: resetPasswordToken })
+        .send({ password: 'password3' })
+        .expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should return 400 if reset password token is missing', async () => {
