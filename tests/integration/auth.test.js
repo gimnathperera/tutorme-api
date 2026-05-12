@@ -283,6 +283,25 @@ describe('Auth routes', () => {
       expect(dbResetPasswordTokenCount).toBe(0);
     });
 
+    test('should expire the reset password token after successful use', async () => {
+      await insertUsers([userOne]);
+      const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+      const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD);
+      await tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD);
+
+      await request(app)
+        .post('/v1/auth/reset-password')
+        .query({ token: resetPasswordToken })
+        .send({ password: 'password2' })
+        .expect(httpStatus.NO_CONTENT);
+
+      await request(app)
+        .post('/v1/auth/reset-password')
+        .query({ token: resetPasswordToken })
+        .send({ password: 'password3' })
+        .expect(httpStatus.UNAUTHORIZED);
+    });
+
     test('should return 400 if reset password token is missing', async () => {
       await insertUsers([userOne]);
 
