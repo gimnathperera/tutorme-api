@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { faqCategories, defaultFaqCategory } = require('../config/enums');
 
 const faqSchema = mongoose.Schema(
   {
+    category: {
+      type: String,
+      enum: faqCategories,
+      default: defaultFaqCategory,
+      index: true,
+    },
     question: {
       type: String,
       required: true,

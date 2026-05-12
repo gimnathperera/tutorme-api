@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const { faqService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const { defaultFaqCategory } = require('../config/enums');
 
 const createFaq = catchAsync(async (req, res) => {
   const faq = await faqService.createFaq(req.body);
@@ -11,6 +12,13 @@ const createFaq = catchAsync(async (req, res) => {
 
 const getFaqs = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['question']);
+
+  if (req.query.category === defaultFaqCategory) {
+    filter.$or = [{ category: defaultFaqCategory }, { category: { $exists: false } }, { category: null }];
+  } else if (req.query.category) {
+    filter.category = req.query.category;
+  }
+
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };

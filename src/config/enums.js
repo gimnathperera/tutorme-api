@@ -21,6 +21,10 @@ const tutorStatuses = ['pending', 'approved', 'rejected', 'suspended'];
 
 const requestTutorStatuses = ['Pending', 'Approved', 'Tutor Assigned', 'Rejected'];
 
+const faqCategories = ['for_parents', 'for_tutors'];
+
+const defaultFaqCategory = 'for_parents';
+
 const classTypes = [
   'Online - Individual',
   'Online - Group',
@@ -131,6 +135,8 @@ module.exports = {
   races,
   tutorStatuses,
   requestTutorStatuses,
+  faqCategories,
+  defaultFaqCategory,
   classTypes,
   classTypesExtended,
   requestTutorClassTypes,
