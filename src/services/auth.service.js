@@ -77,6 +77,9 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     await userService.updateUserById(user.id, { password: newPassword });
     if (user.forcePasswordReset) {
       user.forcePasswordReset = false;
+      if (user.role === 'admin') {
+        user.status = userStatus.APPROVED;
+      }
       await user.save();
     }
     await tokenService.invalidateTokens(user.id, tokenTypes.RESET_PASSWORD);
