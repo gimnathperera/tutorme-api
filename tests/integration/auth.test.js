@@ -283,6 +283,25 @@ describe('Auth routes', () => {
       expect(dbResetPasswordTokenCount).toBe(0);
     });
 
+    test('should approve an admin after they reset their invite password', async () => {
+      await insertUsers([{ ...admin, forcePasswordReset: true }]);
+      const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+      const resetPasswordToken = tokenService.generateToken(admin._id, expires, tokenTypes.RESET_PASSWORD);
+      await tokenService.saveToken(resetPasswordToken, admin._id, expires, tokenTypes.RESET_PASSWORD);
+
+      await request(app)
+        .post('/v1/auth/reset-password')
+        .query({ token: resetPasswordToken })
+        .send({ password: 'password2' })
+        .expect(httpStatus.NO_CONTENT);
+
+      const dbUser = await User.findById(admin._id);
+      const isPasswordMatch = await bcrypt.compare('password2', dbUser.password);
+      expect(isPasswordMatch).toBe(true);
+      expect(dbUser.forcePasswordReset).toBe(false);
+      expect(dbUser.status).toBe('approved');
+    });
+
     test('should expire the reset password token after successful use', async () => {
       await insertUsers([userOne]);
       const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
