@@ -126,26 +126,62 @@ If you did not create an account, then ignore this email.`;
  */
 const sendTemporaryPasswordEmail = async (to, username, tempPassword) => {
   try {
+    const safeUsername = escapeHtml(username || 'there');
+    const safeTempPassword = escapeHtml(tempPassword || '');
     const subject = 'Your Temporary Password for TuitionLanka';
     const text = `
-Dear ${username},
+Hello ${username || 'there'},
 
-A temporary password has been generated for your account.
+Your temporary password for TuitionLanka is:
 
-=====================================
-Temporary Password: ${tempPassword}
-=====================================
+${tempPassword}
 
-Security Notice:
-- Please log in immediately and change your password to something secure.
-- Do not share this password with anyone.
+Please log in as soon as possible and change your password immediately.
+Do not share this password with anyone.
 
 If you did not request this, please contact support.
 
-Thanks, 
-The TuitionLanka support team.`;
+Thanks,
+TuitionLanka Support Team`;
 
-    await sendEmail(to, subject, text);
+    const html = `
+      <div style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+        <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
+          <div style="background:linear-gradient(135deg,#1d4ed8,#2563eb);border-radius:18px 18px 0 0;padding:28px 32px;color:#fff;">
+            <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">TuitionLanka</p>
+            <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;">Your temporary password is ready</h1>
+          </div>
+
+          <div style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 18px 18px;padding:32px;">
+            <p style="margin:0 0 16px;font-size:16px;">Hello <strong>${safeUsername}</strong>,</p>
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#4b5563;">
+              A temporary password has been generated for your account. Use it to log in once, then update it to a password only you know.
+            </p>
+
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:18px 20px;margin:0 0 24px;">
+              <p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#1d4ed8;">
+                Temporary Password
+              </p>
+              <div style="display:inline-block;background:#ffffff;border:1px dashed #60a5fa;border-radius:12px;padding:14px 18px;font-size:20px;font-weight:700;letter-spacing:0.08em;color:#111827;word-break:break-all;">
+                ${safeTempPassword}
+              </div>
+            </div>
+
+            <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#4b5563;">
+              <strong style="color:#1f2937;">Security notice:</strong> Log in immediately and change your password.
+              Do not share this temporary password with anyone. If you did not request this, contact support right away.
+            </p>
+
+            <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.7;">
+              Thanks,<br />
+              <strong>TuitionLanka Support Team</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    await sendEmail(to, subject, text, html);
   } catch (err) {
     logger.error(`Failed to send temporary password email to ${to}:`, err);
     throw new Error('Email sending failed');
