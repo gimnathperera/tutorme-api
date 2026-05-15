@@ -29,6 +29,10 @@ router
   );
 
 router
+  .route('/unassign/:requestTutorId')
+  .patch(auth('manageUsers'), validate(requestTutorValidation.unassignTutor), requestTutorController.unassignTutor);
+
+router
   .route('/match-tutors/:requestTutorId')
   .post(
     auth('manageUsers'),
