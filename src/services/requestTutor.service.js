@@ -568,6 +568,57 @@ const deleteTutorRequestById = async (requestTutorId) => {
 };
 
 /**
+ * Unassign tutor(s) from specific blocks within a request.
+ * Reverts overall status to Pending if all blocks become unassigned.
+ * Fires an email to the requester with the reason (non-blocking).
+ */
+const unassignTutor = async (requestTutorId, tutorBlockIds, unassignReason) => {
+  const tutorRequest = await getRequestTutorById(requestTutorId);
+  if (!tutorRequest) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+  }
+
+  // Capture block details before clearing so the email has accurate info
+  const blocksToNotify = await Promise.all(
+    tutorBlockIds.map(async (blockId) => {
+      const block = tutorRequest.tutors.id(blockId);
+      if (!block) return null;
+
+      const [subjectDoc, tutorDoc] = await Promise.all([
+        resolveSubjectDoc(block.subject),
+        block.assignedTutor ? Tutor.findById(block.assignedTutor).select('fullName').lean() : null,
+      ]);
+
+      return {
+        subjectName: subjectDoc ? subjectDoc.title : block.subject || 'N/A',
+        tutorName: tutorDoc ? tutorDoc.fullName : 'N/A',
+      };
+    })
+  ).then((results) => results.filter(Boolean));
+
+  tutorBlockIds.forEach((blockId) => {
+    const block = tutorRequest.tutors.id(blockId);
+    if (block) {
+      block.assignedTutor = null;
+    }
+  });
+
+  const allUnassigned = tutorRequest.tutors.every((block) => !block.assignedTutor);
+  if (allUnassigned) {
+    tutorRequest.status = 'Pending';
+  }
+
+  await tutorRequest.save();
+
+  // Fire email non-blocking
+  emailService.sendTutorUnassignedToRequester(tutorRequest, blocksToNotify, unassignReason).catch((err) => {
+    logger.warn(`Unassign email failed for request ${requestTutorId}: ${err.message}`);
+  });
+
+  return tutorRequest;
+};
+
+/**
  * Update ONLY the status
  */
 const updateStatusById = async (requestTutorId, status, rejectionReason) => {
@@ -650,5 +701,6 @@ module.exports = {
   deleteTutorRequestById,
   updateStatusById,
   updateAssignedTutor,
+  unassignTutor,
   sendTutorMatchReportToAdmin,
 };
