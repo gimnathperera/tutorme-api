@@ -13,13 +13,18 @@ const getGrades = {
   query: Joi.object().keys({
     title: Joi.string(),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 
 const getGradesWithCounts = {
-  query: Joi.object().keys({}),
+  query: Joi.object().keys({
+    title: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
+  }),
 };
 
 const getGrade = {
@@ -46,6 +51,8 @@ const getSubjectsForGrades = {
       )
       .min(1)
       .required(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 

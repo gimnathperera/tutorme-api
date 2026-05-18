@@ -30,9 +30,8 @@ const getPapers = {
     subject: Joi.string().custom(objectId),
     medium: Joi.string().custom(paperMedium),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-    order: Joi.string().valid('asc', 'desc').default('desc'),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 

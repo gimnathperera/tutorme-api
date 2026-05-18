@@ -2,6 +2,30 @@ const httpStatus = require('http-status');
 const { Grade } = require('../models');
 const ApiError = require('../utils/ApiError');
 
+const prepareGradeQuery = (filter) => {
+  const query = { ...filter };
+
+  if (query.title) {
+    query.title = { $regex: query.title, $options: 'i' };
+  }
+
+  return query;
+};
+
+const buildSortObject = (sortBy, defaultSort = { title: 1 }) => {
+  if (!sortBy) {
+    return defaultSort;
+  }
+
+  return sortBy.split(',').reduce((sort, sortOption) => {
+    const [key, order] = sortOption.split(':');
+    return {
+      ...sort,
+      [key]: order === 'desc' ? -1 : 1,
+    };
+  }, {});
+};
+
 /**
  * Create a grade
  * @param {Object} gradeBody
@@ -21,11 +45,7 @@ const createGrade = async (gradeBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryGrades = async (filter, options) => {
-  const query = { ...filter };
-  if (query.title) {
-    query.title = { $regex: query.title, $options: 'i' };
-  }
-
+  const query = prepareGradeQuery(filter);
   return Grade.paginate(query, options);
 };
 
@@ -38,13 +58,38 @@ const getGradeById = async (id) => {
   return Grade.findById(id).populate('subjects');
 };
 
-const getSubjectsForGrades = async (gradeIds) => {
+const paginateArray = (items, options = {}) => {
+  const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
+  const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
+  const skip = (page - 1) * limit;
+  const results = items.slice(skip, skip + limit);
+  const totalResults = items.length;
+  const totalPages = Math.ceil(totalResults / limit);
+
+  return {
+    results,
+    page,
+    limit,
+    totalPages,
+    totalResults,
+  };
+};
+
+const getSubjectsForGrades = async (gradeIds, options = {}) => {
   const grades = await Grade.find({
     _id: { $in: gradeIds },
   }).populate('subjects');
 
   if (!grades.length) {
-    return [];
+    return {
+      results: [],
+      subjects: [],
+      count: 0,
+      page: options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1,
+      limit: options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10,
+      totalPages: 0,
+      totalResults: 0,
+    };
   }
 
   const subjectMap = new Map();
@@ -55,37 +100,69 @@ const getSubjectsForGrades = async (gradeIds) => {
     });
   });
 
-  return Array.from(subjectMap.values());
+  const paginatedSubjects = paginateArray(Array.from(subjectMap.values()), options);
+
+  return {
+    ...paginatedSubjects,
+    subjects: paginatedSubjects.results,
+    count: paginatedSubjects.results.length,
+  };
 };
 
-const getGradesWithTuitionRateCounts = async () => {
-  const grades = await Grade.aggregate([
-    {
-      $lookup: {
-        from: 'tuitionrates',
-        localField: '_id',
-        foreignField: 'grade',
-        as: 'tuitionRates',
+const getGradesWithTuitionRateCounts = async (filter, options = {}) => {
+  const query = prepareGradeQuery(filter);
+  const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
+  const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
+  const skip = (page - 1) * limit;
+  const sort = buildSortObject(options.sortBy);
+
+  const [totalResults, grades] = await Promise.all([
+    Grade.countDocuments(query).exec(),
+    Grade.aggregate([
+      {
+        $match: query,
       },
-    },
-    {
-      $addFields: {
-        tuitionRateCount: { $size: '$tuitionRates' },
+      {
+        $lookup: {
+          from: 'tuitionrates',
+          localField: '_id',
+          foreignField: 'grade',
+          as: 'tuitionRates',
+        },
       },
-    },
-    {
-      $project: {
-        title: 1,
-        description: 1,
-        tuitionRateCount: 1,
+      {
+        $addFields: {
+          tuitionRateCount: { $size: '$tuitionRates' },
+        },
       },
-    },
-    {
-      $sort: { title: 1 },
-    },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          tuitionRateCount: 1,
+        },
+      },
+      {
+        $sort: sort,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ]),
   ]);
 
-  return grades;
+  const totalPages = Math.ceil(totalResults / limit);
+
+  return {
+    results: grades,
+    page,
+    limit,
+    totalPages,
+    totalResults,
+  };
 };
 
 /**

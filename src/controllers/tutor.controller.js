@@ -85,11 +85,9 @@ const generateTempPassword = catchAsync(async (req, res) => {
 
 const matchTutorsBySubjects = catchAsync(async (req, res) => {
   const { subjects, tutorType } = req.body;
-  const tutors = await tutorService.findTutorsBySubjects(subjects, tutorType);
-  res.send({
-    count: tutors.length,
-    tutors,
-  });
+  const options = pick(req.body, ['limit', 'page']);
+  const result = await tutorService.findTutorsBySubjects(subjects, tutorType, options);
+  res.send(result);
 });
 
 module.exports = {

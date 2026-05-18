@@ -28,21 +28,18 @@ const getGrade = catchAsync(async (req, res) => {
 
 const getSubjectsForGrades = catchAsync(async (req, res) => {
   const { gradeIds } = req.body;
+  const options = pick(req.body, ['limit', 'page']);
 
-  const subjects = await gradeService.getSubjectsForGrades(gradeIds);
-
-  res.send({
-    count: subjects.length,
-    subjects,
-  });
+  const result = await gradeService.getSubjectsForGrades(gradeIds, options);
+  res.send(result);
 });
 
 const getGradesWithCounts = catchAsync(async (req, res) => {
-  const grades = await gradeService.getGradesWithTuitionRateCounts();
-  res.send({
-    count: grades.length,
-    grades,
-  });
+  const filter = pick(req.query, ['title']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await gradeService.getGradesWithTuitionRateCounts(filter, options);
+
+  res.send(result);
 });
 
 const updateGrade = catchAsync(async (req, res) => {

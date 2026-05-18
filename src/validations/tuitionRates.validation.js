@@ -31,20 +31,20 @@ const getTuitionRates = {
     subject: Joi.string(),
     grade: Joi.string(),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 
 const getTuitionRatesByGrade = {
   params: Joi.object().keys({
-    tuitionRatesId: idValidator,
+    gradeId: idValidator,
   }),
   query: Joi.object().keys({
     subject: Joi.string(),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 

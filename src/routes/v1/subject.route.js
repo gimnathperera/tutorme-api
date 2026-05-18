@@ -8,13 +8,13 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(validate(auth('manageUsers'), subjectValidation.createSubject), subjectController.createSubject)
+  .post(auth('manageUsers'), validate(subjectValidation.createSubject), subjectController.createSubject)
   .get(validate(subjectValidation.getSubjects), subjectController.getSubjects);
 
 router
   .route('/:subjectId')
   .get(validate(subjectValidation.getSubject), subjectController.getSubject)
-  .patch(validate(auth('manageUsers'), subjectValidation.updateSubject), subjectController.updateSubject)
-  .delete(validate(auth('manageUsers'), subjectValidation.deleteSubject), subjectController.deleteSubject);
+  .patch(auth('manageUsers'), validate(subjectValidation.updateSubject), subjectController.updateSubject)
+  .delete(auth('manageUsers'), validate(subjectValidation.deleteSubject), subjectController.deleteSubject);
 
 module.exports = router;

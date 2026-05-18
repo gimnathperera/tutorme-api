@@ -133,8 +133,8 @@ const getTutors = {
     gradeId: Joi.string().custom(objectId).optional(),
     subjectId: Joi.string().custom(objectId).optional(),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 
@@ -283,8 +283,9 @@ const generateTempPassword = {
 const matchTutorsBySubjects = {
   body: Joi.object().keys({
     subjects: Joi.array().items(Joi.string().custom(objectId)).min(1).required(),
-
     tutorType: Joi.string().optional(),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1),
   }),
 };
 

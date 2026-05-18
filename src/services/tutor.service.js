@@ -226,7 +226,7 @@ const generateTemporaryPassword = async (tutorId) => {
 };
 
 // Find Tutors by Subjects
-const findTutorsBySubjects = async (subjects, tutorType) => {
+const findTutorsBySubjects = async (subjects, tutorType, options = {}) => {
   const query = {
     subjects: { $all: subjects },
   };
@@ -235,7 +235,25 @@ const findTutorsBySubjects = async (subjects, tutorType) => {
     query.tutorType = tutorType;
   }
 
-  return Tutor.find(query).select('fullName email tutorType subjects').lean();
+  const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
+  const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
+  const skip = (page - 1) * limit;
+
+  const [totalResults, tutors] = await Promise.all([
+    Tutor.countDocuments(query).exec(),
+    Tutor.find(query).select('fullName email tutorType subjects').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+  ]);
+  const totalPages = Math.ceil(totalResults / limit);
+
+  return {
+    results: tutors,
+    tutors,
+    count: tutors.length,
+    page,
+    limit,
+    totalPages,
+    totalResults,
+  };
 };
 
 module.exports = {
