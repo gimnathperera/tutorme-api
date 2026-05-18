@@ -206,6 +206,19 @@ const sendTutorMatchReport = {
   }),
 };
 
+const sendTelegramOutreach = {
+  params: Joi.object().keys({
+    requestTutorId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid request tutor ID');
+        }
+        return value;
+      })
+      .required(),
+  }),
+};
+
 module.exports = {
   createRequestTutor,
   getTutors,
@@ -214,4 +227,5 @@ module.exports = {
   updateStatus,
   updateAssignedTutor,
   sendTutorMatchReport,
+  sendTelegramOutreach,
 };

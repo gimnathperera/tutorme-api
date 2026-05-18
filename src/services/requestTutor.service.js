@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { RequestTutor, Tutor, Grade, Subject } = require('../models');
 const ApiError = require('../utils/ApiError');
 const emailService = require('./email.service');
+const telegramService = require('./telegram.service');
 const logger = require('../config/logger');
 const config = require('../config/config');
 
@@ -451,6 +452,52 @@ const buildTutorRequestMatchReport = async (requestTutor) => {
   };
 };
 
+const escapeTelegramHtml = (value) =>
+  String(value || 'N/A')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const buildTelegramOutreachMessage = async (requestTutor) => {
+  const [gradeDoc, blockSubjectDocs] = await Promise.all([
+    resolveGradeDoc(requestTutor.grade),
+    Promise.all(
+      (requestTutor.tutors || []).map(async (tutorBlock) => {
+        const subjectDoc = await resolveSubjectDoc(tutorBlock.subject);
+        return {
+          tutorBlock,
+          subjectTitle: subjectDoc ? subjectDoc.title : tutorBlock.subject,
+        };
+      })
+    ),
+  ]);
+
+  const lines = [
+    '<b>New tutor request</b>',
+    '',
+    `District: ${escapeTelegramHtml(requestTutor.district)}`,
+    `City: ${escapeTelegramHtml(requestTutor.city)}`,
+    `Medium: ${escapeTelegramHtml(requestTutor.medium)}`,
+    `Grade: ${escapeTelegramHtml(gradeDoc ? gradeDoc.title : requestTutor.grade)}`,
+  ];
+
+  blockSubjectDocs.forEach(({ tutorBlock, subjectTitle }, index) => {
+    lines.push(
+      '',
+      `<b>Request ${index + 1}</b>`,
+      `Subject: ${escapeTelegramHtml(subjectTitle)}`,
+      `Preferred tutor type: ${escapeTelegramHtml(tutorBlock.preferredTutorType)}`,
+      `Class type: ${escapeTelegramHtml(tutorBlock.preferredClassType)}`,
+      `Duration: ${escapeTelegramHtml(tutorBlock.duration)}`,
+      `Frequency: ${escapeTelegramHtml(tutorBlock.frequency)}`
+    );
+  });
+
+  lines.push('', 'Please reply in this group if available outside your usual slots.');
+
+  return lines.join('\n');
+};
+
 const sendAcknowledgement = async (requestTutorBody) => {
   try {
     await emailService.sendAcknowledgement(requestTutorBody);
@@ -555,6 +602,58 @@ const sendTutorMatchReportToAdmin = async (requestTutorId) => {
   };
 };
 
+const sendTelegramOutreach = async (requestTutorId, adminUser) => {
+  const requestTutorDoc = await getRequestTutorById(requestTutorId);
+
+  if (!requestTutorDoc) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tutor request not found');
+  }
+
+  if (requestTutorDoc.telegramOutreachSentAt) {
+    throw new ApiError(httpStatus.CONFLICT, 'Telegram outreach has already been sent for this tutor request');
+  }
+
+  const message = await buildTelegramOutreachMessage(requestTutorDoc);
+  const sentAt = new Date();
+  const sentBy = adminUser && adminUser.id ? adminUser.id : null;
+
+  const reservedRequest = await RequestTutor.findOneAndUpdate(
+    {
+      _id: requestTutorId,
+      $or: [{ telegramOutreachSentAt: { $exists: false } }, { telegramOutreachSentAt: null }],
+    },
+    {
+      $set: {
+        telegramOutreachSentAt: sentAt,
+        telegramOutreachSentBy: sentBy,
+      },
+    },
+    { new: true }
+  );
+
+  if (!reservedRequest) {
+    throw new ApiError(httpStatus.CONFLICT, 'Telegram outreach has already been sent for this tutor request');
+  }
+
+  try {
+    const telegramResult = await telegramService.sendMessage(message);
+
+    return {
+      message: 'Tutor request sent to Telegram',
+      requestTutorId: reservedRequest.id,
+      telegramOutreachSentAt: reservedRequest.telegramOutreachSentAt,
+      telegramOutreachSentBy: reservedRequest.telegramOutreachSentBy,
+      telegramMessageId: telegramResult && telegramResult.message_id,
+    };
+  } catch (err) {
+    await RequestTutor.updateOne(
+      { _id: requestTutorId, telegramOutreachSentAt: sentAt },
+      { $set: { telegramOutreachSentAt: null, telegramOutreachSentBy: null } }
+    );
+    throw err;
+  }
+};
+
 /**
  * Delete tutor request
  */
@@ -651,4 +750,5 @@ module.exports = {
   updateStatusById,
   updateAssignedTutor,
   sendTutorMatchReportToAdmin,
+  sendTelegramOutreach,
 };

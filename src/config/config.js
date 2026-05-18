@@ -26,6 +26,8 @@ const envVarsSchema = Joi.object()
     ADMIN_EMAIL: Joi.string().email().description('the admin email that receives tutor request match reports'),
     USER_APP_URL: Joi.string().uri().description('the user portal base url'),
     ADMIN_APP_URL: Joi.string().uri().description('the admin portal base url'),
+    TELEGRAM_BOT_TOKEN: Joi.string().description('Telegram bot token used for tutor outreach messages'),
+    TELEGRAM_TUTOR_GROUP_CHAT_ID: Joi.string().description('Telegram group/channel chat id for tutor outreach'),
   })
   .unknown();
 
@@ -73,5 +75,9 @@ module.exports = {
   app: {
     userUrl: envVars.USER_APP_URL || 'https://www.tuitionlanka.com',
     adminUrl: envVars.ADMIN_APP_URL || 'https://admin.tuitionlanka.com',
+  },
+  telegram: {
+    botToken: envVars.TELEGRAM_BOT_TOKEN,
+    tutorGroupChatId: envVars.TELEGRAM_TUTOR_GROUP_CHAT_ID,
   },
 };
