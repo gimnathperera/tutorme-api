@@ -629,6 +629,13 @@ const updateStatusById = async (requestTutorId, status, rejectionReason) => {
 
   const previousStatus = tutorRequest.status;
   tutorRequest.status = status;
+
+  if (status === 'Rejected' && previousStatus !== 'Rejected') {
+    tutorRequest.rejectionReason = rejectionReason;
+  } else if (status !== 'Rejected') {
+    tutorRequest.rejectionReason = '';
+  }
+
   await tutorRequest.save();
 
   if (status === 'Rejected' && previousStatus !== 'Rejected') {
