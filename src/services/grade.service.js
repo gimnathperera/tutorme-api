@@ -38,13 +38,75 @@ const getGradeById = async (id) => {
   return Grade.findById(id).populate('subjects');
 };
 
-const getSubjectsForGrades = async (gradeIds) => {
+const getValueByPath = (object, path) =>
+  path.split('.').reduce((value, key) => (value === undefined || value === null ? undefined : value[key]), object);
+
+const sortResults = (results, sortBy) => {
+  if (!sortBy) {
+    return results;
+  }
+
+  const sortingCriteria = sortBy.split(',').map((sortOption) => {
+    const [key, order] = sortOption.split(':');
+    return {
+      key,
+      direction: order === 'desc' ? -1 : 1,
+    };
+  });
+
+  return [...results].sort((left, right) =>
+    sortingCriteria.reduce((comparison, { key, direction }) => {
+      if (comparison !== 0) {
+        return comparison;
+      }
+
+      const leftValue = getValueByPath(left, key);
+      const rightValue = getValueByPath(right, key);
+
+      if (leftValue === rightValue) {
+        return 0;
+      }
+
+      if (leftValue === undefined || leftValue === null) {
+        return -1 * direction;
+      }
+
+      if (rightValue === undefined || rightValue === null) {
+        return 1 * direction;
+      }
+
+      return String(leftValue).localeCompare(String(rightValue), undefined, { numeric: true }) * direction;
+    }, 0)
+  );
+};
+
+const paginateResults = (results, options = {}) => {
+  const shouldPaginate = options.page !== undefined || options.limit !== undefined;
+  const totalResults = results.length;
+  const limit = shouldPaginate && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : totalResults || 10;
+  const page = shouldPaginate && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
+  const skip = (page - 1) * limit;
+  const pagedResults = shouldPaginate ? results.slice(skip, skip + limit) : results;
+  const totalPages = Math.ceil(totalResults / limit);
+
+  return {
+    results: pagedResults,
+    subjects: pagedResults,
+    count: totalResults,
+    page,
+    limit,
+    totalPages,
+    totalResults,
+  };
+};
+
+const getSubjectsForGrades = async (gradeIds, options = {}) => {
   const grades = await Grade.find({
     _id: { $in: gradeIds },
   }).populate('subjects');
 
   if (!grades.length) {
-    return [];
+    return paginateResults([], options);
   }
 
   const subjectMap = new Map();
@@ -55,7 +117,9 @@ const getSubjectsForGrades = async (gradeIds) => {
     });
   });
 
-  return Array.from(subjectMap.values());
+  const subjects = sortResults(Array.from(subjectMap.values()), options.sortBy);
+
+  return paginateResults(subjects, options);
 };
 
 const getGradesWithTuitionRateCounts = async () => {

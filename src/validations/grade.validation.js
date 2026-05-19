@@ -46,6 +46,9 @@ const getSubjectsForGrades = {
       )
       .min(1)
       .required(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
   }),
 };
 
