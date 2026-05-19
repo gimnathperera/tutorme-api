@@ -106,6 +106,9 @@ blogSchema.pre('save', async function (next) {
 blogSchema.plugin(toJSON);
 blogSchema.plugin(paginate);
 
+blogSchema.index({ status: 1, createdAt: -1 });
+blogSchema.index({ tags: 1, status: 1 });
+
 /**
  * @typedef Blog
  */
