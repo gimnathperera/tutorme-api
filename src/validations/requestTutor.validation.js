@@ -219,6 +219,29 @@ const sendTelegramOutreach = {
   }),
 };
 
+const unassignTutor = {
+  params: Joi.object().keys({
+    requestTutorId: Joi.string()
+      .custom((value, helpers) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          return helpers.message('Invalid request tutor ID');
+        }
+        return value;
+      })
+      .required(),
+  }),
+  body: Joi.object().keys({
+    tutorBlockIds: Joi.array().items(Joi.string().trim()).min(1).required().messages({
+      'array.min': 'At least one tutor block ID is required',
+      'any.required': 'tutorBlockIds is required',
+    }),
+    unassignReason: Joi.string().trim().min(1).required().messages({
+      'string.empty': 'Reason for unassignment is required',
+      'any.required': 'Reason for unassignment is required',
+    }),
+  }),
+};
+
 module.exports = {
   createRequestTutor,
   getTutors,
@@ -228,4 +251,5 @@ module.exports = {
   updateAssignedTutor,
   sendTutorMatchReport,
   sendTelegramOutreach,
+  unassignTutor,
 };

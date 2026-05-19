@@ -1008,6 +1008,73 @@ Tuition Lanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send tutor unassignment notification email to the requester
+ * @param {Object} tutorRequest
+ * @param {Array}  unassignedBlocks  - [{ subjectName, tutorName }]
+ * @param {string} unassignReason
+ */
+const sendTutorUnassignedToRequester = async (tutorRequest, unassignedBlocks, unassignReason) => {
+  try {
+    const { name, email } = tutorRequest;
+    const subject = 'Update on Your Tuition Request – Tuition Lanka';
+
+    const blockLines = unassignedBlocks
+      .map((b) => `  - ${b.subjectName} (previously assigned to ${b.tutorName})`)
+      .join('\n');
+
+    const blockHtml = unassignedBlocks
+      .map(
+        (b) => `<li><strong>${escapeHtml(b.subjectName)}</strong> — previously assigned to ${escapeHtml(b.tutorName)}</li>`
+      )
+      .join('');
+
+    const text = `
+Dear ${name},
+
+We wanted to let you know that the tutor previously assigned to your tuition request has been unassigned.
+
+Affected Subject(s):
+${blockLines}
+
+Reason: ${unassignReason}
+
+Our team is already working on finding a suitable replacement and will be in touch with you shortly.
+
+If you have any questions, please don't hesitate to contact us.
+
+Warm regards,
+Tuition Lanka Team
+Tuition Lanka – Learn Better, Achieve More
+`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
+        <p>Dear <strong>${escapeHtml(name)}</strong>,</p>
+        <p>We wanted to let you know that the tutor previously assigned to your tuition request has been <strong>unassigned</strong>.</p>
+
+        <h3>📋 Affected Subject(s)</h3>
+        <ul>${blockHtml}</ul>
+
+        <h3>📝 Reason</h3>
+        <p>${escapeHtml(unassignReason)}</p>
+
+        <p>Our team is already working on finding a suitable replacement and will be in touch with you shortly.</p>
+        <p>If you have any questions, please don't hesitate to contact us.</p>
+
+        <p>Warm regards,<br/>
+        <strong>Tuition Lanka Team</strong><br/>
+        Tuition Lanka – Learn Better, Achieve More</p>
+      </div>
+    `;
+
+    await transport.sendMail({ from: config.email.from, to: email, subject, text, html });
+    logger.info(`Tutor unassigned email sent to requester: ${email}`);
+  } catch (err) {
+    logger.error('Failed to send tutor unassigned email to requester:', err);
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -1018,6 +1085,7 @@ module.exports = {
   sendRequestTutorRejectedEmail,
   sendTutorAssignedToRequester,
   sendTutorAssignedToTutor,
+  sendTutorUnassignedToRequester,
   sendTutorRegistrationPendingEmail,
   sendTutorApprovedEmail,
   sendTutorRejectedEmail,

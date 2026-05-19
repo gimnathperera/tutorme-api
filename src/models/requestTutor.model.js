@@ -41,6 +41,11 @@ const requestTutorSchema = mongoose.Schema(
       required: true,
       default: 'Pending',
     },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     phoneNumber: {
       type: String,
       required: true,
