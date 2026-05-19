@@ -10,7 +10,7 @@ const createTuitionRate = catchAsync(async (req, res) => {
 });
 
 const queryTuitionRates = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['subject', 'grade']);
+  const filter = pick(req.query, ['search', 'subject', 'grade']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };
@@ -21,7 +21,7 @@ const queryTuitionRates = catchAsync(async (req, res) => {
 });
 
 const getTuitionRatesByGrade = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['subject']);
+  const filter = pick(req.query, ['search', 'subject']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };

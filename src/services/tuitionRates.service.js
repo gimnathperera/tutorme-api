@@ -1,6 +1,32 @@
 const httpStatus = require('http-status');
-const { TuitionRates } = require('../models');
+const { Grade, Subject, TuitionRates } = require('../models');
 const ApiError = require('../utils/ApiError');
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildTuitionRateSearchQuery = async (filter = {}) => {
+  const query = { ...filter };
+  const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
+
+  delete query.search;
+
+  if (!searchTerm) {
+    return query;
+  }
+
+  const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+  const [grades, subjects] = await Promise.all([
+    Grade.find({ title: searchRegex }).select('_id').lean(),
+    Subject.find({ title: searchRegex }).select('_id').lean(),
+  ]);
+
+  const gradeIds = grades.map((grade) => grade._id);
+  const subjectIds = subjects.map((subject) => subject._id);
+
+  query.$or = [{ grade: { $in: gradeIds } }, { subject: { $in: subjectIds } }];
+
+  return query;
+};
 
 /**
  * Create a Tuition Rate
@@ -18,7 +44,8 @@ const createTuitionRate = async (tuitionRateBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryTuitionRates = async (filter, options) => {
-  const tuitionRates = await TuitionRates.paginate(filter, {
+  const query = await buildTuitionRateSearchQuery(filter);
+  const tuitionRates = await TuitionRates.paginate(query, {
     ...options,
     populate: 'grade subject',
   });
@@ -26,10 +53,10 @@ const queryTuitionRates = async (filter, options) => {
 };
 
 const getTuitionRatesByGradeId = async (gradeId, filter, options) => {
-  const query = {
+  const query = await buildTuitionRateSearchQuery({
     grade: gradeId,
     ...filter,
-  };
+  });
 
   const tuitionRates = await TuitionRates.paginate(query, {
     ...options,

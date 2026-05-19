@@ -40,4 +40,12 @@ router
     requestTutorController.sendTutorMatchReport
   );
 
+router
+  .route('/:requestTutorId/send-telegram-outreach')
+  .post(
+    auth('manageUsers'),
+    validate(requestTutorValidation.sendTelegramOutreach),
+    requestTutorController.sendTelegramOutreach
+  );
+
 module.exports = router;
