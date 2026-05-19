@@ -1,4 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn install
+if command -v yarn >/dev/null 2>&1; then
+  yarn install
+elif command -v npm >/dev/null 2>&1; then
+  npm install
+fi
