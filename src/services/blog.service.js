@@ -39,8 +39,9 @@ const queryBlogs = async (filter, options, user) => {
 
   const blogs = await Blog.paginate(query, {
     ...options,
-    populate: 'tags relatedArticles',
-    select: 'title slug author image content relatedArticles tags faqs status createdAt updatedAt',
+    limit: Math.min(options.limit || 20, 100),
+    populate: 'tags',
+    select: 'title slug author image tags status createdAt',
   });
 
   return blogs;
