@@ -69,6 +69,11 @@ const sendTutorMatchReport = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const sendTelegramOutreach = catchAsync(async (req, res) => {
+  const result = await requestTutorService.sendTelegramOutreach(req.params.requestTutorId, req.user);
+  res.send(result);
+});
+
 const unassignTutor = catchAsync(async (req, res) => {
   const { requestTutorId } = req.params;
   const { tutorBlockIds, unassignReason } = req.body;
@@ -85,4 +90,5 @@ module.exports = {
   updateAssignedTutor,
   unassignTutor,
   sendTutorMatchReport,
+  sendTelegramOutreach,
 };

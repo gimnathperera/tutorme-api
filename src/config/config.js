@@ -24,8 +24,11 @@ const envVarsSchema = Joi.object()
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
     ADMIN_EMAIL: Joi.string().email().description('the admin email that receives tutor request match reports'),
+    ADMIN_WHATSAPP_NUMBER: Joi.string().description('the admin WhatsApp number tutors can contact for support'),
     USER_APP_URL: Joi.string().uri().description('the user portal base url'),
     ADMIN_APP_URL: Joi.string().uri().description('the admin portal base url'),
+    TELEGRAM_BOT_TOKEN: Joi.string().description('Telegram bot token used for tutor outreach messages'),
+    TELEGRAM_TUTOR_GROUP_CHAT_ID: Joi.string().description('Telegram group/channel chat id for tutor outreach'),
   })
   .unknown();
 
@@ -69,9 +72,14 @@ module.exports = {
     },
     from: `"Tuition Lanka" <${process.env.EMAIL_FROM}>`,
     admin: envVars.ADMIN_EMAIL || envVars.EMAIL_FROM,
+    adminWhatsAppNumber: envVars.ADMIN_WHATSAPP_NUMBER,
   },
   app: {
     userUrl: envVars.USER_APP_URL || 'https://www.tuitionlanka.com',
     adminUrl: envVars.ADMIN_APP_URL || 'https://admin.tuitionlanka.com',
+  },
+  telegram: {
+    botToken: envVars.TELEGRAM_BOT_TOKEN,
+    tutorGroupChatId: envVars.TELEGRAM_TUTOR_GROUP_CHAT_ID,
   },
 };

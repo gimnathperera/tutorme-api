@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const config = require('../config/config');
 const logger = require('../config/logger');
 const { Grade, Subject } = require('../models');
+const telegramService = require('./telegram.service');
 
 const transport = nodemailer.createTransport(config.email.smtp);
 /* istanbul ignore next */
@@ -582,6 +583,55 @@ const sendTutorApprovedEmail = async (to, tutorName) => {
   try {
     const subject = 'Your Tutor Registration is Approved – TuitionLanka';
     const signInUrl = 'https://www.tuitionlanka.com?login=true';
+    let tutorRequestsTelegramGroupUrl = '';
+
+    try {
+      const inviteLink = await telegramService.createTutorInviteLink(tutorName);
+      tutorRequestsTelegramGroupUrl = inviteLink && inviteLink.invite_link ? inviteLink.invite_link : '';
+    } catch (telegramErr) {
+      logger.warn(`Failed to generate Telegram tutor invite link for ${to}: ${telegramErr.message}`);
+    }
+
+    const { adminWhatsAppNumber } = config.email;
+    const telegramSupportText = adminWhatsAppNumber
+      ? `If you have any issues joining the Telegram group, please contact the TuitionLanka admin on WhatsApp: ${adminWhatsAppNumber}`
+      : 'If you have any issues joining the Telegram group, please contact the TuitionLanka admin.';
+    const telegramSupportHtml = adminWhatsAppNumber
+      ? `If you have any issues joining the Telegram group, please contact the TuitionLanka admin on WhatsApp: <strong>${adminWhatsAppNumber}</strong>`
+      : 'If you have any issues joining the Telegram group, please contact the TuitionLanka admin.';
+
+    const telegramText = tutorRequestsTelegramGroupUrl
+      ? `To receive new tuition requests, please join our official Telegram group using your secure one-time invite link.
+
+This link can only be used once and will expire in 48 hours.
+${tutorRequestsTelegramGroupUrl}
+
+${telegramSupportText}`
+      : `We could not generate your secure Telegram invite link automatically. ${telegramSupportText}`;
+
+    const telegramHtml = tutorRequestsTelegramGroupUrl
+      ? `
+          <p>To receive new tuition requests, please join our official Telegram group using your secure one-time invite link.</p>
+          <p>This link can only be used once and will expire in 48 hours.</p>
+          <p style="text-align: center; margin: 24px 0;">
+            <a href="${tutorRequestsTelegramGroupUrl}"
+               style="background-color: #229ED9; color: #fff; padding: 13px 28px;
+                      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
+              Join Telegram Group
+            </a>
+          </p>
+          <p style="color: #6b7280; font-size: 13px;">Or copy and paste this secure Telegram invite link into your browser:<br/>
+            <a href="${tutorRequestsTelegramGroupUrl}" style="color: #4F46E5; font-weight: bold;">${tutorRequestsTelegramGroupUrl}</a>
+          </p>
+          <p>${telegramSupportHtml}</p>
+        `
+      : `
+          <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 14px 18px; border-radius: 4px; margin: 22px 0;">
+            <p style="margin: 0; color: #9a3412;">
+              We could not generate your secure Telegram invite link automatically. ${telegramSupportHtml}
+            </p>
+          </div>
+        `;
 
     const text = `
 Dear ${tutorName},
@@ -590,6 +640,8 @@ Great news! Your tutor registration on TuitionLanka has been approved.
 
 You can now log in to the platform using the link below:
 ${signInUrl}
+
+${telegramText}
 
 Thank you for joining TuitionLanka. We look forward to connecting you with students!
 
@@ -619,6 +671,8 @@ TuitionLanka – Learn Better, Achieve More
           <p style="color: #6b7280; font-size: 13px;">Or copy this link into your browser:<br/>
             <a href="${signInUrl}" style="color: #4F46E5;">${signInUrl}</a>
           </p>
+
+          ${telegramHtml}
 
           <p>Thank you for joining TuitionLanka. We look forward to connecting you with students!</p>
 
