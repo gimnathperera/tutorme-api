@@ -26,6 +26,8 @@ const envVarsSchema = Joi.object()
     ADMIN_EMAIL: Joi.string().email().description('the admin email that receives tutor request match reports'),
     USER_APP_URL: Joi.string().uri().description('the user portal base url'),
     ADMIN_APP_URL: Joi.string().uri().description('the admin portal base url'),
+    SENTRY_DSN: Joi.string().uri().allow('').optional().description('Sentry project DSN'),
+    SENTRY_RELEASE: Joi.string().allow('').optional().description('Sentry release identifier'),
   })
   .unknown();
 
@@ -73,5 +75,9 @@ module.exports = {
   app: {
     userUrl: envVars.USER_APP_URL || 'https://www.tuitionlanka.com',
     adminUrl: envVars.ADMIN_APP_URL || 'https://admin.tuitionlanka.com',
+  },
+  sentry: {
+    dsn: envVars.SENTRY_DSN,
+    release: envVars.SENTRY_RELEASE || undefined,
   },
 };

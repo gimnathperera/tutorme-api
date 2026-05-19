@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const app = require('./app');
+const sentry = require('./config/sentry');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const app = require('./app');
 
 let server;
 const port = config.port || 3000;
@@ -26,7 +27,8 @@ const exitHandler = () => {
 
 const unexpectedErrorHandler = (error) => {
   logger.error(error);
-  exitHandler();
+  sentry.captureException(error);
+  sentry.flush().finally(exitHandler);
 };
 
 process.on('uncaughtException', unexpectedErrorHandler);

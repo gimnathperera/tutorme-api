@@ -32,3 +32,7 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_RELEASE
+        sync: false
