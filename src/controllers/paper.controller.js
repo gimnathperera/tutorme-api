@@ -10,7 +10,7 @@ const createPaper = catchAsync(async (req, res) => {
 });
 
 const getPapers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['title', 'grade', 'subject', 'medium']);
+  const filter = pick(req.query, ['title', 'year', 'yearSearch', 'grade', 'subject', 'medium']);
 
   const options = { ...pick(req.query, ['sortBy', 'limit', 'page', 'order']), populate: 'grade,subject' };
 
