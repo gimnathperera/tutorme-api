@@ -96,7 +96,7 @@ const getBlogs = {
     tags: Joi.array().items(objectId()),
     status: Joi.string().valid('pending', 'approved', 'rejected'),
     sortBy: Joi.string(),
-    limit: Joi.number().integer(),
+    limit: Joi.number().integer().max(100),
     page: Joi.number().integer(),
   }),
 };
