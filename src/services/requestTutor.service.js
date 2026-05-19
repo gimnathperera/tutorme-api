@@ -458,14 +458,32 @@ const escapeTelegramHtml = (value) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
+const isTutorBlockAssigned = (tutorBlock) => Boolean(tutorBlock && String(tutorBlock.assignedTutor || '').trim());
+
+const getShortReference = (id) => {
+  const safeId = String(id || '').trim();
+  return safeId ? safeId.slice(-6).toUpperCase() : 'N/A';
+};
+
 const buildTelegramOutreachMessage = async (requestTutor) => {
+  const requestId = String(requestTutor.id || requestTutor._id || '');
+  const shortRequestRef = getShortReference(requestId);
+  const unassignedTutorBlocks = (requestTutor.tutors || [])
+    .map((tutorBlock, index) => ({ tutorBlock, requestNumber: index + 1 }))
+    .filter(({ tutorBlock }) => !isTutorBlockAssigned(tutorBlock));
+
+  if (unassignedTutorBlocks.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'All tutor request blocks are already assigned');
+  }
+
   const [gradeDoc, blockSubjectDocs] = await Promise.all([
     resolveGradeDoc(requestTutor.grade),
     Promise.all(
-      (requestTutor.tutors || []).map(async (tutorBlock) => {
+      unassignedTutorBlocks.map(async ({ tutorBlock, requestNumber }) => {
         const subjectDoc = await resolveSubjectDoc(tutorBlock.subject);
         return {
           tutorBlock,
+          requestNumber,
           subjectTitle: subjectDoc ? subjectDoc.title : tutorBlock.subject,
         };
       })
@@ -475,16 +493,18 @@ const buildTelegramOutreachMessage = async (requestTutor) => {
   const lines = [
     '<b>New tutor request</b>',
     '',
+    `Tutor request ref: ${escapeTelegramHtml(shortRequestRef)}`,
     `District: ${escapeTelegramHtml(requestTutor.district)}`,
     `City: ${escapeTelegramHtml(requestTutor.city)}`,
     `Medium: ${escapeTelegramHtml(requestTutor.medium)}`,
     `Grade: ${escapeTelegramHtml(gradeDoc ? gradeDoc.title : requestTutor.grade)}`,
   ];
 
-  blockSubjectDocs.forEach(({ tutorBlock, subjectTitle }, index) => {
+  blockSubjectDocs.forEach(({ tutorBlock, requestNumber, subjectTitle }) => {
     lines.push(
       '',
-      `<b>Request ${index + 1}</b>`,
+      `<b>Request ${requestNumber}</b>`,
+      `Request ref: ${escapeTelegramHtml(getShortReference(tutorBlock.id || tutorBlock._id))}`,
       `Subject: ${escapeTelegramHtml(subjectTitle)}`,
       `Preferred tutor type: ${escapeTelegramHtml(tutorBlock.preferredTutorType)}`,
       `Class type: ${escapeTelegramHtml(tutorBlock.preferredClassType)}`,
