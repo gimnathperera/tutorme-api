@@ -28,6 +28,7 @@ const createTuitionRate = {
 // Get tuition rates validation
 const getTuitionRates = {
   query: Joi.object().keys({
+    search: Joi.string().allow(''),
     subject: Joi.string(),
     grade: Joi.string(),
     sortBy: Joi.string(),
@@ -38,9 +39,10 @@ const getTuitionRates = {
 
 const getTuitionRatesByGrade = {
   params: Joi.object().keys({
-    tuitionRatesId: idValidator,
+    gradeId: idValidator,
   }),
   query: Joi.object().keys({
+    search: Joi.string().allow(''),
     subject: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),

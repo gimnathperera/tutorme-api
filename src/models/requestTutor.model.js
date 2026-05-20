@@ -51,6 +51,15 @@ const requestTutorSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+    telegramOutreachSentAt: {
+      type: Date,
+      default: null,
+    },
+    telegramOutreachSentBy: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      default: null,
+    },
 
     tutors: [
       {

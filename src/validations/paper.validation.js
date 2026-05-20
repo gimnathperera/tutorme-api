@@ -26,6 +26,8 @@ const createPaper = {
 const getPapers = {
   query: Joi.object().keys({
     title: Joi.string(),
+    year: Joi.number().integer(),
+    yearSearch: Joi.string().pattern(/^\d+$/).allow(''),
     grade: Joi.string().custom(objectId),
     subject: Joi.string().custom(objectId),
     medium: Joi.string().custom(paperMedium),

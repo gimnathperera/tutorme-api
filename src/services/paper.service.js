@@ -27,10 +27,26 @@ const preparePaperData = (paperBody) => {
 
 const preparePaperQuery = (filter) => {
   const query = { ...filter };
+  const yearSearch = typeof query.yearSearch === 'string' ? query.yearSearch.trim() : '';
+
+  delete query.yearSearch;
 
   if (query.medium !== undefined) {
     const normalizedMedium = normalizeMediumOrThrow(query.medium);
     query.medium = { $regex: `^${escapeRegex(normalizedMedium)}$`, $options: 'i' };
+  }
+
+  if (query.title !== undefined) {
+    query.title = { $regex: escapeRegex(query.title), $options: 'i' };
+  }
+
+  if (yearSearch) {
+    query.$expr = {
+      $regexMatch: {
+        input: { $toString: '$year' },
+        regex: escapeRegex(yearSearch),
+      },
+    };
   }
 
   return query;
