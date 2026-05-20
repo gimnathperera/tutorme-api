@@ -2,6 +2,28 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { Inquiry } = require('../models');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const prepareInquiryQuery = (filter = {}) => {
+  const query = { ...filter };
+
+  if (query.message) {
+    query.message = { $regex: escapeRegex(query.message), $options: 'i' };
+  }
+
+  if (query.name) {
+    query['sender.name'] = { $regex: escapeRegex(query.name), $options: 'i' };
+    delete query.name;
+  }
+
+  if (query.email) {
+    query['sender.email'] = { $regex: escapeRegex(query.email), $options: 'i' };
+    delete query.email;
+  }
+
+  return query;
+};
+
 /**
  * Create an inquiry
  * @param {Object} inquiryBody
@@ -21,7 +43,7 @@ const createInquiry = async (inquiryBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryInquiries = async (filter, options) => {
-  const inquiries = await Inquiry.paginate(filter, options);
+  const inquiries = await Inquiry.paginate(prepareInquiryQuery(filter), options);
   return inquiries;
 };
 
