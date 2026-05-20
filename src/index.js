@@ -1,3 +1,5 @@
+require('../instrument');
+
 const mongoose = require('mongoose');
 const sentry = require('./config/sentry');
 const config = require('./config/config');
