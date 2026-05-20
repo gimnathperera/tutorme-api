@@ -14,6 +14,8 @@ const createInquiry = {
 const getInquiries = {
   query: Joi.object().keys({
     message: Joi.string(),
+    name: Joi.string(),
+    email: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
