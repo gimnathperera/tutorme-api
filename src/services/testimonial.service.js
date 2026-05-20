@@ -2,6 +2,18 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { Testimonial } = require('../models');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const prepareTestimonialQuery = (filter = {}) => {
+  const query = { ...filter };
+
+  if (query.content) {
+    query.content = { $regex: escapeRegex(query.content), $options: 'i' };
+  }
+
+  return query;
+};
+
 /**
  * Create a testimonial
  * @param {Object} testimonialBody
@@ -21,7 +33,7 @@ const createTestimonial = async (testimonialBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryTestimonials = async (filter, options) => {
-  const testimonials = await Testimonial.paginate(filter, options);
+  const testimonials = await Testimonial.paginate(prepareTestimonialQuery(filter), options);
   return testimonials;
 };
 

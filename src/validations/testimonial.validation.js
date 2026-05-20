@@ -15,7 +15,8 @@ const createTestimonials = {
 
 const getTestimonials = {
   query: Joi.object().keys({
-    title: Joi.string(),
+    content: Joi.string(),
+    rating: Joi.number(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
