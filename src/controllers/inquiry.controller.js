@@ -10,7 +10,7 @@ const createInquiry = catchAsync(async (req, res) => {
 });
 
 const getInquiries = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['author', 'sender']);
+  const filter = pick(req.query, ['message', 'name', 'email']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };

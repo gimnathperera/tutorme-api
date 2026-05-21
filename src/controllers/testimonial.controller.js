@@ -10,7 +10,7 @@ const createTestimonial = catchAsync(async (req, res) => {
 });
 
 const getTestimonials = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['author', 'content']);
+  const filter = pick(req.query, ['content', 'rating']);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
   };
