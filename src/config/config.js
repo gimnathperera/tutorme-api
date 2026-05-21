@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+    APP_ENV: Joi.string().valid('production', 'staging', 'development', 'test').optional(),
     PORT: Joi.number().default(3000),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
@@ -82,6 +83,7 @@ module.exports = {
   },
   sentry: {
     dsn: envVars.SENTRY_DSN,
+    environment: envVars.APP_ENV || envVars.NODE_ENV,
     release: envVars.SENTRY_RELEASE || undefined,
   },
   telegram: {

@@ -136,10 +136,10 @@ const beforeSend = (event) => {
 if (isEnabled) {
   Sentry.init({
     dsn: config.sentry.dsn,
-    environment: config.env,
+    environment: config.sentry.environment,
     release: config.sentry.release,
     sendDefaultPii: false,
-    tracesSampleRate: config.env === 'production' ? 0.05 : 0.1,
+    tracesSampleRate: config.sentry.environment === 'production' ? 0.05 : 0.1,
     beforeSend,
   });
 }
