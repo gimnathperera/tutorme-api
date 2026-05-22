@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+    APP_ENV: Joi.string().valid('production', 'staging', 'development', 'test').optional(),
     PORT: Joi.number().default(3000),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
@@ -27,6 +28,8 @@ const envVarsSchema = Joi.object()
     ADMIN_WHATSAPP_NUMBER: Joi.string().description('the admin WhatsApp number tutors can contact for support'),
     USER_APP_URL: Joi.string().uri().description('the user portal base url'),
     ADMIN_APP_URL: Joi.string().uri().description('the admin portal base url'),
+    SENTRY_DSN: Joi.string().uri().allow('').optional().description('Sentry project DSN'),
+    SENTRY_RELEASE: Joi.string().allow('').optional().description('Sentry release identifier'),
     TELEGRAM_BOT_TOKEN: Joi.string().description('Telegram bot token used for tutor outreach messages'),
     TELEGRAM_TUTOR_GROUP_CHAT_ID: Joi.string().description('Telegram group/channel chat id for tutor outreach'),
   })
@@ -77,6 +80,11 @@ module.exports = {
   app: {
     userUrl: envVars.USER_APP_URL || 'https://www.tuitionlanka.com',
     adminUrl: envVars.ADMIN_APP_URL || 'https://admin.tuitionlanka.com',
+  },
+  sentry: {
+    dsn: envVars.SENTRY_DSN,
+    environment: envVars.APP_ENV || envVars.NODE_ENV,
+    release: envVars.SENTRY_RELEASE || undefined,
   },
   telegram: {
     botToken: envVars.TELEGRAM_BOT_TOKEN,

@@ -8,6 +8,7 @@ const passport = require('passport');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const sentry = require('./config/sentry');
 const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
@@ -50,13 +51,14 @@ if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
 }
 
-// health check endpoint
 app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
 // v1 api routes
 app.use('/v1', routes);
+
+sentry.setupExpressErrorHandler(app);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
