@@ -305,7 +305,9 @@ const tutorUserProfileFields = {
   teachingSummary: Joi.string().allow('').max(750),
   studentResults: Joi.string().allow('').max(750),
   sellingPoints: Joi.string().allow('').max(750),
-  certificatesAndQualifications: Joi.array().items(Joi.string()),
+  certificatesAndQualifications: Joi.array().items(
+    Joi.alternatives().try(Joi.string(), Joi.object({ type: Joi.string().allow(''), url: Joi.string() }))
+  ),
   language: Joi.string(),
   timeZone: Joi.string(),
   rate: Joi.string(),
