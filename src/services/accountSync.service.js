@@ -20,12 +20,15 @@ const getTutorCertificatesFromUser = (user, tutor) => {
 
   const existingCertificates = Array.isArray(tutor.certificatesAndQualifications) ? tutor.certificatesAndQualifications : [];
 
-  return user.certificatesAndQualifications.map((certificateUrl) => {
-    const existingCertificate = existingCertificates.find((certificate) => certificate.url === certificateUrl);
+  return user.certificatesAndQualifications.map((certificate) => {
+    if (certificate && typeof certificate === 'object' && certificate.url) {
+      return { type: certificate.type || 'Certificate', url: certificate.url };
+    }
 
+    const existingCertificate = existingCertificates.find((c) => c.url === certificate);
     return {
       type: (existingCertificate && existingCertificate.type) || 'Certificate',
-      url: certificateUrl,
+      url: certificate,
     };
   });
 };
@@ -36,7 +39,11 @@ const getUserCertificatesFromTutor = (tutor) => {
   }
 
   return tutor.certificatesAndQualifications
-    .map((certificate) => (typeof certificate === 'string' ? certificate : certificate.url))
+    .map((certificate) => {
+      if (typeof certificate === 'string') return { type: 'Certificate', url: certificate };
+      if (certificate && certificate.url) return { type: certificate.type || 'Certificate', url: certificate.url };
+      return null;
+    })
     .filter(Boolean);
 };
 

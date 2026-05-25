@@ -210,7 +210,7 @@ const userSchema = mongoose.Schema(
       default: '',
     },
     certificatesAndQualifications: {
-      type: [String],
+      type: [mongoose.Schema.Types.Mixed],
       default: [],
     },
     gender: {
