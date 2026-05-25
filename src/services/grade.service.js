@@ -125,23 +125,10 @@ const getSubjectsForGrades = async (gradeIds, options = {}) => {
 const getGradesWithTuitionRateCounts = async () => {
   const grades = await Grade.aggregate([
     {
-      $lookup: {
-        from: 'tuitionrates',
-        localField: '_id',
-        foreignField: 'grade',
-        as: 'tuitionRates',
-      },
-    },
-    {
-      $addFields: {
-        tuitionRateCount: { $size: '$tuitionRates' },
-      },
-    },
-    {
       $project: {
         title: 1,
         description: 1,
-        tuitionRateCount: 1,
+        tuitionRateCount: { $size: { $ifNull: ['$subjects', []] } },
       },
     },
     {
