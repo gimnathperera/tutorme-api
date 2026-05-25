@@ -53,17 +53,55 @@ const queryTuitionRates = async (filter, options) => {
 };
 
 const getTuitionRatesByGradeId = async (gradeId, filter, options) => {
-  const query = await buildTuitionRateSearchQuery({
-    grade: gradeId,
-    ...filter,
+  const grade = await Grade.findById(gradeId).populate('subjects').lean();
+  if (!grade) {
+    return { results: [], page: 1, limit: 10, totalPages: 0, totalResults: 0 };
+  }
+
+  const subjects = grade.subjects || [];
+
+  // Fetch all configured rates for this grade in one query
+  const existingRates = await TuitionRates.find({ grade: gradeId }).populate('subject').lean();
+  const ratesBySubjectId = new Map(existingRates.map((r) => [r.subject._id.toString(), r]));
+
+  // Build merged list — every subject appears, rate fields are null if not configured
+  let merged = subjects.map((subject) => {
+    const rate = ratesBySubjectId.get(subject._id.toString());
+    if (rate) return rate;
+    return {
+      subject: { id: subject._id, _id: subject._id, title: subject.title },
+      grade: { id: grade._id, _id: grade._id, title: grade.title },
+      universityStudentsRate: null,
+      partTimeTutorRate: null,
+      fullTimeTutorRate: null,
+      moeTeacherRate: null,
+    };
   });
 
-  const tuitionRates = await TuitionRates.paginate(query, {
-    ...options,
-    populate: 'grade subject',
-  });
+  // Apply optional search/subject filters
+  const searchTerm = typeof filter.search === 'string' ? filter.search.trim() : '';
+  if (searchTerm) {
+    const searchRegex = new RegExp(escapeRegex(searchTerm), 'i');
+    merged = merged.filter((r) => searchRegex.test((r.subject && r.subject.title) || ''));
+  }
+  if (filter.subject) {
+    merged = merged.filter((r) => {
+      try {
+        return (r.subject && r.subject._id && r.subject._id.toString()) === filter.subject;
+      } catch (e) {
+        return false;
+      }
+    });
+  }
 
-  return tuitionRates;
+  // Manual pagination (paginate plugin not usable on plain arrays)
+  const totalResults = merged.length;
+  const limit = parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
+  const page = parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
+  const totalPages = Math.ceil(totalResults / limit) || 1;
+  const results = merged.slice((page - 1) * limit, page * limit);
+
+  return { results, page, limit, totalPages, totalResults };
 };
 
 /**
