@@ -138,6 +138,8 @@ if (isEnabled) {
     dsn: config.sentry.dsn,
     environment: config.sentry.environment,
     release: config.sentry.release,
+    integrations: [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })],
+    enableLogs: true,
     sendDefaultPii: false,
     tracesSampleRate: config.sentry.environment === 'production' ? 0.05 : 0.1,
     beforeSend,
