@@ -582,7 +582,7 @@ TuitionLanka – Learn Better, Achieve More
 const sendTutorApprovedEmail = async (to, tutorName) => {
   try {
     const subject = 'Your Tutor Registration is Approved – TuitionLanka';
-    const signInUrl = 'https://www.tuitionlanka.com?login=true';
+    const signInUrl = `${config.app.userUrl}?login=true`;
     let tutorRequestsTelegramGroupUrl = '';
 
     try {
