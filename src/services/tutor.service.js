@@ -34,24 +34,25 @@ const getEmailAvailability = async (email) => {
     Tutor.findOne({ email: normalizedEmail }).select('_id status').lean(),
   ]);
 
-  if (existingTutor && existingTutor.status === 'suspended') {
-    return {
-      available: false,
-      message: 'This email has been suspended. Please contact admin.',
-    };
+  if (existingTutor) {
+    if (existingTutor.status === 'suspended') {
+      return { available: false, message: 'This email has been suspended. Please contact admin.' };
+    }
+    if (existingTutor.status === 'pending') {
+      return { available: false, message: 'A registration with this email is already pending approval.' };
+    }
+    if (existingTutor.status === 'approved') {
+      return { available: false, message: 'Email already exists' };
+    }
+    // rejected tutors are allowed to re-register regardless of whether a User record exists
+    return { available: true, message: 'Email is available' };
   }
 
-  if (existingUser || existingTutor) {
-    return {
-      available: false,
-      message: 'Email already exists',
-    };
+  if (existingUser) {
+    return { available: false, message: 'Email already exists' };
   }
 
-  return {
-    available: true,
-    message: 'Email is available',
-  };
+  return { available: true, message: 'Email is available' };
 };
 
 /**
