@@ -27,6 +27,43 @@ const sendEmail = async (to, subject, text, html) => {
 
 const normalizeBaseUrl = (url) => String(url || '').replace(/\/+$/, '');
 
+const LOGO_URL = 'https://www.tuitionlanka.com/Emale_template_logo.jpeg';
+const ICON_URL = 'https://www.tuitionlanka.com/Email_template_icon.jpeg';
+
+const buildEmailHtml = (bodyContent) => `
+  <div style="background-color:#EFF5FF;padding:40px 0;font-family:Arial,Helvetica,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(30,64,175,0.10);">
+
+      <div style="background:linear-gradient(135deg,#235ED5,#3b7ef8);padding:28px 32px;text-align:center;">
+        <img src="${LOGO_URL}" alt="Tuition Lanka" style="height:70px;max-width:280px;" />
+      </div>
+
+      <div style="background:#ffffff;padding:40px 40px 32px;">
+        <div style="text-align:center;margin-bottom:28px;">
+          <img src="${ICON_URL}" alt="" style="width:80px;height:80px;" />
+        </div>
+        ${bodyContent}
+        <p style="color:#374151;font-size:14px;margin-top:32px;line-height:1.6;">
+          Warm regards,<br/>
+          <strong>Tuition Lanka Team</strong>
+        </p>
+      </div>
+
+      <div style="background:#f8faff;border-top:1px solid #dbeafe;padding:20px 32px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">
+          <a href="https://www.tuitionlanka.com" style="color:#235ED5;text-decoration:none;">www.tuitionlanka.com</a>
+          &nbsp;|&nbsp;
+          <a href="mailto:support.tuitionlanka@gmail.com" style="color:#235ED5;text-decoration:none;">support.tuitionlanka@gmail.com</a>
+          &nbsp;|&nbsp;
+          <span style="color:#374151;">+94 707491400</span>
+        </p>
+        <p style="margin:0;font-size:12px;color:#9ca3af;">&copy; 2026 - All right reserved by Tuition Lanka.</p>
+      </div>
+
+    </div>
+  </div>
+`;
+
 const escapeHtml = (value) =>
   String(value)
     .replace(/&/g, '&amp;')
@@ -70,24 +107,24 @@ ${resetPasswordUrl}
 If you didn’t request this, please ignore this email.
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.6;">
-        <p>Hello,</p>
-        <p>We received a request to reset the password for your <strong>TuitionLanka</strong> account.</p>
-        <p>You can reset your password by clicking the button below:</p>
-        <p style="text-align: left; margin: 25px 0;">
-          <a href="${resetPasswordUrl}"
-             style="background-color: #4F46E5; color: #fff; padding: 12px 24px;
-                    border-radius: 8px; text-decoration: none; font-weight: bold;">
-            Reset Password
-          </a>
-        </p>
-        <p>If the button above doesn’t work, you can copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #1d4ed8;">${resetPasswordUrl}</p>
-        <p>If you did not request a password reset, please ignore this message.</p>
-        <p>Thank you,<br><strong>The TuitionLanka Support Team</strong></p>
-      </div>
-    `;
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Reset Your Password</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        We received a request to reset the password for your <strong>TuitionLanka</strong> account.
+        Click the button below to set a new password.
+      </p>
+      <p style="text-align:center;margin:28px 0;">
+        <a href="${resetPasswordUrl}"
+           style="background-color:#235ED5;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+          Reset Password
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;line-height:1.6;">
+        If the button above doesn’t work, copy and paste this link into your browser:<br/>
+        <a href="${resetPasswordUrl}" style="color:#235ED5;word-break:break-all;">${resetPasswordUrl}</a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin-top:16px;">If you did not request a password reset, please ignore this message.</p>
+    `);
 
     await transport.sendMail({
       from: config.email.from,
@@ -145,42 +182,23 @@ If you did not request this, please contact support.
 Thanks,
 TuitionLanka Support Team`;
 
-    const html = `
-      <div style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-        <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
-          <div style="background:linear-gradient(135deg,#1d4ed8,#2563eb);border-radius:18px 18px 0 0;padding:28px 32px;color:#fff;">
-            <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">TuitionLanka</p>
-            <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;">Your temporary password is ready</h1>
-          </div>
-
-          <div style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 18px 18px;padding:32px;">
-            <p style="margin:0 0 16px;font-size:16px;">Hello <strong>${safeUsername}</strong>,</p>
-            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#4b5563;">
-              A temporary password has been generated for your account. Use it to log in once, then update it to a password only you know.
-            </p>
-
-            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:18px 20px;margin:0 0 24px;">
-              <p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#1d4ed8;">
-                Temporary Password
-              </p>
-              <div style="display:inline-block;background:#ffffff;border:1px dashed #60a5fa;border-radius:12px;padding:14px 18px;font-size:20px;font-weight:700;letter-spacing:0.08em;color:#111827;word-break:break-all;">
-                ${safeTempPassword}
-              </div>
-            </div>
-
-            <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#4b5563;">
-              <strong style="color:#1f2937;">Security notice:</strong> Log in immediately and change your password.
-              Do not share this temporary password with anyone. If you did not request this, contact support right away.
-            </p>
-
-            <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.7;">
-              Thanks,<br />
-              <strong>TuitionLanka Support Team</strong>
-            </p>
-          </div>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Your Temporary Password</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Hello <strong>${safeUsername}</strong>,<br/>
+        A temporary password has been generated for your account. Use it to log in once, then update it to a password only you know.
+      </p>
+      <div style="background:#EFF5FF;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:0 0 24px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;text-transform:uppercase;color:#235ED5;letter-spacing:0.04em;">Temporary Password</p>
+        <div style="display:inline-block;background:#fff;border:1px dashed #60a5fa;border-radius:10px;padding:14px 24px;font-size:22px;font-weight:700;letter-spacing:0.08em;color:#235ED5;word-break:break-all;">
+          ${safeTempPassword}
         </div>
       </div>
-    `;
+      <p style="color:#6b7280;font-size:13px;line-height:1.7;">
+        <strong style="color:#374151;">Security notice:</strong> Log in immediately and change your password.
+        Do not share this password with anyone. If you did not request this, contact support right away.
+      </p>
+    `);
 
     await sendEmail(to, subject, text, html);
   } catch (err) {
@@ -264,56 +282,49 @@ Tuition Lanka Team
 Tuition Lanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
-        <p>Dear <strong>${name}</strong>,</p>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${name},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Thank you for submitting your tutor request with <strong>Tuition Lanka</strong>.
+        We're happy to inform you that we have <strong>successfully received your request</strong>.
+      </p>
 
-        <p>Thank you for submitting your tutor request with <strong>Tuition Lanka</strong>.
-        We're happy to inform you that we have successfully received your request.</p>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Student Details</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Full Name:</strong> ${name}</li>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Phone Number:</strong> ${phoneNumber}</li>
+        <li><strong>District:</strong> ${district}</li>
+        <li><strong>City:</strong> ${city}</li>
+      </ul>
 
-        <h3>👤 Student Details</h3>
-        <ul>
-          <li><strong>Full Name:</strong> ${name}</li>
-          <li><strong>Email:</strong> ${email}</li>
-          <li><strong>Phone Number:</strong> ${phoneNumber}</li>
-          <li><strong>District:</strong> ${district}</li>
-          <li><strong>City:</strong> ${city}</li>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Academic Preferences</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Medium:</strong> ${medium}</li>
+        <li><strong>Grade:</strong> ${gradeName}</li>
+        <li><strong>Number of Tutors Requested:</strong> ${tutors.length}</li>
+      </ul>
+
+      ${tutors
+        .slice(0, 4)
+        .map(
+          (tutor, index) => `
+        <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Tutor ${index + 1} Details</p>
+        <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+          <li><strong>Subject:</strong> ${resolveSubject(tutor.subject)}</li>
+          <li><strong>Class Duration:</strong> ${tutor.duration}</li>
+          <li><strong>Frequency:</strong> ${tutor.frequency}</li>
+          <li><strong>Preferred Tutor Type:</strong> ${tutor.preferredTutorType}</li>
         </ul>
+      `
+        )
+        .join('')}
 
-        <h3>📘 Academic Preferences</h3>
-        <ul>
-          <li><strong>Medium:</strong> ${medium}</li>
-          <li><strong>Grade:</strong> ${gradeName}</li>
-          <li><strong>Number of Tutors Requested:</strong> ${tutors.length}</li>
-        </ul>
-
-        ${tutors
-          .slice(0, 4)
-          .map(
-            (tutor, index) => `
-          <h4>Tutor ${index + 1} Details</h4>
-          <ul>
-            <li><strong>Subject:</strong> ${resolveSubject(tutor.subject)}</li>
-            <li><strong>Class Duration:</strong> ${tutor.duration}</li>
-            <li><strong>Frequency:</strong> ${tutor.frequency}</li>
-            <li><strong>Preferred Tutor Type:</strong> ${tutor.preferredTutorType}</li>
-          </ul>
-        `
-          )
-          .join('')}
-
-        <p>
-          Our team has now started processing your request. We will carefully review your requirements,
-          assign suitable tutors, and contact you shortly.
-        </p>
-
-        <p>
-          Warm regards,<br/>
-          <strong>Tuition Lanka Team</strong><br/>
-          Tuition Lanka – Learn Better, Achieve More
-        </p>
-      </div>
-    `;
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:20px 0 0;">
+        Our team has now started processing your request. We will carefully review your requirements,
+        assign suitable tutors, and contact you shortly.
+      </p>
+    `);
 
     await transport.sendMail({
       from: config.email.from,
@@ -374,59 +385,31 @@ Best regards,
 TuitionLanka Team
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.7; max-width:600px; margin:0 auto;">
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${safeName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Thank you for submitting your tutor request to <strong>Tuition Lanka</strong>.
+        We reviewed your request and unfortunately we were unable to find a suitable match at this time.
+      </p>
 
-        <div style="background-color:#dc2626; padding:24px 32px; border-radius:8px 8px 0 0;">
-          <h2 style="color:#ffffff; margin:0; font-size:22px;">
-            Tutor Request Update
-          </h2>
-        </div>
-
-        <div style="background-color:#f9fafb; padding:28px 32px; border:1px solid #e5e7eb; border-top:none; border-radius:0 0 8px 8px;">
-
-          <p>Dear <strong>${safeName}</strong>,</p>
-
-          <p>
-            Thank you for submitting your tutor request to TuitionLanka.
-          </p>
-
-          <p>
-            We reviewed your tutor request and unfortunately we were unable to find a suitable match at this time.
-          </p>
-
-          <div style="background-color:#fef2f2; border-left:4px solid #ef4444; padding:16px 20px; border-radius:4px; margin:20px 0;">
-            <p style="margin:0 0 8px 0; color:#7f1d1d;">
-              <strong>Reason provided by our team:</strong>
-            </p>
-
-            <p style="margin:0; color:#991b1b; white-space:pre-wrap;">
-              ${safeReason}
-            </p>
-          </div>
-
-          <h3 style="margin-top:24px;">Request Details</h3>
-
-          <ul style="padding-left:20px;">
-            <li><strong>Name:</strong> ${safeName}</li>
-            <li><strong>Email:</strong> ${safeEmail}</li>
-            <li><strong>City:</strong> ${safeCity}</li>
-            <li><strong>District:</strong> ${safeDistrict}</li>
-            <li><strong>Grade:</strong> ${safeGrade}</li>
-          </ul>
-
-          <p>
-            You are welcome to submit a new tutor request in the future with updated details if needed.
-          </p>
-
-          <p style="margin-top:28px;">
-            Best regards,<br />
-            <strong>TuitionLanka Team</strong>
-          </p>
-
-        </div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;padding:16px 20px;margin:20px 0;">
+        <p style="margin:0 0 6px;font-weight:bold;color:#7f1d1d;">Reason provided by our team:</p>
+        <p style="margin:0;color:#991b1b;white-space:pre-wrap;font-size:14px;">${safeReason}</p>
       </div>
-    `;
+
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Request Details</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Name:</strong> ${safeName}</li>
+        <li><strong>Email:</strong> ${safeEmail}</li>
+        <li><strong>City:</strong> ${safeCity}</li>
+        <li><strong>District:</strong> ${safeDistrict}</li>
+        <li><strong>Grade:</strong> ${safeGrade}</li>
+      </ul>
+
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        You are welcome to submit a new tutor request in the future with updated details if needed.
+      </p>
+    `);
 
     await transport.sendMail({
       from: config.email.from,
@@ -468,22 +451,24 @@ Regards,
 TuitionLanka Team
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
-        <p>Hello <strong>${name}</strong>,</p>
-        <p>You have been added as an <strong>admin</strong> on <strong>TuitionLanka</strong>.</p>
-        <p>Please set your password by clicking the button below:</p>
-        <p>
-          <a href="${resetUrl}"
-             style="display:inline-block;background:#4F46E5;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">
-            Set Password
-          </a>
-        </p>
-        <p>If the button does not work, copy and paste this link into your browser:</p>
-        <p style="word-break:break-all;">${resetUrl}</p>
-        <p>Regards,<br/>TuitionLanka Team</p>
-      </div>
-    `;
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Hello ${name},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        You have been added as an <strong>admin</strong> on <strong>Tuition Lanka</strong>.
+        Please set your password by clicking the button below.
+      </p>
+      <p style="text-align:center;margin:28px 0;">
+        <a href="${resetUrl}"
+           style="background-color:#235ED5;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+          Set Password
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;line-height:1.6;">
+        If the button does not work, copy and paste this link into your browser:<br/>
+        <a href="${resetUrl}" style="color:#235ED5;word-break:break-all;">${resetUrl}</a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin-top:12px;">This link can be used only once and will expire soon.</p>
+    `);
 
     await transport.sendMail({
       from: config.email.from,
@@ -529,36 +514,25 @@ The TuitionLanka Team
 TuitionLanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #4F46E5; padding: 24px 32px; border-radius: 8px 8px 0 0;">
-          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Registration Received – Pending Review</h2>
-        </div>
-        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-          <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Thank you for registering as a tutor on <strong>TuitionLanka</strong>!</p>
-          <p>We have successfully received your registration and it is currently <strong>under review</strong> by our team.</p>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Thank you for registering as a tutor on <strong>Tuition Lanka</strong>!
+        We have successfully received your registration and it is currently <strong>under review</strong> by our team.
+      </p>
 
-          <div style="background-color: #EFF6FF; border-left: 4px solid #4F46E5; padding: 16px 20px; border-radius: 4px; margin: 20px 0;">
-            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📋 What happens next?</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #1e3a8a;">
-              <li>Our team will carefully review your profile and submitted documents.</li>
-              <li>You will receive a confirmation email once your registration has been <strong>approved</strong>.</li>
-              <li>This process typically takes <strong>2–5 business days</strong>.</li>
-            </ul>
-          </div>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">What happens next?</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li>Our team will carefully review your profile and submitted documents.</li>
+        <li>You will receive a confirmation email once your registration has been <strong>approved</strong>.</li>
+        <li>This process typically takes <strong>2–5 business days</strong>.</li>
+      </ul>
 
-          <p>If you have any questions in the meantime, please don't hesitate to contact our support team.</p>
-          <p>Thank you for your patience and for choosing TuitionLanka.</p>
-
-          <p style="margin-top: 28px;">
-            Warm regards,<br/>
-            <strong>The TuitionLanka Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
-          </p>
-        </div>
-      </div>
-    `;
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        If you have any questions in the meantime, please don't hesitate to contact our support team.
+        Thank you for your patience and for choosing Tuition Lanka.
+      </p>
+    `);
 
     await transport.sendMail({
       from: config.email.from,
@@ -650,40 +624,27 @@ The TuitionLanka Team
 TuitionLanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #16a34a; padding: 24px 32px; border-radius: 8px 8px 0 0;">
-          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">🎉 Registration Approved!</h2>
-        </div>
-        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-          <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Great news! Your tutor registration on <strong>TuitionLanka</strong> has been <strong style="color: #16a34a;">approved</strong>.</p>
-          <p>You can now log in to the platform and start connecting with students.</p>
-
-          <p style="text-align: center; margin: 28px 0;">
-            <a href="${signInUrl}"
-               style="background-color: #4F46E5; color: #fff; padding: 13px 28px;
-                      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
-              Log In to TuitionLanka
-            </a>
-          </p>
-
-          <p style="color: #6b7280; font-size: 13px;">Or copy this link into your browser:<br/>
-            <a href="${signInUrl}" style="color: #4F46E5;">${signInUrl}</a>
-          </p>
-
-          ${telegramHtml}
-
-          <p>Thank you for joining TuitionLanka. We look forward to connecting you with students!</p>
-
-          <p style="margin-top: 28px;">
-            Warm regards,<br/>
-            <strong>The TuitionLanka Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
-          </p>
-        </div>
-      </div>
-    `;
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Great news! Your tutor registration on <strong>Tuition Lanka</strong> has been <strong style="color:#16a34a;">approved</strong>.
+        You can now log in to the platform and start connecting with students.
+      </p>
+      <p style="text-align:center;margin:28px 0;">
+        <a href="${signInUrl}"
+           style="background-color:#235ED5;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+          Log In to Tuition Lanka
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin:0 0 20px;">
+        Or copy this link into your browser:<br/>
+        <a href="${signInUrl}" style="color:#235ED5;word-break:break-all;">${signInUrl}</a>
+      </p>
+      ${telegramHtml}
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
+        Thank you for joining Tuition Lanka. We look forward to connecting you with students!
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to, subject, text, html });
   } catch (err) {
@@ -727,29 +688,18 @@ TuitionLanka – Learn Better, Achieve More
          </div>`
       : '';
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #dc2626; padding: 24px 32px; border-radius: 8px 8px 0 0;">
-          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Registration Not Approved</h2>
-        </div>
-        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-          <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>Thank you for your interest in joining <strong>TuitionLanka</strong> as a tutor.</p>
-          <p>After careful review, we regret to inform you that your registration has <strong style="color: #dc2626;">not been approved</strong> at this time.</p>
-
-          ${messageHtml}
-
-          <p>If you have any questions or would like to discuss further, please contact our support team.</p>
-          <p>Thank you for your understanding.</p>
-
-          <p style="margin-top: 28px;">
-            Warm regards,<br/>
-            <strong>The TuitionLanka Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
-          </p>
-        </div>
-      </div>
-    `;
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Thank you for your interest in joining <strong>Tuition Lanka</strong> as a tutor.
+        After careful review, we regret to inform you that your registration has <strong style="color:#dc2626;">not been approved</strong> at this time.
+      </p>
+      ${messageHtml}
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
+        If you have any questions or would like to discuss further, please contact our support team.
+        Thank you for your understanding.
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to, subject, text, html });
   } catch (err) {
@@ -784,30 +734,19 @@ The TuitionLanka Team
 TuitionLanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #222; line-height: 1.7; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #4b5563; padding: 24px 32px; border-radius: 8px 8px 0 0;">
-          <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Account Suspended</h2>
-        </div>
-        <div style="background-color: #f9fafb; padding: 28px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-          <p>Dear <strong>${tutorName}</strong>,</p>
-          <p>We are writing to inform you that your <strong>TuitionLanka</strong> tutor account has been <strong style="color: #4b5563;">suspended</strong>.</p>
-
-          <div style="background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 14px 18px; border-radius: 4px; margin: 20px 0;">
-            <p style="margin: 0; color: #374151;">During the suspension period, you will not be able to log in or access the platform.</p>
-          </div>
-
-          <p>If you believe this is a mistake or would like to appeal, please contact our support team directly.</p>
-          <p>Thank you for your understanding.</p>
-
-          <p style="margin-top: 28px;">
-            Warm regards,<br/>
-            <strong>The TuitionLanka Team</strong><br/>
-            <span style="color: #6b7280; font-size: 13px;">TuitionLanka – Learn Better, Achieve More</span>
-          </p>
-        </div>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        We are writing to inform you that your <strong>Tuition Lanka</strong> tutor account has been <strong>suspended</strong>.
+      </p>
+      <div style="background:#f3f4f6;border-left:4px solid #6b7280;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <p style="margin:0;color:#374151;font-size:14px;">During the suspension period, you will not be able to log in or access the platform.</p>
       </div>
-    `;
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        If you believe this is a mistake or would like to appeal, please contact our support team directly.
+        Thank you for your understanding.
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to, subject, text, html });
   } catch (err) {
@@ -872,43 +811,59 @@ Tuition Lanka Team
 Tuition Lanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
-        <p>Dear <strong>${name}</strong>,</p>
-        <p>Great news! A tutor has been assigned for your tuition request with <strong>Tuition Lanka</strong>.</p>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${name},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Great news! A tutor has been assigned for your tuition request with <strong>Tuition Lanka</strong>.
+      </p>
 
-        <h3>📋 Assignment Details</h3>
-        <ul>
-          <li><strong>Grade:</strong> ${gradeName || 'N/A'}</li>
-          <li><strong>Subject:</strong> ${subjectName}</li>
-          <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
-          <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
-          <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
-        </ul>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Assignment Details</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Grade:</strong> ${gradeName || 'N/A'}</li>
+        <li><strong>Subject:</strong> ${subjectName}</li>
+        <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
+        <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
+        <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
+      </ul>
 
-        <h3>👤 Your Assigned Tutor</h3>
-        <ul>
-          <li><strong>Name:</strong> ${tutorName}</li>
-          <li><strong>Contact:</strong> ${tutorContact}</li>
-          <li><strong>Email:</strong> ${tutorEmail}</li>
-          <li><strong>Tutor Type:</strong> ${tutorTypes}</li>
-          <li><strong>Highest Education:</strong> ${tutorEducation}</li>
-          <li><strong>Years of Experience:</strong> ${tutorExperience}</li>
-        </ul>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Your Assigned Tutor</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Name:</strong> ${tutorName}</li>
+        <li><strong>Contact:</strong> ${tutorContact}</li>
+        <li><strong>Email:</strong> ${tutorEmail}</li>
+        <li><strong>Tutor Type:</strong> ${tutorTypes}</li>
+        <li><strong>Highest Education:</strong> ${tutorEducation}</li>
+        <li><strong>Years of Experience:</strong> ${tutorExperience}</li>
+      </ul>
 
-        <h3>📝 Teaching Profile</h3>
-        ${tutorIntro ? `<p><strong>Introduction:</strong><br/>${tutorIntro}</p>` : ''}
-        ${tutorAcademic ? `<p><strong>Teaching Experience &amp; Achievements:</strong><br/>${tutorAcademic}</p>` : ''}
-        ${tutorResults ? `<p><strong>Student Results / Track Record:</strong><br/>${tutorResults}</p>` : ''}
+      ${
+        tutorIntro || tutorAcademic || tutorResults
+          ? `
+        <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Teaching Profile</p>
+        ${
+          tutorIntro
+            ? `<p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 10px;"><strong>Introduction:</strong><br/>${tutorIntro}</p>`
+            : ''
+        }
+        ${
+          tutorAcademic
+            ? `<p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 10px;"><strong>Teaching Experience &amp; Achievements:</strong><br/>${tutorAcademic}</p>`
+            : ''
+        }
+        ${
+          tutorResults
+            ? `<p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 10px;"><strong>Student Results / Track Record:</strong><br/>${tutorResults}</p>`
+            : ''
+        }
+      `
+          : ''
+      }
 
-        <p>Your assigned tutor will be in contact with you shortly to arrange the first session.</p>
-        <p>If you have any questions, feel free to reach out to us.</p>
-
-        <p>Warm regards,<br/>
-        <strong>Tuition Lanka Team</strong><br/>
-        Tuition Lanka – Learn Better, Achieve More</p>
-      </div>
-    `;
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
+        Your assigned tutor will be in contact with you shortly to arrange the first session.
+        If you have any questions, feel free to reach out to us.
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to: email, subject, text, html });
     logger.info(`TM-696: Tutor assigned email sent to requester: ${email}`);
@@ -963,43 +918,39 @@ Tuition Lanka Team
 Tuition Lanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
-        <p>Dear <strong>${tutorName}</strong>,</p>
-        <p>Congratulations! You have been assigned a new student through <strong>Tuition Lanka</strong>.</p>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Congratulations! You have been assigned a new student through <strong>Tuition Lanka</strong>.
+      </p>
 
-        <h3>👤 Student Details</h3>
-        <ul>
-          <li><strong>Name:</strong> ${studentName}</li>
-          <li><strong>Email:</strong> ${studentEmail}</li>
-          <li><strong>Phone Number:</strong> ${phoneNumber}</li>
-          <li><strong>City:</strong> ${city}</li>
-          <li><strong>District:</strong> ${district}</li>
-        </ul>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Student Details</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Name:</strong> ${studentName}</li>
+        <li><strong>Email:</strong> ${studentEmail}</li>
+        <li><strong>Phone Number:</strong> ${phoneNumber}</li>
+        <li><strong>City:</strong> ${city}</li>
+        <li><strong>District:</strong> ${district}</li>
+      </ul>
 
-        <h3>📋 Assignment Details</h3>
-        <ul>
-          <li><strong>Grade:</strong> ${gradeName}</li>
-          <li><strong>Subject:</strong> ${subjectName}</li>
-          <li><strong>Medium:</strong> ${medium}</li>
-          <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
-          <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
-          <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
-          <li><strong>Preferred Tutor Type:</strong> ${assignedBlock.preferredTutorType}</li>
-        </ul>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Assignment Details</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+        <li><strong>Grade:</strong> ${gradeName}</li>
+        <li><strong>Subject:</strong> ${subjectName}</li>
+        <li><strong>Medium:</strong> ${medium}</li>
+        <li><strong>Duration:</strong> ${assignedBlock.duration}</li>
+        <li><strong>Frequency:</strong> ${assignedBlock.frequency}</li>
+        <li><strong>Class Type:</strong> ${assignedBlock.preferredClassType}</li>
+        <li><strong>Preferred Tutor Type:</strong> ${assignedBlock.preferredTutorType}</li>
+      </ul>
 
-        <h3>✅ Next Steps</h3>
-        <p>
-          Please reach out to the student directly using the contact details above to arrange
-          the first session at a mutually convenient time.
-        </p>
-        <p>If you have any questions or need assistance, feel free to contact us.</p>
-
-        <p>Warm regards,<br/>
-        <strong>Tuition Lanka Team</strong><br/>
-        Tuition Lanka – Learn Better, Achieve More</p>
-      </div>
-    `;
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Next Steps</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Please reach out to the student directly using the contact details above to arrange
+        the first session at a mutually convenient time.
+        If you have any questions or need assistance, feel free to contact us.
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to: tutorEmail, subject, text, html });
     logger.info(`TM-698: Assignment email sent to tutor: ${tutorEmail}`);
@@ -1048,25 +999,25 @@ Tuition Lanka Team
 Tuition Lanka – Learn Better, Achieve More
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color:#222; line-height:1.6">
-        <p>Dear <strong>${escapeHtml(name)}</strong>,</p>
-        <p>We wanted to let you know that the tutor previously assigned to your tuition request has been <strong>unassigned</strong>.</p>
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${escapeHtml(
+        name
+      )},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        We wanted to let you know that the tutor previously assigned to your tuition request has been <strong>unassigned</strong>.
+      </p>
 
-        <h3>📋 Affected Subject(s)</h3>
-        <ul>${blockHtml}</ul>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Affected Subject(s)</p>
+      <ul style="color:#374151;font-size:14px;line-height:1.8;padding-left:20px;margin:0 0 16px;">${blockHtml}</ul>
 
-        <h3>📝 Reason</h3>
-        <p>${escapeHtml(unassignReason)}</p>
+      <p style="font-weight:bold;color:#235ED5;margin:20px 0 8px;">Reason</p>
+      <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;">${escapeHtml(unassignReason)}</p>
 
-        <p>Our team is already working on finding a suitable replacement and will be in touch with you shortly.</p>
-        <p>If you have any questions, please don't hesitate to contact us.</p>
-
-        <p>Warm regards,<br/>
-        <strong>Tuition Lanka Team</strong><br/>
-        Tuition Lanka – Learn Better, Achieve More</p>
-      </div>
-    `;
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        Our team is already working on finding a suitable replacement and will be in touch with you shortly.
+        If you have any questions, please don't hesitate to contact us.
+      </p>
+    `);
 
     await transport.sendMail({ from: config.email.from, to: email, subject, text, html });
     logger.info(`Tutor unassigned email sent to requester: ${email}`);
