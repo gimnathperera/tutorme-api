@@ -670,7 +670,7 @@ Dear ${tutorName},
 
 Thank you for your interest in joining TuitionLanka as a tutor.
 
-After careful review, we regret to inform you that your registration has not been approved at this time.
+After careful review, we regret to inform you that your registration has been rejected at this time.
 ${messageBlock}
 If you have any questions or would like to discuss further, please contact our support team.
 
@@ -692,7 +692,7 @@ TuitionLanka – Learn Better, Achieve More
       <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${tutorName},</p>
       <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
         Thank you for your interest in joining <strong>Tuition Lanka</strong> as a tutor.
-        After careful review, we regret to inform you that your registration has <strong style="color:#dc2626;">not been approved</strong> at this time.
+        After careful review, we regret to inform you that your registration has been <strong style="color:#dc2626;">Rejected</strong> at this time.
       </p>
       ${messageHtml}
       <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
