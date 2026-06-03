@@ -662,7 +662,7 @@ TuitionLanka – Learn Better, Achieve More
  */
 const sendTutorRejectedEmail = async (to, tutorName, customMessage) => {
   try {
-    const subject = 'Your Tutor Registration was Not Approved – TuitionLanka';
+    const subject = 'Your Tutor Registration has been Rejected – TuitionLanka';
     const messageBlock = customMessage ? `\nReason provided by our team:\n${customMessage}\n` : '';
 
     const text = `
