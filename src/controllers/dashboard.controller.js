@@ -6,6 +6,12 @@ const getDashboardSummary = catchAsync(async (req, res) => {
   res.send(summary);
 });
 
+const getFullDashboard = catchAsync(async (req, res) => {
+  const data = await dashboardService.getFullDashboard();
+  res.send(data);
+});
+
 module.exports = {
   getDashboardSummary,
+  getFullDashboard,
 };
