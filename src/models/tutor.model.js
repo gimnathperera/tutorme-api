@@ -90,6 +90,10 @@ const tutorSchema = mongoose.Schema(
       enum: ['pending', 'approved', 'rejected', 'suspended'],
       default: 'pending',
     },
+    approvedAt: {
+      type: Date,
+      index: true,
+    },
 
     classType: [
       {

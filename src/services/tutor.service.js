@@ -154,7 +154,11 @@ const updateTutorById = async (tutorId, updateBody) => {
   if (!tutor) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
-  Object.assign(tutor, updateBody);
+  const updatePayload = { ...updateBody };
+  if (updateBody.status === 'approved' && tutor.status !== 'approved') {
+    updatePayload.approvedAt = new Date();
+  }
+  Object.assign(tutor, updatePayload);
   await tutor.save();
   await accountSyncService.syncUserFromTutor(tutor);
   return tutor;

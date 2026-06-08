@@ -3,6 +3,7 @@ const { User, Tutor, RequestTutor, Inquiry } = require('../models');
 // Helpers
 
 const ASSIGNED_STATUSES = ['Rejected', 'Tutor Assigned', 'Assiged', 'Assigned'];
+const APPROVED_TUTOR_ACTIVITY_DATE = { $ifNull: ['$approvedAt', '$updatedAt'] };
 
 /** Return midnight (UTC) of a date offset by `days` from today */
 const dayOffset = (days) => {
@@ -23,6 +24,33 @@ const buildTrend = async (Model, matchFilter = {}) => {
     Model.countDocuments({ ...matchFilter, createdAt: { $gte: todayStart, $lt: tomorrowStart } }),
     Model.countDocuments({ ...matchFilter, createdAt: { $gte: last7Start, $lt: tomorrowStart } }),
     Model.countDocuments({ ...matchFilter, createdAt: { $gte: prev7Start, $lt: last7Start } }),
+  ]);
+
+  return { today, last7Days, prev7Days };
+};
+
+/** Build a trend object from a computed date expression, such as approval date with legacy fallback */
+const buildTrendByDateExpression = async (Model, matchFilter = {}, dateExpression) => {
+  const todayStart = dayOffset(0);
+  const tomorrowStart = dayOffset(1);
+  const last7Start = dayOffset(-6); // inclusive of today = 7 days
+  const prev7Start = dayOffset(-13);
+
+  const countRange = async (start, end) => {
+    const result = await Model.aggregate([
+      { $match: matchFilter },
+      { $addFields: { dashboardActivityDate: dateExpression } },
+      { $match: { dashboardActivityDate: { $gte: start, $lt: end } } },
+      { $count: 'total' },
+    ]);
+
+    return result.length > 0 ? result[0].total : 0;
+  };
+
+  const [today, last7Days, prev7Days] = await Promise.all([
+    countRange(todayStart, tomorrowStart),
+    countRange(last7Start, tomorrowStart),
+    countRange(prev7Start, last7Start),
   ]);
 
   return { today, last7Days, prev7Days };
@@ -49,6 +77,35 @@ const buildDailyChart = async (Model, matchFilter = {}, days = 30) => {
   const byDate = Object.fromEntries(raw.map((r) => [r._id, r.count]));
 
   // Build a complete day-by-day array (fill gaps with 0)
+  return Array.from({ length: days }, (_, i) => {
+    const d = dayOffset(-(days - 1 - i));
+    const key = d.toISOString().slice(0, 10);
+    return { date: key, count: byDate[key] || 0 };
+  });
+};
+
+/** Build daily chart data from a computed date expression */
+const buildDailyChartByDateExpression = async (Model, matchFilter = {}, days = 30, dateExpression) => {
+  const startDate = dayOffset(-(days - 1));
+  const endDate = dayOffset(1); // exclusive: tomorrow midnight
+
+  const pipeline = [
+    { $match: matchFilter },
+    { $addFields: { dashboardActivityDate: dateExpression } },
+    { $match: { dashboardActivityDate: { $gte: startDate, $lt: endDate } } },
+    {
+      $group: {
+        _id: {
+          $dateToString: { format: '%Y-%m-%d', date: '$dashboardActivityDate', timezone: 'UTC' },
+        },
+        count: { $sum: 1 },
+      },
+    },
+  ];
+
+  const raw = await Model.aggregate(pipeline);
+  const byDate = Object.fromEntries(raw.map((r) => [r._id, r.count]));
+
   return Array.from({ length: days }, (_, i) => {
     const d = dayOffset(-(days - 1 - i));
     const key = d.toISOString().slice(0, 10);
@@ -157,10 +214,10 @@ const buildRecentActivity = async () => {
 /** Existing lightweight summary (kept for backward compatibility) */
 const getDashboardSummary = async () => {
   const [registeredTutors, registeredStudents, requestTutorRequests, registerAsTutorRequests] = await Promise.all([
-    User.countDocuments({ role: 'tutor' }),
+    Tutor.countDocuments({ status: 'approved' }),
     User.countDocuments({ role: 'user' }),
     RequestTutor.countDocuments(),
-    Tutor.countDocuments(),
+    Tutor.countDocuments({ status: 'pending' }),
   ]);
 
   return {
@@ -208,23 +265,23 @@ const getFullDashboard = async () => {
     recentActivity,
   ] = await Promise.all([
     // Summary
-    User.countDocuments({ role: 'tutor' }),
+    Tutor.countDocuments({ status: 'approved' }),
     User.countDocuments({ role: 'user' }),
     RequestTutor.countDocuments(),
-    Tutor.countDocuments(),
+    Tutor.countDocuments({ status: 'pending' }),
 
     // Trends
-    buildTrend(Tutor, { status: 'approved' }), // registeredTutors trend
+    buildTrendByDateExpression(Tutor, { status: 'approved' }, APPROVED_TUTOR_ACTIVITY_DATE), // approved tutors trend
     buildTrend(RequestTutor), // requestTutorRequests trend
-    buildTrend(Tutor), // registerAsTutorRequests trend
+    buildTrend(Tutor, { status: 'pending' }), // registerAsTutorRequests trend
 
     // Chart totals
     Tutor.countDocuments({ status: 'approved' }),
 
     // Chart
-    buildDailyChart(Tutor, { status: 'approved' }, CHART_DAYS),
+    buildDailyChartByDateExpression(Tutor, { status: 'approved' }, CHART_DAYS, APPROVED_TUTOR_ACTIVITY_DATE),
     buildDailyChart(RequestTutor, {}, CHART_DAYS),
-    buildDailyChart(Tutor, {}, CHART_DAYS),
+    buildDailyChart(Tutor, { status: 'pending' }, CHART_DAYS),
 
     // Attention
     Tutor.countDocuments({ status: 'pending' }),
