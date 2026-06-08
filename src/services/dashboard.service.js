@@ -217,7 +217,7 @@ const getDashboardSummary = async () => {
     Tutor.countDocuments({ status: 'approved' }),
     User.countDocuments({ role: 'user' }),
     RequestTutor.countDocuments(),
-    Tutor.countDocuments(),
+    Tutor.countDocuments({ status: 'pending' }),
   ]);
 
   return {
@@ -268,12 +268,12 @@ const getFullDashboard = async () => {
     Tutor.countDocuments({ status: 'approved' }),
     User.countDocuments({ role: 'user' }),
     RequestTutor.countDocuments(),
-    Tutor.countDocuments(),
+    Tutor.countDocuments({ status: 'pending' }),
 
     // Trends
     buildTrendByDateExpression(Tutor, { status: 'approved' }, APPROVED_TUTOR_ACTIVITY_DATE), // approved tutors trend
     buildTrend(RequestTutor), // requestTutorRequests trend
-    buildTrend(Tutor), // registerAsTutorRequests trend
+    buildTrend(Tutor, { status: 'pending' }), // registerAsTutorRequests trend
 
     // Chart totals
     Tutor.countDocuments({ status: 'approved' }),
@@ -281,7 +281,7 @@ const getFullDashboard = async () => {
     // Chart
     buildDailyChartByDateExpression(Tutor, { status: 'approved' }, CHART_DAYS, APPROVED_TUTOR_ACTIVITY_DATE),
     buildDailyChart(RequestTutor, {}, CHART_DAYS),
-    buildDailyChart(Tutor, {}, CHART_DAYS),
+    buildDailyChart(Tutor, { status: 'pending' }, CHART_DAYS),
 
     // Attention
     Tutor.countDocuments({ status: 'pending' }),
