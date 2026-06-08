@@ -27,8 +27,8 @@ const sendEmail = async (to, subject, text, html) => {
 
 const normalizeBaseUrl = (url) => String(url || '').replace(/\/+$/, '');
 
-const LOGO_URL = 'https://www.tuitionlanka.com/Emale_template_logo.jpeg';
-const ICON_URL = 'https://www.tuitionlanka.com/Email_template_icon.jpeg';
+const LOGO_URL = `${config.app.userUrl}/Emale_template_logo.png`;
+const ICON_URL = `${config.app.userUrl}/Email_template_icon.png`;
 
 const buildEmailHtml = (bodyContent) => `
   <div style="background-color:#EFF5FF;padding:40px 0;font-family:Arial,Helvetica,sans-serif;">
@@ -662,7 +662,7 @@ TuitionLanka – Learn Better, Achieve More
  */
 const sendTutorRejectedEmail = async (to, tutorName, customMessage) => {
   try {
-    const subject = 'Your Tutor Registration was Not Approved – TuitionLanka';
+    const subject = 'Your Tutor Registration has been Rejected – TuitionLanka';
     const messageBlock = customMessage ? `\nReason provided by our team:\n${customMessage}\n` : '';
 
     const text = `
