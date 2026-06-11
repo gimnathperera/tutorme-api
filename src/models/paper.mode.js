@@ -30,6 +30,16 @@ const papersSchema = mongoose.Schema(
       trim: true,
       required: true,
     },
+    examType: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    subjectTitle: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   {
     timestamps: true,
