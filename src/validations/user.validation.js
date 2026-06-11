@@ -67,7 +67,7 @@ const updateUser = {
       subjects: Joi.optional(),
       timeZone: Joi.string(),
       language: Joi.string(),
-      avatar: Joi.string(),
+      avatar: Joi.string().allow(''),
     })
     .unknown(false)
     .min(1),
