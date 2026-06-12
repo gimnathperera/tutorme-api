@@ -12,6 +12,7 @@ router
   .get(validate(paperValidation.getPapers), paperController.getPapers);
 
 router.get('/mediums', validate(paperValidation.getPaperMediums), paperController.getPaperMediums);
+router.get('/exam-types', paperController.getExamTypes);
 
 router
   .route('/:paperId')

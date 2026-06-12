@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { Grade, Paper, Subject } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { formatPaperMediums, normalizePaperMedium, paperMediums } = require('../config/paper');
+const { formatPaperMediums, normalizePaperMedium, paperMediums, normalizeExamType } = require('../config/paper');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -22,14 +22,31 @@ const preparePaperData = (paperBody) => {
     paperData.medium = normalizeMediumOrThrow(paperData.medium);
   }
 
+  if (paperData.examType) {
+    paperData.examType = normalizeExamType(paperData.examType) || paperData.examType;
+  }
+
   return paperData;
 };
 
 const preparePaperQuery = (filter) => {
   const query = { ...filter };
   const yearSearch = typeof query.yearSearch === 'string' ? query.yearSearch.trim() : '';
+  const { fromYear, toYear } = query;
 
   delete query.yearSearch;
+  delete query.fromYear;
+  delete query.toYear;
+
+  if (fromYear !== undefined || toYear !== undefined) {
+    query.year = {};
+    if (fromYear !== undefined) query.year.$gte = fromYear;
+    if (toYear !== undefined) query.year.$lte = toYear;
+  }
+
+  if (query.examType !== undefined) {
+    query.examType = { $regex: `^${escapeRegex(query.examType)}$`, $options: 'i' };
+  }
 
   if (query.medium !== undefined) {
     const normalizedMedium = normalizeMediumOrThrow(query.medium);
@@ -68,6 +85,12 @@ const validatePaperReferences = async (paperBody) => {
   }
 };
 
+const resolveSubjectTitle = async (subjectId) => {
+  if (!subjectId) return null;
+  const subject = await Subject.findById(subjectId).select('title').lean();
+  return subject ? subject.title : null;
+};
+
 /**
  * Create a paper
  * @param {Object} paperBody
@@ -80,6 +103,7 @@ const createPaper = async (paperBody) => {
 
   const paperData = preparePaperData(paperBody);
   await validatePaperReferences(paperData);
+  paperData.subjectTitle = await resolveSubjectTitle(paperData.subject);
   return Paper.create(paperData);
 };
 
@@ -126,6 +150,10 @@ const updatePaperById = async (paperId, updateBody) => {
 
   const paperData = preparePaperData(updateBody);
   await validatePaperReferences(paperData);
+
+  if (paperData.subject) {
+    paperData.subjectTitle = await resolveSubjectTitle(paperData.subject);
+  }
 
   Object.assign(paper, paperData);
   await paper.save();

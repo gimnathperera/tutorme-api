@@ -1,19 +1,32 @@
 const paperMediums = [
-  {
-    id: 'Sinhala',
-    title: 'Sinhala',
-  },
-  {
-    id: 'English',
-    title: 'English',
-  },
-  {
-    id: 'Tamil',
-    title: 'Tamil',
-  },
+  { id: 'Sinhala', title: 'Sinhala' },
+  { id: 'English', title: 'English' },
+  { id: 'Tamil', title: 'Tamil' },
+];
+
+const examTypes = [
+  { id: 'Term Test', title: 'Term Test' },
+  { id: 'Model Paper', title: 'Model Paper' },
+  { id: 'Scholarship Exam', title: 'Scholarship Exam' },
+  { id: 'GCE Exam', title: 'GCE Exam' },
+  { id: 'Cambridge Exam', title: 'Cambridge Exam' },
+  { id: 'Edexcel Exam', title: 'Edexcel Exam' },
 ];
 
 const normalizeValue = (value) => value.trim().toLowerCase();
+
+const getExamType = (value) => {
+  if (typeof value !== 'string') return null;
+  const norm = normalizeValue(value);
+  return examTypes.find((e) => normalizeValue(e.id) === norm) || null;
+};
+
+const normalizeExamType = (value) => {
+  const examType = getExamType(value);
+  return examType ? examType.id : null;
+};
+
+const examTypeIds = examTypes.map((e) => e.id);
 
 const getPaperMedium = (value) => {
   if (typeof value !== 'string') {
@@ -66,4 +79,8 @@ module.exports = {
   formatPaperMediums,
   getPaperMedium,
   normalizePaperMedium,
+  examTypes,
+  examTypeIds,
+  getExamType,
+  normalizeExamType,
 };
