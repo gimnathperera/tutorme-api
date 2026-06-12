@@ -86,7 +86,9 @@ const updateUser = catchAsync(async (req, res) => {
   if (newStatus && newStatus !== oldStatus) {
     const fireEmail = async () => {
       try {
-        if (newStatus === 'rejected') {
+        if (newStatus === 'approved') {
+          await emailService.sendAdminApprovedEmail(user.email, user.name);
+        } else if (newStatus === 'rejected') {
           await emailService.sendAdminRejectedEmail(user.email, user.name, rejectionMessage || '');
         } else if (newStatus === 'suspended') {
           await emailService.sendAdminSuspendedEmail(user.email, user.name);

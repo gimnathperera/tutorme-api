@@ -1027,6 +1027,61 @@ Tuition Lanka – Learn Better, Achieve More
 };
 
 /**
+ * Send admin account approved/reactivated email
+ * @param {string} to - Admin's email address
+ * @param {string} adminName - Admin's name
+ * @returns {Promise}
+ */
+const sendAdminApprovedEmail = async (to, adminName) => {
+  try {
+    const adminWebsiteUrl = process.env.ADMIN_WEBSITE_URL || 'http://localhost:3000';
+    const signInUrl = `${adminWebsiteUrl}/signin`;
+    const subject = 'Your Admin Account has been Approved – TuitionLanka';
+
+    const text = `
+Dear ${adminName},
+
+Great news! Your TuitionLanka admin account has been approved and is now active.
+
+You can log in to the platform using the link below:
+${signInUrl}
+
+If you have any questions, please contact our support team.
+
+Warm regards,
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
+`;
+
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${adminName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        Great news! Your <strong>Tuition Lanka</strong> admin account has been <strong style="color:#16a34a;">approved</strong> and is now active.
+        You can log in to the platform and access the admin portal.
+      </p>
+      <p style="text-align:center;margin:28px 0;">
+        <a href="${signInUrl}"
+           style="background-color:#235ED5;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+          Log In to Tuition Lanka
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin:0 0 20px;">
+        Or copy this link into your browser:<br/>
+        <a href="${signInUrl}" style="color:#235ED5;word-break:break-all;">${signInUrl}</a>
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
+        If you have any questions, please contact our support team.
+      </p>
+    `);
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send admin approved email to ${to}:`, err);
+    throw new Error('Admin approved email failed');
+  }
+};
+
+/**
  * Send admin account rejection email
  * @param {string} to - Admin's email address
  * @param {string} adminName - Admin's name
@@ -1141,6 +1196,7 @@ module.exports = {
   sendTutorRejectedEmail,
   sendTutorSuspendedEmail,
   sendAdminInviteEmail,
+  sendAdminApprovedEmail,
   sendAdminRejectedEmail,
   sendAdminSuspendedEmail,
 };
