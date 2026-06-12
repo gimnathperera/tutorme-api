@@ -68,6 +68,7 @@ const updateUser = {
       timeZone: Joi.string(),
       language: Joi.string(),
       avatar: Joi.string().allow(''),
+      rejectionMessage: Joi.string().allow('').max(1000).optional(),
     })
     .unknown(false)
     .min(1),

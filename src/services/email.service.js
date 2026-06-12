@@ -1026,6 +1026,105 @@ Tuition Lanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send admin account rejection email
+ * @param {string} to - Admin's email address
+ * @param {string} adminName - Admin's name
+ * @param {string} customMessage - Optional rejection reason
+ * @returns {Promise}
+ */
+const sendAdminRejectedEmail = async (to, adminName, customMessage) => {
+  try {
+    const subject = 'Your Admin Account has been Rejected – TuitionLanka';
+    const messageBlock = customMessage ? `\nReason provided by our team:\n${customMessage}\n` : '';
+
+    const text = `
+Dear ${adminName},
+
+We regret to inform you that your TuitionLanka admin account has been rejected.
+${messageBlock}
+If you believe this is a mistake or would like to discuss further, please contact our support team.
+
+Thank you for your understanding.
+
+Warm regards,
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
+`;
+
+    const messageHtml = customMessage
+      ? `<div style="background-color:#fef2f2;border-left:4px solid #ef4444;padding:14px 18px;border-radius:4px;margin:20px 0;">
+           <p style="margin:0;color:#7f1d1d;font-size:14px;"><strong>Reason provided by our team:</strong></p>
+           <p style="margin:8px 0 0;color:#991b1b;white-space:pre-wrap;">${customMessage}</p>
+         </div>`
+      : '';
+
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${adminName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        We regret to inform you that your <strong>Tuition Lanka</strong> admin account has been <strong style="color:#dc2626;">Rejected</strong>.
+      </p>
+      ${messageHtml}
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin-top:16px;">
+        If you believe this is a mistake or would like to discuss further, please contact our support team.
+        Thank you for your understanding.
+      </p>
+    `);
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send admin rejected email to ${to}:`, err);
+    throw new Error('Admin rejected email failed');
+  }
+};
+
+/**
+ * Send admin account suspension email
+ * @param {string} to - Admin's email address
+ * @param {string} adminName - Admin's name
+ * @returns {Promise}
+ */
+const sendAdminSuspendedEmail = async (to, adminName) => {
+  try {
+    const subject = 'Your Admin Account has been Suspended – TuitionLanka';
+
+    const text = `
+Dear ${adminName},
+
+We are writing to inform you that your TuitionLanka admin account has been suspended.
+
+During the suspension period, you will not be able to log in or access the platform.
+
+If you believe this is a mistake or would like to appeal, please contact our support team directly.
+
+Thank you for your understanding.
+
+Warm regards,
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
+`;
+
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${adminName},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+        We are writing to inform you that your <strong>Tuition Lanka</strong> admin account has been <strong>suspended</strong>.
+      </p>
+      <div style="background:#f3f4f6;border-left:4px solid #6b7280;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <p style="margin:0;color:#374151;font-size:14px;">During the suspension period, you will not be able to log in or access the platform.</p>
+      </div>
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        If you believe this is a mistake or would like to appeal, please contact our support team directly.
+        Thank you for your understanding.
+      </p>
+    `);
+
+    await transport.sendMail({ from: config.email.from, to, subject, text, html });
+  } catch (err) {
+    logger.error(`Failed to send admin suspended email to ${to}:`, err);
+    throw new Error('Admin suspended email failed');
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -1042,4 +1141,6 @@ module.exports = {
   sendTutorRejectedEmail,
   sendTutorSuspendedEmail,
   sendAdminInviteEmail,
+  sendAdminRejectedEmail,
+  sendAdminSuspendedEmail,
 };

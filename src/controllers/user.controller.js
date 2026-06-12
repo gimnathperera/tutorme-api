@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { userService, tokenService, emailService } = require('../services');
 const { serializeUserProfile } = require('../utils/availability');
+const logger = require('../config/logger');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -70,7 +71,33 @@ const getUser = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const user = await userService.updateUserById(req.params.userId, req.body, req.user);
+  const { rejectionMessage, ...updateBody } = req.body;
+
+  const existingUser = await userService.getUserById(req.params.userId);
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  const oldStatus = existingUser.status;
+  const newStatus = updateBody.status;
+
+  const user = await userService.updateUserById(req.params.userId, updateBody, req.user);
+
+  // Fire status-change emails (fire-and-forget — never block the response)
+  if (newStatus && newStatus !== oldStatus) {
+    const fireEmail = async () => {
+      try {
+        if (newStatus === 'rejected') {
+          await emailService.sendAdminRejectedEmail(user.email, user.name, rejectionMessage || '');
+        } else if (newStatus === 'suspended') {
+          await emailService.sendAdminSuspendedEmail(user.email, user.name);
+        }
+      } catch (emailErr) {
+        logger.warn(`Status email failed for user ${user.id} (${oldStatus} → ${newStatus}): ${emailErr.message}`);
+      }
+    };
+    fireEmail();
+  }
+
   res.send(serializeUserProfile(user));
 });
 
