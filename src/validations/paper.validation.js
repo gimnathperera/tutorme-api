@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const { objectId } = require('./custom.validation');
-const { normalizePaperMedium } = require('../config/paper');
+const { normalizePaperMedium, examTypeIds } = require('../config/paper');
 
 const paperMedium = (value, helpers) => {
   const normalizedMedium = normalizePaperMedium(value);
@@ -20,6 +20,9 @@ const createPaper = {
     grade: Joi.string().required().custom(objectId),
     year: Joi.number().required(),
     url: Joi.string().required(),
+    examType: Joi.string()
+      .valid(...examTypeIds)
+      .allow(null, ''),
   }),
 };
 
@@ -27,7 +30,12 @@ const getPapers = {
   query: Joi.object().keys({
     title: Joi.string(),
     year: Joi.number().integer(),
+    fromYear: Joi.number().integer(),
+    toYear: Joi.number().integer(),
     yearSearch: Joi.string().pattern(/^\d+$/).allow(''),
+    examType: Joi.string()
+      .valid(...examTypeIds)
+      .allow(''),
     grade: Joi.string().custom(objectId),
     subject: Joi.string().custom(objectId),
     medium: Joi.string().custom(paperMedium),
@@ -63,6 +71,9 @@ const updatePaper = {
       grade: Joi.string().custom(objectId),
       year: Joi.number(),
       url: Joi.string(),
+      examType: Joi.string()
+        .valid(...examTypeIds)
+        .allow(null, ''),
     })
     .min(1),
 };

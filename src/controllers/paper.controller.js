@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const { paperService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const { examTypes } = require('../config/paper');
 
 const createPaper = catchAsync(async (req, res) => {
   const paper = await paperService.createPaper(req.body);
@@ -10,9 +11,22 @@ const createPaper = catchAsync(async (req, res) => {
 });
 
 const getPapers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['title', 'year', 'yearSearch', 'grade', 'subject', 'medium']);
+  const filter = pick(req.query, [
+    'title',
+    'year',
+    'yearSearch',
+    'fromYear',
+    'toYear',
+    'grade',
+    'subject',
+    'medium',
+    'examType',
+  ]);
 
   const options = { ...pick(req.query, ['sortBy', 'limit', 'page', 'order']), populate: 'grade,subject' };
+  if (!options.sortBy) {
+    options.sortBy = 'year:desc,subjectTitle:asc';
+  }
 
   const result = await paperService.queryPapers(filter, options);
 
@@ -51,6 +65,10 @@ const deletePaper = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getExamTypes = catchAsync(async (req, res) => {
+  res.send({ examTypes });
+});
+
 module.exports = {
   createPaper,
   getPapers,
@@ -58,4 +76,5 @@ module.exports = {
   getPaper,
   updatePaper,
   deletePaper,
+  getExamTypes,
 };
