@@ -17,6 +17,7 @@ const blogRoute = require('./blog.route');
 const requestTutorRoute = require('./request-tutor.route');
 const tagRoute = require('./tage.route');
 const dashboardRoute = require('./dashboard.route');
+const referralRoute = require('./referral.route');
 
 const router = express.Router();
 
@@ -85,6 +86,10 @@ const defaultRoutes = [
   {
     path: '/blogs',
     route: blogRoute,
+  },
+  {
+    path: '/referrals',
+    route: referralRoute,
   },
 ];
 

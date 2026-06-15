@@ -9,3 +9,4 @@ module.exports.levelController = require('./level.controller');
 module.exports.requestTutorController = require('./requestTutor.controllers');
 module.exports.tagController = require('./tag.controller');
 module.exports.dashboardController = require('./dashboard.controller');
+module.exports.referralController = require('./referral.controller');
