@@ -121,6 +121,9 @@ const createTutor = {
       'any.only': 'You must agree to Terms and Conditions',
     }),
     agreeAssignmentInfo: Joi.boolean().valid(true).required(),
+
+    // Referral
+    referredByCode: Joi.string().alphanum().max(20).uppercase().allow('').optional(),
   }),
 };
 
@@ -314,6 +317,12 @@ const tutorUserProfileFields = {
   availability: availabilityField,
 };
 
+const sendReferralCode = {
+  params: Joi.object().keys({
+    tutorId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createTutor,
   getTutors,
@@ -325,4 +334,5 @@ module.exports = {
   generateTempPassword,
   matchTutorsBySubjects,
   tutorUserProfileFields,
+  sendReferralCode,
 };

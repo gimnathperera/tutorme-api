@@ -238,6 +238,18 @@ const tutorSchema = mongoose.Schema(
       index: true,
       sparse: true,
     },
+    referralCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      unique: true,
+      sparse: true,
+    },
+    referredByCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
   },
   {
     timestamps: true,

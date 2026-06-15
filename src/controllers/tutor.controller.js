@@ -92,6 +92,12 @@ const matchTutorsBySubjects = catchAsync(async (req, res) => {
   });
 });
 
+const sendReferralCode = catchAsync(async (req, res) => {
+  const { tutor, referralCode } = await tutorService.ensureReferralCode(req.params.tutorId);
+  await emailService.sendReferralCodeEmail(tutor.email, tutor.fullName, referralCode);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 module.exports = {
   createTutor,
   getTutors,
@@ -102,4 +108,5 @@ module.exports = {
   changePassword,
   generateTempPassword,
   matchTutorsBySubjects,
+  sendReferralCode,
 };
