@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Tutor, User } = require('../models');
+const { Tutor, User, Referee } = require('../models');
 
 const REFERRAL_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -11,7 +11,7 @@ const generateReferralCode = () => {
 };
 
 /**
- * Generate a referral code that isn't already used by a tutor or an admin user.
+ * Generate a referral code that isn't already used by a tutor, an admin user, or a referee.
  * @returns {Promise<string>}
  */
 const generateUniqueReferralCode = async () => {
@@ -20,19 +20,20 @@ const generateUniqueReferralCode = async () => {
   while (taken) {
     code = generateReferralCode();
     // eslint-disable-next-line no-await-in-loop
-    const [tutorExists, userExists] = await Promise.all([
+    const [tutorExists, userExists, refereeExists] = await Promise.all([
       Tutor.findOne({ referralCode: code }).select('_id').lean(),
       User.findOne({ referralCode: code }).select('_id').lean(),
+      Referee.findOne({ referralCode: code }).select('_id').lean(),
     ]);
-    taken = Boolean(tutorExists || userExists);
+    taken = Boolean(tutorExists || userExists || refereeExists);
   }
   return code;
 };
 
 /**
- * Find whichever Tutor or admin User document owns a given referral code.
+ * Find whichever Tutor, admin User, or Referee document owns a given referral code.
  * @param {string} code
- * @returns {Promise<{ type: 'Tutor'|'User', id: string, name: string, email: string } | null>}
+ * @returns {Promise<{ type: 'Tutor'|'User'|'Referee', id: string, name: string, email: string } | null>}
  */
 const findReferrerByReferralCode = async (code) => {
   if (!code) return null;
@@ -46,6 +47,11 @@ const findReferrerByReferralCode = async (code) => {
   const user = await User.findOne({ referralCode: normalized, role: 'admin' }).select('_id name email').lean();
   if (user) {
     return { type: 'User', id: user._id.toString(), name: user.name, email: user.email };
+  }
+
+  const referee = await Referee.findOne({ referralCode: normalized }).select('_id name email').lean();
+  if (referee) {
+    return { type: 'Referee', id: referee._id.toString(), name: referee.name, email: referee.email };
   }
 
   return null;
