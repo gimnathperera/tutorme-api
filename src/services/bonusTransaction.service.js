@@ -1,10 +1,10 @@
 const httpStatus = require('http-status');
-const { BonusTransaction, Tutor, User } = require('../models');
+const { BonusTransaction, Tutor, User, Referee } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
  * Create a bonus transaction record when rewards are marked as sent.
- * The referrer may be a tutor or an admin user.
+ * The referrer may be a tutor, an admin user, or a referee.
  */
 const createTransaction = async ({ referrerTutorId, adminId, adminEmail, rewardIds, rewardCount }) => {
   const tutor = await Tutor.findById(referrerTutorId).select('fullName email').lean();
@@ -22,13 +22,27 @@ const createTransaction = async ({ referrerTutorId, adminId, adminEmail, rewardI
   }
 
   const referrerUser = await User.findById(referrerTutorId).select('name email').lean();
-  if (!referrerUser) throw new ApiError(httpStatus.NOT_FOUND, 'Referrer not found');
+  if (referrerUser) {
+    return BonusTransaction.create({
+      referrerTutorId,
+      referrerModel: 'User',
+      referrerName: referrerUser.name,
+      referrerEmail: referrerUser.email,
+      adminId,
+      adminEmail,
+      rewardIds,
+      rewardCount,
+    });
+  }
+
+  const referrerReferee = await Referee.findById(referrerTutorId).select('name email').lean();
+  if (!referrerReferee) throw new ApiError(httpStatus.NOT_FOUND, 'Referrer not found');
 
   return BonusTransaction.create({
     referrerTutorId,
-    referrerModel: 'User',
-    referrerName: referrerUser.name,
-    referrerEmail: referrerUser.email,
+    referrerModel: 'Referee',
+    referrerName: referrerReferee.name,
+    referrerEmail: referrerReferee.email,
     adminId,
     adminEmail,
     rewardIds,

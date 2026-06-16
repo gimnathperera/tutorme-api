@@ -3,7 +3,7 @@ const { toJSON } = require('./plugins');
 
 const bonusTransactionSchema = new mongoose.Schema(
   {
-    referrerModel: { type: String, enum: ['Tutor', 'User'], default: 'Tutor' },
+    referrerModel: { type: String, enum: ['Tutor', 'User', 'Referee'], default: 'Tutor' },
     referrerTutorId: { type: mongoose.Schema.Types.ObjectId, refPath: 'referrerModel', required: true, index: true },
     referrerName: { type: String, required: true, trim: true },
     referrerEmail: { type: String, required: true, trim: true, lowercase: true },
