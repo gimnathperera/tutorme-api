@@ -18,6 +18,7 @@ const requestTutorRoute = require('./request-tutor.route');
 const tagRoute = require('./tage.route');
 const dashboardRoute = require('./dashboard.route');
 const referralRoute = require('./referral.route');
+const bonusTransactionRoute = require('./bonusTransaction.route');
 
 const router = express.Router();
 
@@ -90,6 +91,10 @@ const defaultRoutes = [
   {
     path: '/referrals',
     route: referralRoute,
+  },
+  {
+    path: '/bonus-transactions',
+    route: bonusTransactionRoute,
   },
 ];
 

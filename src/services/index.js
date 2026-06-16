@@ -17,3 +17,5 @@ module.exports.requestTutorService = require('./requestTutor.service');
 module.exports.tagService = require('./tag.service');
 module.exports.dashboardService = require('./dashboard.service');
 module.exports.referralService = require('./referral.service');
+module.exports.bonusTransactionService = require('./bonusTransaction.service');
+module.exports.referralCodeService = require('./referralCode.service');
