@@ -107,6 +107,12 @@ const createAdmin = {
   }),
 };
 
+const sendReferralCode = {
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -116,4 +122,5 @@ module.exports = {
   changePassword,
   generateTempPassword,
   createAdmin,
+  sendReferralCode,
 };
