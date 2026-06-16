@@ -34,6 +34,7 @@ const batchUpdateRewards = {
       )
       .min(1)
       .required(),
+    referrerTutorId: Joi.string().custom(objectId).optional(),
   }),
 };
 
