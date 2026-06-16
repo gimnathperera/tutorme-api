@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const httpStatus = require('http-status');
 const { Tutor, User, ReferralReward } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -6,26 +5,7 @@ const { generateTempPassword } = require('../utils/generatePassword');
 const logger = require('../config/logger');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
-
-const REFERRAL_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-const generateReferralCode = () => {
-  const bytes = crypto.randomBytes(8);
-  return Array.from(bytes)
-    .map((b) => REFERRAL_CODE_CHARS[b % 36])
-    .join('');
-};
-
-const generateUniqueReferralCode = async () => {
-  let code;
-  let exists;
-  do {
-    code = generateReferralCode();
-    // eslint-disable-next-line no-await-in-loop
-    exists = await Tutor.findOne({ referralCode: code }).select('_id').lean();
-  } while (exists);
-  return code;
-};
+const referralCodeService = require('./referralCode.service');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const toArray = (value) => (Array.isArray(value) ? value : [value]);
@@ -112,11 +92,11 @@ const createTutor = async (tutorBody) => {
 
   const referredByCode = tutorBody.referredByCode ? tutorBody.referredByCode.toUpperCase().trim() : undefined;
 
-  // Validate referral code if provided
-  let referrerTutor = null;
+  // Validate referral code if provided — may belong to a tutor or an admin user
+  let referrer = null;
   if (referredByCode) {
-    referrerTutor = await findTutorByReferralCode(referredByCode);
-    if (!referrerTutor) {
+    referrer = await referralCodeService.findReferrerByReferralCode(referredByCode);
+    if (!referrer) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid referral code');
     }
   }
@@ -128,10 +108,11 @@ const createTutor = async (tutorBody) => {
   });
 
   // Create referral reward entry if a valid referral code was used
-  if (referrerTutor) {
+  if (referrer) {
     try {
       await ReferralReward.create({
-        referrerTutorId: referrerTutor._id,
+        referrerTutorId: referrer.id,
+        referrerModel: referrer.type,
         referredTutorId: tutor._id,
         rewardSent: false,
       });
@@ -317,7 +298,7 @@ const ensureReferralCode = async (tutorId) => {
     return { tutor, referralCode: tutor.referralCode };
   }
 
-  const code = await generateUniqueReferralCode();
+  const code = await referralCodeService.generateUniqueReferralCode();
   await Tutor.findByIdAndUpdate(tutorId, { referralCode: code });
   return { tutor, referralCode: code };
 };
