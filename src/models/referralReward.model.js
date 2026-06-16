@@ -5,7 +5,7 @@ const referralRewardSchema = mongoose.Schema(
   {
     referrerModel: {
       type: String,
-      enum: ['Tutor', 'User'],
+      enum: ['Tutor', 'User', 'Referee'],
       default: 'Tutor',
     },
     referrerTutorId: {
