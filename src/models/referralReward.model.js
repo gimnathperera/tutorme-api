@@ -3,9 +3,14 @@ const { toJSON, paginate } = require('./plugins');
 
 const referralRewardSchema = mongoose.Schema(
   {
+    referrerModel: {
+      type: String,
+      enum: ['Tutor', 'User'],
+      default: 'Tutor',
+    },
     referrerTutorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Tutor',
+      refPath: 'referrerModel',
       required: true,
       index: true,
     },
