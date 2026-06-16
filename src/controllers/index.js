@@ -11,3 +11,4 @@ module.exports.tagController = require('./tag.controller');
 module.exports.dashboardController = require('./dashboard.controller');
 module.exports.referralController = require('./referral.controller');
 module.exports.bonusTransactionController = require('./bonusTransaction.controller');
+module.exports.refereeController = require('./referee.controller');

@@ -15,3 +15,4 @@ module.exports.RequestTutor = require('./requestTutor.model');
 module.exports.Tag = require('./tags.model');
 module.exports.ReferralReward = require('./referralReward.model');
 module.exports.BonusTransaction = require('./bonusTransaction.model');
+module.exports.Referee = require('./referee.model');

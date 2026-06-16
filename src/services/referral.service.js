@@ -38,12 +38,27 @@ const getReferralsSummary = async (options = {}) => {
       },
     },
     {
+      $lookup: {
+        from: 'referees',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'refereeReferrer',
+      },
+    },
+    {
       $addFields: {
         referrer: {
-          $ifNull: [{ $arrayElemAt: ['$tutorReferrer', 0] }, { $arrayElemAt: ['$userReferrer', 0] }],
+          $ifNull: [
+            { $arrayElemAt: ['$tutorReferrer', 0] },
+            { $ifNull: [{ $arrayElemAt: ['$userReferrer', 0] }, { $arrayElemAt: ['$refereeReferrer', 0] }] },
+          ],
         },
         referrerType: {
-          $cond: [{ $gt: [{ $size: '$tutorReferrer' }, 0] }, 'tutor', 'admin'],
+          $cond: [
+            { $gt: [{ $size: '$tutorReferrer' }, 0] },
+            'tutor',
+            { $cond: [{ $gt: [{ $size: '$userReferrer' }, 0] }, 'admin', 'referee'] },
+          ],
         },
       },
     },

@@ -19,3 +19,4 @@ module.exports.dashboardService = require('./dashboard.service');
 module.exports.referralService = require('./referral.service');
 module.exports.bonusTransactionService = require('./bonusTransaction.service');
 module.exports.referralCodeService = require('./referralCode.service');
+module.exports.refereeService = require('./referee.service');
