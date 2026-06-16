@@ -118,6 +118,12 @@ const generateTempPassword = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const sendReferralCode = catchAsync(async (req, res) => {
+  const { user, referralCode } = await userService.ensureReferralCode(req.params.userId);
+  await emailService.sendReferralCodeEmail(user.email, user.name, referralCode);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 module.exports = {
   createUser,
   createAdmin,
@@ -127,4 +133,5 @@ module.exports = {
   deleteUser,
   changePassword,
   generateTempPassword,
+  sendReferralCode,
 };

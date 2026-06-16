@@ -1180,6 +1180,77 @@ TuitionLanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send referral code email to a tutor (triggered manually by admin)
+ * @param {string} to - Tutor's email address
+ * @param {string} tutorName - Tutor's full name
+ * @param {string} referralCode - Tutor's unique referral code
+ * @returns {Promise}
+ */
+const sendReferralCodeEmail = async (to, tutorName, referralCode) => {
+  try {
+    const safeCode = escapeHtml(referralCode);
+    const registrationLink = `${normalizeBaseUrl(config.app.userUrl)}/en/register-tutor?referral=${encodeURIComponent(
+      referralCode
+    )}`;
+    const subject = 'Your Tuition Lanka Referral Code';
+
+    const text = `
+Dear ${tutorName},
+
+Here is your unique referral code for Tuition Lanka:
+
+${referralCode}
+
+Share the link below with other tutors — when they open it, your referral code will be filled in automatically:
+${registrationLink}
+
+You will earn a reward for each tutor who joins using your code.
+
+If you have any questions, feel free to contact our support team.
+
+Warm regards,
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
+`;
+
+    const html = buildEmailHtml(`
+      <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">Dear ${escapeHtml(
+        tutorName
+      )},</p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Here is your unique referral code for <strong>Tuition Lanka</strong>.
+        Share the link below with other tutors — when they open it, your code will be filled in automatically.
+        You will earn a reward for each tutor who joins using your code.
+      </p>
+      <div style="background:#EFF5FF;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:0 0 24px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;text-transform:uppercase;color:#235ED5;letter-spacing:0.04em;">Your Referral Code</p>
+        <div style="display:inline-block;background:#fff;border:1px dashed #60a5fa;border-radius:10px;padding:14px 32px;font-size:26px;font-weight:700;letter-spacing:0.16em;color:#235ED5;word-break:break-all;">
+          ${safeCode}
+        </div>
+      </div>
+      <p style="text-align:center;margin:0 0 24px;">
+        <a href="${registrationLink}"
+           style="background-color:#235ED5;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+          Share Registration Link
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;line-height:1.6;margin:0 0 24px;">
+        Or copy and paste this link to share with others:<br/>
+        <a href="${registrationLink}" style="color:#235ED5;word-break:break-all;">${registrationLink}</a>
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.7;">
+        If you have any questions, feel free to contact our support team.
+      </p>
+    `);
+
+    await sendEmail(to, subject, text, html);
+  } catch (err) {
+    logger.error(`Failed to send referral code email to ${to}:`, err);
+    throw new Error('Referral code email failed');
+  }
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -1199,4 +1270,5 @@ module.exports = {
   sendAdminApprovedEmail,
   sendAdminRejectedEmail,
   sendAdminSuspendedEmail,
+  sendReferralCodeEmail,
 };

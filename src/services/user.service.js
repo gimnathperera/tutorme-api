@@ -6,6 +6,7 @@ const tokenService = require('./token.service');
 const { normalizeUserProfileFields } = require('../utils/availability');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
+const referralCodeService = require('./referralCode.service');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -55,6 +56,26 @@ const createUser = async (userBody) => {
  */
 const queryUsers = async (filter, options) => {
   const users = await User.paginate(buildUserSearchFilter(filter), options);
+
+  // Attach each linked tutor's referral code so the admin UI can show "code sent" state
+  // for tutor rows without changing the existing tutorId (string) field shape.
+  const tutorUserIds = users.results.filter((user) => user.role === 'tutor' && user.tutorId).map((user) => user.tutorId);
+
+  if (tutorUserIds.length > 0) {
+    const tutors = await Tutor.find({ _id: { $in: tutorUserIds } })
+      .select('referralCode')
+      .lean();
+    const referralCodeByTutorId = new Map(tutors.map((tutor) => [tutor._id.toString(), tutor.referralCode]));
+
+    users.results = users.results.map((user) => {
+      const serialized = typeof user.toJSON === 'function' ? user.toJSON() : user;
+      if (user.role === 'tutor' && user.tutorId) {
+        serialized.referralCode = referralCodeByTutorId.get(user.tutorId.toString()) || undefined;
+      }
+      return serialized;
+    });
+  }
+
   return users;
 };
 
@@ -264,6 +285,27 @@ const changeAdminPassword = async (userId, updateBody) => {
   return { message: 'Password updated successfully' };
 };
 
+/**
+ * Returns the admin user's existing referral code, or generates and saves a new one if missing.
+ * @param {string} userId
+ * @returns {Promise<{ user: object, referralCode: string }>}
+ */
+const ensureReferralCode = async (userId) => {
+  const user = await User.findById(userId).lean();
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  if (user.role !== 'admin') {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Referral codes can only be sent to admin users from this endpoint');
+  }
+
+  if (user.referralCode) {
+    return { user, referralCode: user.referralCode };
+  }
+
+  const code = await referralCodeService.generateUniqueReferralCode();
+  await User.findByIdAndUpdate(userId, { referralCode: code });
+  return { user, referralCode: code };
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -275,4 +317,5 @@ module.exports = {
   generateTemporaryPassword,
   createAdminUser,
   changeAdminPassword,
+  ensureReferralCode,
 };
