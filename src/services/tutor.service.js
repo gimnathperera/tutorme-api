@@ -1,10 +1,11 @@
 const httpStatus = require('http-status');
-const { Tutor, User } = require('../models');
+const { Tutor, User, ReferralReward } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateTempPassword } = require('../utils/generatePassword');
 const logger = require('../config/logger');
 const emailService = require('./email.service');
 const accountSyncService = require('./accountSync.service');
+const referralCodeService = require('./referralCode.service');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const toArray = (value) => (Array.isArray(value) ? value : [value]);
@@ -69,6 +70,17 @@ const checkEmailAvailable = async (email) => {
 };
 
 /**
+ * Validate that a referral code exists and belongs to an active tutor.
+ * Returns the referrer tutor document or null if invalid.
+ * @param {string} code
+ * @returns {Promise<Tutor|null>}
+ */
+const findTutorByReferralCode = async (code) => {
+  if (!code) return null;
+  return Tutor.findOne({ referralCode: code.toUpperCase().trim() }).select('_id referralCode').lean();
+};
+
+/**
  * Create a Tutor
  * @param {Object} tutorBody
  * @returns {Promise<Tutor>}
@@ -78,7 +90,37 @@ const createTutor = async (tutorBody) => {
   await checkEmailSuspended(tutorBody.email);
   await checkEmailAvailable(tutorBody.email);
 
-  const tutor = await Tutor.create({ ...tutorBody, status: 'pending' });
+  const referredByCode = tutorBody.referredByCode ? tutorBody.referredByCode.toUpperCase().trim() : undefined;
+
+  // Validate referral code if provided — may belong to a tutor or an admin user
+  let referrer = null;
+  if (referredByCode) {
+    referrer = await referralCodeService.findReferrerByReferralCode(referredByCode);
+    if (!referrer) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid referral code');
+    }
+  }
+
+  const tutor = await Tutor.create({
+    ...tutorBody,
+    status: 'pending',
+    referredByCode: referredByCode || undefined,
+  });
+
+  // Create referral reward entry if a valid referral code was used
+  if (referrer) {
+    try {
+      await ReferralReward.create({
+        referrerTutorId: referrer.id,
+        referrerModel: referrer.type,
+        referredTutorId: tutor._id,
+        rewardSent: false,
+      });
+    } catch (rewardErr) {
+      logger.warn(`Failed to create referral reward for tutor ${tutor.id}: ${rewardErr.message}`);
+    }
+  }
+
   try {
     await emailService.sendTutorRegistrationPendingEmail(tutor.email, tutor.fullName);
   } catch (emailErr) {
@@ -243,6 +285,24 @@ const findTutorsBySubjects = async (subjects, tutorType) => {
   return Tutor.find(query).select('fullName email tutorType subjects').lean();
 };
 
+/**
+ * Returns the tutor's existing referral code, or generates and saves a new one if missing.
+ * @param {string} tutorId
+ * @returns {Promise<{ tutor: object, referralCode: string }>}
+ */
+const ensureReferralCode = async (tutorId) => {
+  const tutor = await Tutor.findById(tutorId).lean();
+  if (!tutor) throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
+
+  if (tutor.referralCode) {
+    return { tutor, referralCode: tutor.referralCode };
+  }
+
+  const code = await referralCodeService.generateUniqueReferralCode();
+  await Tutor.findByIdAndUpdate(tutorId, { referralCode: code });
+  return { tutor, referralCode: code };
+};
+
 module.exports = {
   createTutor,
   queryTutors,
@@ -255,4 +315,6 @@ module.exports = {
   checkEmailSuspended,
   checkEmailAvailable,
   getEmailAvailability,
+  findTutorByReferralCode,
+  ensureReferralCode,
 };

@@ -17,6 +17,9 @@ const blogRoute = require('./blog.route');
 const requestTutorRoute = require('./request-tutor.route');
 const tagRoute = require('./tage.route');
 const dashboardRoute = require('./dashboard.route');
+const referralRoute = require('./referral.route');
+const bonusTransactionRoute = require('./bonusTransaction.route');
+const refereeRoute = require('./referee.route');
 
 const router = express.Router();
 
@@ -85,6 +88,18 @@ const defaultRoutes = [
   {
     path: '/blogs',
     route: blogRoute,
+  },
+  {
+    path: '/referrals',
+    route: referralRoute,
+  },
+  {
+    path: '/bonus-transactions',
+    route: bonusTransactionRoute,
+  },
+  {
+    path: '/referees',
+    route: refereeRoute,
   },
 ];
 

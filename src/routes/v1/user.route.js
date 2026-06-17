@@ -13,6 +13,11 @@ router
 
 router.route('/admins').post(auth('manageUsers'), validate(userValidation.createAdmin), userController.createAdmin);
 
+// Static route must come before parameterized /:userId route
+router
+  .route('/send-referral-code/:userId')
+  .post(auth('manageUsers'), validate(userValidation.sendReferralCode), userController.sendReferralCode);
+
 router
   .route('/:userId')
   .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)

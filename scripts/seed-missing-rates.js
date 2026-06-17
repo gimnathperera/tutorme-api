@@ -28,15 +28,15 @@ const DRY_RUN = !process.argv.includes('--apply');
 const GRADE_FALLBACK_RATES = {
   'G.C.E Advanced Level (Technology Stream)': {
     universityStudentsRate: { minimumRate: 1000, maximumRate: 2500 },
-    partTimeTutorRate:      { minimumRate: 1500, maximumRate: 3500 },
-    fullTimeTutorRate:      { minimumRate: 2000, maximumRate: 5000 },
-    moeTeacherRate:         { minimumRate: 2500, maximumRate: 6000 },
+    partTimeTutorRate: { minimumRate: 1500, maximumRate: 3500 },
+    fullTimeTutorRate: { minimumRate: 2000, maximumRate: 5000 },
+    moeTeacherRate: { minimumRate: 2500, maximumRate: 6000 },
   },
-  'Diplomas': {
+  Diplomas: {
     universityStudentsRate: { minimumRate: 1500, maximumRate: 3000 },
-    partTimeTutorRate:      { minimumRate: 2000, maximumRate: 4000 },
-    fullTimeTutorRate:      { minimumRate: 2000, maximumRate: 6000 },
-    moeTeacherRate:         { minimumRate: 2500, maximumRate: 8000 },
+    partTimeTutorRate: { minimumRate: 2000, maximumRate: 4000 },
+    fullTimeTutorRate: { minimumRate: 2000, maximumRate: 6000 },
+    moeTeacherRate: { minimumRate: 2500, maximumRate: 8000 },
   },
 };
 
@@ -137,13 +137,9 @@ async function run() {
       totalSkipped++;
       continue;
     }
-    const configuredSubjectIds = new Set(
-      configuredRates.map((r) => (r.subject && (r.subject.id || r.subject._id)))
-    );
+    const configuredSubjectIds = new Set(configuredRates.map((r) => r.subject && (r.subject.id || r.subject._id)));
 
-    const missingSubjects = subjects.filter(
-      (s) => !configuredSubjectIds.has(s.id || s._id)
-    );
+    const missingSubjects = subjects.filter((s) => !configuredSubjectIds.has(s.id || s._id));
 
     if (!missingSubjects.length) {
       console.log(`[OK]   "${grade.title}" — all ${subjects.length} subjects have rates`);

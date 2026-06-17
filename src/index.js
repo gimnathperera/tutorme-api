@@ -1,5 +1,11 @@
 require('../instrument');
 
+// Override system DNS with Google's public DNS servers.
+// The system DNS on this machine refuses SRV queries (querySrv ECONNREFUSED),
+// which breaks mongodb+srv:// Atlas connections. This must run before mongoose.
+// const dns = require('dns'); #Dev
+// dns.setServers(['8.8.8.8', '8.8.4.4']); #Dev
+
 const mongoose = require('mongoose');
 const sentry = require('./config/sentry');
 const config = require('./config/config');
