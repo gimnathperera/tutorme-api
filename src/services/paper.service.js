@@ -45,7 +45,18 @@ const preparePaperQuery = (filter) => {
   }
 
   if (query.examType !== undefined) {
-    query.examType = { $regex: `^${escapeRegex(query.examType)}$`, $options: 'i' };
+    const examTypeValue = query.examType;
+    delete query.examType;
+    const examTypeConditions = [
+      { examType: { $regex: `^${escapeRegex(examTypeValue)}$`, $options: 'i' } },
+      { title: { $regex: escapeRegex(examTypeValue), $options: 'i' } },
+    ];
+    if (query.$or) {
+      query.$and = [{ $or: query.$or }, { $or: examTypeConditions }];
+      delete query.$or;
+    } else {
+      query.$or = examTypeConditions;
+    }
   }
 
   if (query.medium !== undefined) {
