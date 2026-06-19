@@ -28,6 +28,16 @@ const normalizeExamType = (value) => {
 
 const examTypeIds = examTypes.map((e) => e.id);
 
+// Regex patterns to identify exam type from paper title (used as fallback when examType field is null)
+const examTypeTitlePatterns = {
+  'GCE Exam': 'G\\.C\\.E\\.|GCE Exam',
+  'Term Test': 'Term Test',
+  'Model Paper': 'Model Paper',
+  'Scholarship Exam': 'Scholarship',
+  'Cambridge Exam': 'Cambridge',
+  'Edexcel Exam': 'Edexcel',
+};
+
 const getPaperMedium = (value) => {
   if (typeof value !== 'string') {
     return null;
@@ -81,6 +91,7 @@ module.exports = {
   normalizePaperMedium,
   examTypes,
   examTypeIds,
+  examTypeTitlePatterns,
   getExamType,
   normalizeExamType,
 };
