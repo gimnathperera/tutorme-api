@@ -1,7 +1,13 @@
 const httpStatus = require('http-status');
 const { Grade, Paper, Subject } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { formatPaperMediums, normalizePaperMedium, paperMediums, normalizeExamType } = require('../config/paper');
+const {
+  formatPaperMediums,
+  normalizePaperMedium,
+  paperMediums,
+  normalizeExamType,
+  examTypeTitlePatterns,
+} = require('../config/paper');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -47,10 +53,18 @@ const preparePaperQuery = (filter) => {
   if (query.examType !== undefined) {
     const examTypeValue = query.examType;
     delete query.examType;
-    const examTypeConditions = [
-      { examType: { $regex: `^${escapeRegex(examTypeValue)}$`, $options: 'i' } },
-      { title: { $regex: escapeRegex(examTypeValue), $options: 'i' } },
-    ];
+
+    const examTypeConditions = [{ examType: { $regex: `^${escapeRegex(examTypeValue)}$`, $options: 'i' } }];
+
+    const titlePattern = examTypeTitlePatterns[examTypeValue];
+    if (titlePattern) {
+      // Fallback for legacy documents where examType field was not set
+      examTypeConditions.push({
+        examType: { $in: [null, ''] },
+        title: { $regex: titlePattern, $options: 'i' },
+      });
+    }
+
     if (query.$or) {
       query.$and = [{ $or: query.$or }, { $or: examTypeConditions }];
       delete query.$or;
