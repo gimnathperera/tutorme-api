@@ -1251,6 +1251,96 @@ TuitionLanka – Learn Better, Achieve More
   }
 };
 
+/**
+ * Send a payment confirmation email to a referee after a slip is uploaded.
+ * The slip is attached directly as a file.
+ * @param {string} to - Referee's email address
+ * @param {string} referrerName - Referee's display name
+ * @param {{ total: number, approved: number, rejected: number }} breakdown
+ * @param {{ data: string, fileName: string, mimeType: string }} slip - raw base64 slip
+ * @returns {Promise}
+ */
+const sendPaymentConfirmationEmail = async (to, referrerName, breakdown, slip) => {
+  const safeName = escapeHtml(referrerName || 'there');
+  const subject = 'Your Referral Payment Has Been Processed – TuitionLanka';
+
+  const { total = 0, approved = 0, rejected = 0 } = breakdown;
+
+  const text = `
+Dear ${referrerName || 'there'},
+
+Great news! Your referral payment has been processed by Tuition Lanka.
+
+Please find your payment slip attached to this email.
+
+Referral Breakdown (for your referral code)
+Total tutors registered via your code : ${total}
+Approved and verified tutors          : ${approved}
+Rejected tutors                       : ${rejected}
+
+Thank you for referring tutors to Tuition Lanka. We appreciate your continued support.
+
+Warm regards,
+The TuitionLanka Team
+TuitionLanka – Learn Better, Achieve More
+`;
+
+  const html = buildEmailHtml(`
+    <p style="color:#235ED5;font-size:18px;font-weight:bold;text-align:center;margin:0 0 20px;">
+      Payment Confirmation
+    </p>
+    <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 16px;">
+      Dear <strong>${safeName}</strong>,
+    </p>
+    <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 24px;">
+      Great news! Your referral payment has been <strong style="color:#16a34a;">processed</strong> by Tuition Lanka.
+      Your payment slip is attached to this email for your records.
+    </p>
+
+    <div style="background:#EFF5FF;border:1px solid #bfdbfe;border-radius:12px;padding:24px 28px;margin:0 0 28px;">
+      <p style="margin:0 0 16px;font-size:13px;font-weight:700;text-transform:uppercase;color:#235ED5;letter-spacing:0.04em;">
+        Referral Breakdown
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#374151;">
+        <tbody>
+          <tr style="border-bottom:1px solid #dbeafe;">
+            <td style="padding:10px 0;color:#6b7280;">Total tutors registered via your code</td>
+            <td style="padding:10px 0;text-align:right;font-weight:700;color:#1e3a8a;">${total}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #dbeafe;">
+            <td style="padding:10px 0;color:#6b7280;">Approved and verified tutors</td>
+            <td style="padding:10px 0;text-align:right;font-weight:700;color:#16a34a;">${approved}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0;color:#6b7280;">Rejected tutors</td>
+            <td style="padding:10px 0;text-align:right;font-weight:700;color:#dc2626;">${rejected}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:#374151;font-size:15px;line-height:1.7;">
+      Thank you for referring tutors to <strong>Tuition Lanka</strong>.
+      We appreciate your continued support.
+    </p>
+  `);
+
+  await transport.sendMail({
+    from: config.email.from,
+    to,
+    subject,
+    text,
+    html,
+    attachments: [
+      {
+        filename: slip.fileName,
+        content: Buffer.from(slip.data, 'base64'),
+        contentType: slip.mimeType,
+      },
+    ],
+  });
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -1271,4 +1361,5 @@ module.exports = {
   sendAdminRejectedEmail,
   sendAdminSuspendedEmail,
   sendReferralCodeEmail,
+  sendPaymentConfirmationEmail,
 };
