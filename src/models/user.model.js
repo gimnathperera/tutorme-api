@@ -282,6 +282,21 @@ const userSchema = mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    accountName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    accountNumber: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    bankName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   {
     timestamps: true,

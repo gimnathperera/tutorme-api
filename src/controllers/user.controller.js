@@ -52,6 +52,7 @@ const getUsers = catchAsync(async (req, res) => {
     'createdAt',
     'name',
     'role',
+    'roles',
   ]);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
