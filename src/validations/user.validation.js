@@ -28,6 +28,7 @@ const getUsers = {
     search: Joi.string().allow(''),
     name: Joi.string(),
     role: Joi.string(),
+    roles: Joi.string().allow(''),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -69,6 +70,9 @@ const updateUser = {
       language: Joi.string(),
       avatar: Joi.string().allow(''),
       rejectionMessage: Joi.string().allow('').max(1000).optional(),
+      accountName: Joi.string().max(100).allow(null, '').optional(),
+      accountNumber: Joi.string().max(30).allow(null, '').optional(),
+      bankName: Joi.string().max(100).allow(null, '').optional(),
     })
     .unknown(false)
     .min(1),

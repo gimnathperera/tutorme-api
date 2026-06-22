@@ -1,6 +1,8 @@
 const httpStatus = require('http-status');
-const { BonusTransaction, Tutor, User, Referee } = require('../models');
+const { BonusTransaction, Tutor, User, Referee, ReferralReward } = require('../models');
 const ApiError = require('../utils/ApiError');
+const logger = require('../config/logger');
+const emailService = require('./email.service');
 
 /**
  * Create a bonus transaction record when rewards are marked as sent.
@@ -90,13 +92,63 @@ const getTransactionById = async (id) => {
 };
 
 /**
- * Attach a slip (base64) to an existing transaction.
+ * Attach a slip (base64) to an existing transaction, then fire a payment
+ * confirmation email to the referee. Email is fire-and-forget — a send
+ * failure is logged but never blocks or rolls back the slip save.
  */
 const uploadSlip = async (id, { data, fileName, mimeType }) => {
   const transaction = await BonusTransaction.findById(id);
   if (!transaction) throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
   transaction.slip = { data, fileName, mimeType };
   await transaction.save();
+
+  // Fire-and-forget — not awaited so the HTTP 204 response is not delayed
+  const fireConfirmationEmail = async () => {
+    try {
+      // Compute referral breakdown for this referee reusing the same
+      // ReferralReward + tutors join pattern from getReferralsSummary.
+      const [breakdown] = await ReferralReward.aggregate([
+        { $match: { referrerTutorId: transaction.referrerTutorId } },
+        {
+          $lookup: {
+            from: 'tutors',
+            localField: 'referredTutorId',
+            foreignField: '_id',
+            as: 'referredTutor',
+          },
+        },
+        {
+          $addFields: {
+            referredTutorStatus: { $ifNull: [{ $arrayElemAt: ['$referredTutor.status', 0] }, null] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            approved: { $sum: { $cond: [{ $eq: ['$referredTutorStatus', 'approved'] }, 1, 0] } },
+            rejected: { $sum: { $cond: [{ $eq: ['$referredTutorStatus', 'rejected'] }, 1, 0] } },
+          },
+        },
+      ]);
+
+      const counts = breakdown || { total: 0, approved: 0, rejected: 0 };
+
+      await emailService.sendPaymentConfirmationEmail(transaction.referrerEmail, transaction.referrerName, counts, {
+        data,
+        fileName,
+        mimeType,
+      });
+
+      logger.info(`Payment confirmation email sent to ${transaction.referrerEmail} for transaction ${id}`);
+    } catch (err) {
+      logger.warn(
+        `Failed to send payment confirmation email for transaction ${id} to ${transaction.referrerEmail}: ${err.message}`
+      );
+    }
+  };
+
+  fireConfirmationEmail();
 };
 
 /**

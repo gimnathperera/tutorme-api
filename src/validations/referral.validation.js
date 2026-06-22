@@ -32,7 +32,7 @@ const batchUpdateRewards = {
           rewardSent: Joi.boolean().required(),
         })
       )
-      .min(1)
+      .min(5)
       .required(),
     referrerTutorId: Joi.string().custom(objectId).optional(),
   }),

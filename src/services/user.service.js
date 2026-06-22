@@ -16,6 +16,19 @@ const buildUserSearchFilter = (filter = {}) => {
 
   delete normalizedFilter.search;
 
+  // `roles` (comma-separated) expands into a Mongoose $in query on the role field.
+  // Backward-compatible: the existing `role` single-value filter still works as before.
+  if (typeof normalizedFilter.roles === 'string' && normalizedFilter.roles.trim()) {
+    const roleList = normalizedFilter.roles
+      .split(',')
+      .map((r) => r.trim())
+      .filter(Boolean);
+    if (roleList.length > 0) {
+      normalizedFilter.role = { $in: roleList };
+    }
+    delete normalizedFilter.roles;
+  }
+
   if (!searchTerm) {
     return normalizedFilter;
   }

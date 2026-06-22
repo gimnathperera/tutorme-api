@@ -217,6 +217,18 @@ const deleteTutorById = async (tutorId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
 
+  // If the tutor is still pending and was referred, remove their ReferralReward entry.
+  // This keeps totalReferrals accurate — the referrer's count drops because the
+  // registration never reached approval. Approved or rejected tutors are not touched
+  // (their reward record stays, and the referrer keeps their earned entitlement).
+  if (tutor.status === 'pending' && tutor.referredByCode) {
+    try {
+      await ReferralReward.deleteOne({ referredTutorId: tutor._id });
+    } catch (err) {
+      logger.warn(`Failed to clean up referral reward for pending tutor ${tutor._id}: ${err.message}`);
+    }
+  }
+
   const linkedUser = tutor.userId
     ? await User.findById(tutor.userId)
     : await User.findOne({ $or: [{ tutorId: tutor._id }, { email: tutor.email }] });
