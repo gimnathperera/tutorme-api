@@ -28,7 +28,7 @@ const getEmailAvailability = async (email) => {
 /**
  * Create a referee, auto-assign a referral code, and email it to them.
  */
-const createReferee = async ({ name, email, contactNumber, gender, avatar }) => {
+const createReferee = async ({ name, email, contactNumber, gender, avatar, accountName, accountNumber, bankName }) => {
   const normalizedEmail = email.toLowerCase().trim();
   const availability = await getEmailAvailability(normalizedEmail);
   if (!availability.available) {
@@ -44,6 +44,9 @@ const createReferee = async ({ name, email, contactNumber, gender, avatar }) => 
     gender,
     avatar: avatar || undefined,
     referralCode,
+    accountName: accountName || undefined,
+    accountNumber: accountNumber || undefined,
+    bankName: bankName || undefined,
   });
 
   try {
