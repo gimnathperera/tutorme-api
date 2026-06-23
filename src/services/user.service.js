@@ -68,7 +68,38 @@ const createUser = async (userBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryUsers = async (filter, options) => {
-  const users = await User.paginate(buildUserSearchFilter(filter), options);
+  const hasReferralCode = filter.hasReferralCode === 'true';
+
+  // Strip non-DB fields before building the Mongoose filter
+  const { hasReferralCode: _ignored, ...dbFilter } = filter;
+  const mongoFilter = buildUserSearchFilter(dbFilter);
+
+  if (hasReferralCode) {
+    // Tutor referral codes are stored on the Tutor model, not the User model.
+    // Admin referral codes are on the User model directly.
+    // Pre-fetch which tutors have a code so we can filter at pagination time.
+    const tutorsWithCode = await Tutor.find({ referralCode: { $exists: true, $ne: null } })
+      .select('_id')
+      .lean();
+    const tutorIdsWithCode = tutorsWithCode.map((t) => t._id);
+
+    const referralCodeOr = [
+      // Admin/User rows: referralCode field is directly on the User document
+      { role: { $ne: 'tutor' }, referralCode: { $exists: true, $ne: null } },
+      // Tutor rows: referralCode is on the linked Tutor document
+      { role: 'tutor', tutorId: { $in: tutorIdsWithCode } },
+    ];
+
+    if (mongoFilter.$or) {
+      // An existing $or from the search term — combine both conditions with $and
+      mongoFilter.$and = [{ $or: mongoFilter.$or }, { $or: referralCodeOr }];
+      delete mongoFilter.$or;
+    } else {
+      mongoFilter.$or = referralCodeOr;
+    }
+  }
+
+  const users = await User.paginate(mongoFilter, options);
 
   // Attach each linked tutor's referral code so the admin UI can show "code sent" state
   // for tutor rows without changing the existing tutorId (string) field shape.

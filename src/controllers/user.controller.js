@@ -53,6 +53,7 @@ const getUsers = catchAsync(async (req, res) => {
     'name',
     'role',
     'roles',
+    'hasReferralCode',
   ]);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),

@@ -29,6 +29,7 @@ const getUsers = {
     name: Joi.string(),
     role: Joi.string(),
     roles: Joi.string().allow(''),
+    hasReferralCode: Joi.string().valid('true', 'false').optional(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
