@@ -350,6 +350,25 @@ const ensureReferralCode = async (userId) => {
   return { user, referralCode: code };
 };
 
+/**
+ * Revoke (clear) a user's referral code without deleting their account.
+ * For tutor users the code lives on the linked Tutor document; for all
+ * others it lives on the User document itself.
+ * @param {ObjectId|string} userId
+ */
+const clearUserReferralCode = async (userId) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.role === 'tutor' && user.tutorId) {
+    await Tutor.findByIdAndUpdate(user.tutorId, { $unset: { referralCode: 1 } });
+  } else {
+    await User.findByIdAndUpdate(userId, { $unset: { referralCode: 1 } });
+  }
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -362,4 +381,5 @@ module.exports = {
   createAdminUser,
   changeAdminPassword,
   ensureReferralCode,
+  clearUserReferralCode,
 };

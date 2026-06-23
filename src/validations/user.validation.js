@@ -118,6 +118,12 @@ const sendReferralCode = {
   }),
 };
 
+const clearReferralCode = {
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -125,6 +131,7 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  clearReferralCode,
   generateTempPassword,
   createAdmin,
   sendReferralCode,
