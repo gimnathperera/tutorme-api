@@ -99,9 +99,9 @@ const createTutor = {
     academicDetails: Joi.string().allow('').max(1000),
 
     // 4. Tutor's Profile
-    teachingSummary: Joi.string().max(750).required(),
-    studentResults: Joi.string().max(750).required(),
-    sellingPoints: Joi.string().max(750).required(),
+    teachingSummary: Joi.string().allow('').max(750),
+    studentResults: Joi.string().allow('').max(750),
+    sellingPoints: Joi.string().allow('').max(750),
     certificatesAndQualifications: Joi.array()
       .items(
         Joi.object().keys({

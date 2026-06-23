@@ -178,17 +178,17 @@ const tutorSchema = mongoose.Schema(
     teachingSummary: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
     studentResults: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
     sellingPoints: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
 
     agreeTerms: {
