@@ -129,16 +129,25 @@ const getRewardsForReferrer = async (referrerTutorId, unsentOnly = true) => {
   const filter = { referrerTutorId };
   if (unsentOnly) filter.rewardSent = false;
 
-  const rewards = await ReferralReward.find(filter)
-    .populate('referredTutorId', 'fullName email createdAt')
+  // Only surface rewards where the referred tutor is approved.
+  // Mongoose populate with `match` sets referredTutorId to null when the
+  // condition isn't met, so we filter those out afterwards.
+  const rawRewards = await ReferralReward.find(filter)
+    .populate({
+      path: 'referredTutorId',
+      match: { status: 'approved' },
+      select: 'fullName email createdAt',
+    })
     .sort({ createdAt: -1 })
     .lean();
 
-  return rewards.map((r) => ({
-    ...r,
-    id: r._id.toString(),
-    referredTutorId: r.referredTutorId ? { ...r.referredTutorId, id: r.referredTutorId._id?.toString() } : r.referredTutorId,
-  }));
+  return rawRewards
+    .filter((r) => r.referredTutorId !== null)
+    .map((r) => ({
+      ...r,
+      id: r._id.toString(),
+      referredTutorId: { ...r.referredTutorId, id: r.referredTutorId._id?.toString() },
+    }));
 };
 
 /**

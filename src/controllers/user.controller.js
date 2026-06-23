@@ -53,6 +53,7 @@ const getUsers = catchAsync(async (req, res) => {
     'name',
     'role',
     'roles',
+    'hasReferralCode',
   ]);
   const options = {
     ...pick(req.query, ['sortBy', 'limit', 'page']),
@@ -125,6 +126,11 @@ const sendReferralCode = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const clearReferralCode = catchAsync(async (req, res) => {
+  await userService.clearUserReferralCode(req.params.userId);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 module.exports = {
   createUser,
   createAdmin,
@@ -135,4 +141,5 @@ module.exports = {
   changePassword,
   generateTempPassword,
   sendReferralCode,
+  clearReferralCode,
 };

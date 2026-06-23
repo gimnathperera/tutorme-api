@@ -29,6 +29,7 @@ const getUsers = {
     name: Joi.string(),
     role: Joi.string(),
     roles: Joi.string().allow(''),
+    hasReferralCode: Joi.string().valid('true', 'false').optional(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -117,6 +118,12 @@ const sendReferralCode = {
   }),
 };
 
+const clearReferralCode = {
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -124,6 +131,7 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  clearReferralCode,
   generateTempPassword,
   createAdmin,
   sendReferralCode,
