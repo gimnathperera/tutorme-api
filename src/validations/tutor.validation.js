@@ -51,8 +51,8 @@ const createTutor = {
       'number.base': 'Age must be a number',
       'any.required': 'Age is required',
     }),
-    nationality: Joi.string().valid('Sri Lankan', 'Others').required(),
-    race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').required(),
+    nationality: Joi.string().valid('Sri Lankan', 'Others').optional(),
+    race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').optional(),
 
     // 2. Tutoring Preferences
     classType: Joi.array()
