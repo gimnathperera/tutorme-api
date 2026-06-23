@@ -77,12 +77,12 @@ const tutorSchema = mongoose.Schema(
     nationality: {
       type: String,
       enum: ['Sri Lankan', 'Others'],
-      required: true,
+      required: false,
     },
     race: {
       type: String,
       enum: ['Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others'],
-      required: true,
+      required: false,
     },
 
     status: {
@@ -178,17 +178,17 @@ const tutorSchema = mongoose.Schema(
     teachingSummary: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
     studentResults: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
     sellingPoints: {
       type: String,
       maxlength: 750,
-      required: true,
+      default: '',
     },
 
     agreeTerms: {
