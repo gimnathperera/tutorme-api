@@ -51,8 +51,8 @@ const createTutor = {
       'number.base': 'Age must be a number',
       'any.required': 'Age is required',
     }),
-    nationality: Joi.string().valid('Sri Lankan', 'Others').allow('').optional(),
-    race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').allow('').optional(),
+    nationality: Joi.string().valid('Sri Lankan', 'Others').allow('', null).optional(),
+    race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').allow('', null).optional(),
 
     // 2. Tutoring Preferences
     classType: Joi.array()
@@ -185,8 +185,8 @@ const updateTutor = {
       dateOfBirth: Joi.string().isoDate(),
       gender: Joi.string().valid('Male', 'Female'),
       age: Joi.number().integer().min(1),
-      nationality: Joi.string().valid('Sri Lankan', 'Others').allow(''),
-      race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').allow(''),
+      nationality: Joi.string().valid('Sri Lankan', 'Others').allow('', null),
+      race: Joi.string().valid('Sinhalese', 'Tamil', 'Muslim', 'Burgher', 'Others').allow('', null),
 
       tutorMediums: Joi.array().items(Joi.string().valid('Sinhala', 'English', 'Tamil')).min(1),
       grades: Joi.array().items(Joi.string()),

@@ -200,6 +200,14 @@ const updateUserById = async (userId, updateBody, actor) => {
 
   Object.assign(user, normalizedUpdateBody);
 
+  // Mongoose 5 validates ALL fields on save(), including pre-existing null values that fail enum checks.
+  // Convert null enum-constrained fields to undefined so Mongoose $unset them instead of erroring.
+  ['nationality', 'race'].forEach((field) => {
+    if (user[field] === null) {
+      user.set(field, undefined);
+    }
+  });
+
   await user.save();
   await accountSyncService.syncTutorFromUser(user);
   return user;
