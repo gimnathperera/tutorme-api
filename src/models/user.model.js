@@ -282,6 +282,21 @@ const userSchema = mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    accountName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    accountNumber: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    bankName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -318,6 +333,11 @@ userSchema.pre('save', async function (next) {
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password, 8);
   }
+  // Mongoose 5 casts null to the string "null" before enum validation, which fails
+  // for non-required String enum fields. Convert null to undefined so these optional
+  // fields are treated as unset rather than triggering a spurious validation error.
+  if (user.nationality === null) user.nationality = undefined;
+  if (user.race === null) user.race = undefined;
   next();
 });
 

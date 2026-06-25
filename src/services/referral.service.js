@@ -11,11 +11,37 @@ const getReferralsSummary = async (options = {}) => {
   const skip = (page - 1) * limit;
 
   const pipeline = [
+    // Resolve the referred tutor's status so we can filter pendingRewards correctly.
+    // totalReferrals counts every ReferralReward doc (all statuses).
+    // pendingRewards counts only unsent rewards where the referred tutor is 'approved'.
+    {
+      $lookup: {
+        from: 'tutors',
+        localField: 'referredTutorId',
+        foreignField: '_id',
+        as: 'referredTutor',
+      },
+    },
+    {
+      $addFields: {
+        referredTutorStatus: { $ifNull: [{ $arrayElemAt: ['$referredTutor.status', 0] }, null] },
+      },
+    },
     {
       $group: {
         _id: '$referrerTutorId',
         totalReferrals: { $sum: 1 },
-        pendingRewards: { $sum: { $cond: [{ $eq: ['$rewardSent', false] }, 1, 0] } },
+        pendingRewards: {
+          $sum: {
+            $cond: {
+              if: {
+                $and: [{ $eq: ['$rewardSent', false] }, { $eq: ['$referredTutorStatus', 'approved'] }],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
       },
     },
     { $sort: { totalReferrals: -1 } },
@@ -103,20 +129,31 @@ const getRewardsForReferrer = async (referrerTutorId, unsentOnly = true) => {
   const filter = { referrerTutorId };
   if (unsentOnly) filter.rewardSent = false;
 
-  const rewards = await ReferralReward.find(filter)
-    .populate('referredTutorId', 'fullName email createdAt')
+  // Only surface rewards where the referred tutor is approved.
+  // Mongoose populate with `match` sets referredTutorId to null when the
+  // condition isn't met, so we filter those out afterwards.
+  const rawRewards = await ReferralReward.find(filter)
+    .populate({
+      path: 'referredTutorId',
+      match: { status: 'approved' },
+      select: 'fullName email createdAt',
+    })
     .sort({ createdAt: -1 })
     .lean();
 
-  return rewards.map((r) => ({
-    ...r,
-    id: r._id.toString(),
-    referredTutorId: r.referredTutorId ? { ...r.referredTutorId, id: r.referredTutorId._id?.toString() } : r.referredTutorId,
-  }));
+  return rawRewards
+    .filter((r) => r.referredTutorId !== null)
+    .map((r) => ({
+      ...r,
+      id: r._id.toString(),
+      referredTutorId: { ...r.referredTutorId, id: r.referredTutorId._id?.toString() },
+    }));
 };
 
 /**
  * Batch-update rewardSent for multiple reward entries.
+ * - At least 5 rewards must be marked as sent in one batch.
+ * - Once a reward is locked (lockedInBatch: true) it cannot be un-sent.
  * @param {Array<{id: string, rewardSent: boolean}>} updates
  */
 const batchUpdateRewards = async (updates) => {
@@ -124,12 +161,33 @@ const batchUpdateRewards = async (updates) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No updates provided');
   }
 
-  const ops = updates.map(({ id, rewardSent }) => ({
-    updateOne: {
-      filter: { _id: id },
-      update: { $set: { rewardSent: Boolean(rewardSent) } },
-    },
-  }));
+  const toBeSent = updates.filter((u) => u.rewardSent === true);
+  if (toBeSent.length < 5) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `A reward batch requires at least 5 referrals. You selected ${toBeSent.length}.`
+    );
+  }
+
+  const ops = updates.map(({ id, rewardSent }) => {
+    if (rewardSent) {
+      // Mark as sent and lock permanently — filter excludes already-locked docs
+      // so re-saving the same item is a harmless no-op.
+      return {
+        updateOne: {
+          filter: { _id: id },
+          update: { $set: { rewardSent: true, lockedInBatch: true } },
+        },
+      };
+    }
+    // Un-sending is only allowed for items that have NOT been locked yet.
+    return {
+      updateOne: {
+        filter: { _id: id, lockedInBatch: { $ne: true } },
+        update: { $set: { rewardSent: false } },
+      },
+    };
+  });
 
   await ReferralReward.bulkWrite(ops);
 };

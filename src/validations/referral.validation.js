@@ -10,7 +10,7 @@ const validateReferralCode = {
 const getReferralsSummary = {
   query: Joi.object().keys({
     page: Joi.number().integer().min(1),
-    limit: Joi.number().integer().min(1).max(100),
+    limit: Joi.number().integer().min(1).max(1000),
   }),
 };
 
@@ -32,7 +32,7 @@ const batchUpdateRewards = {
           rewardSent: Joi.boolean().required(),
         })
       )
-      .min(1)
+      .min(5)
       .required(),
     referrerTutorId: Joi.string().custom(objectId).optional(),
   }),

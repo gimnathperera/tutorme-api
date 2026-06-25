@@ -16,6 +16,19 @@ const buildUserSearchFilter = (filter = {}) => {
 
   delete normalizedFilter.search;
 
+  // `roles` (comma-separated) expands into a Mongoose $in query on the role field.
+  // Backward-compatible: the existing `role` single-value filter still works as before.
+  if (typeof normalizedFilter.roles === 'string' && normalizedFilter.roles.trim()) {
+    const roleList = normalizedFilter.roles
+      .split(',')
+      .map((r) => r.trim())
+      .filter(Boolean);
+    if (roleList.length > 0) {
+      normalizedFilter.role = { $in: roleList };
+    }
+    delete normalizedFilter.roles;
+  }
+
   if (!searchTerm) {
     return normalizedFilter;
   }
@@ -55,7 +68,38 @@ const createUser = async (userBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryUsers = async (filter, options) => {
-  const users = await User.paginate(buildUserSearchFilter(filter), options);
+  const hasReferralCode = filter.hasReferralCode === 'true';
+
+  // Strip non-DB fields before building the Mongoose filter
+  const { hasReferralCode: _ignored, ...dbFilter } = filter;
+  const mongoFilter = buildUserSearchFilter(dbFilter);
+
+  if (hasReferralCode) {
+    // Tutor referral codes are stored on the Tutor model, not the User model.
+    // Admin referral codes are on the User model directly.
+    // Pre-fetch which tutors have a code so we can filter at pagination time.
+    const tutorsWithCode = await Tutor.find({ referralCode: { $exists: true, $ne: null } })
+      .select('_id')
+      .lean();
+    const tutorIdsWithCode = tutorsWithCode.map((t) => t._id);
+
+    const referralCodeOr = [
+      // Admin/User rows: referralCode field is directly on the User document
+      { role: { $ne: 'tutor' }, referralCode: { $exists: true, $ne: null } },
+      // Tutor rows: referralCode is on the linked Tutor document
+      { role: 'tutor', tutorId: { $in: tutorIdsWithCode } },
+    ];
+
+    if (mongoFilter.$or) {
+      // An existing $or from the search term — combine both conditions with $and
+      mongoFilter.$and = [{ $or: mongoFilter.$or }, { $or: referralCodeOr }];
+      delete mongoFilter.$or;
+    } else {
+      mongoFilter.$or = referralCodeOr;
+    }
+  }
+
+  const users = await User.paginate(mongoFilter, options);
 
   // Attach each linked tutor's referral code so the admin UI can show "code sent" state
   // for tutor rows without changing the existing tutorId (string) field shape.
@@ -155,6 +199,14 @@ const updateUserById = async (userId, updateBody, actor) => {
   }
 
   Object.assign(user, normalizedUpdateBody);
+
+  // Mongoose 5 validates ALL fields on save(), including pre-existing null values that fail enum checks.
+  // Convert null enum-constrained fields to undefined so Mongoose $unset them instead of erroring.
+  ['nationality', 'race'].forEach((field) => {
+    if (user[field] === null) {
+      user.set(field, undefined);
+    }
+  });
 
   await user.save();
   await accountSyncService.syncTutorFromUser(user);
@@ -306,6 +358,25 @@ const ensureReferralCode = async (userId) => {
   return { user, referralCode: code };
 };
 
+/**
+ * Revoke (clear) a user's referral code without deleting their account.
+ * For tutor users the code lives on the linked Tutor document; for all
+ * others it lives on the User document itself.
+ * @param {ObjectId|string} userId
+ */
+const clearUserReferralCode = async (userId) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.role === 'tutor' && user.tutorId) {
+    await Tutor.findByIdAndUpdate(user.tutorId, { $unset: { referralCode: 1 } });
+  } else {
+    await User.findByIdAndUpdate(userId, { $unset: { referralCode: 1 } });
+  }
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -318,4 +389,5 @@ module.exports = {
   createAdminUser,
   changeAdminPassword,
   ensureReferralCode,
+  clearUserReferralCode,
 };

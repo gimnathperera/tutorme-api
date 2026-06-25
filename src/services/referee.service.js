@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Referee, Tutor, User, ReferralReward } = require('../models');
+const { Referee, Tutor, User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
 const emailService = require('./email.service');
@@ -28,7 +28,7 @@ const getEmailAvailability = async (email) => {
 /**
  * Create a referee, auto-assign a referral code, and email it to them.
  */
-const createReferee = async ({ name, email, contactNumber, gender, avatar }) => {
+const createReferee = async ({ name, email, contactNumber, gender, avatar, accountName, accountNumber, bankName }) => {
   const normalizedEmail = email.toLowerCase().trim();
   const availability = await getEmailAvailability(normalizedEmail);
   if (!availability.available) {
@@ -44,6 +44,9 @@ const createReferee = async ({ name, email, contactNumber, gender, avatar }) => 
     gender,
     avatar: avatar || undefined,
     referralCode,
+    accountName: accountName || undefined,
+    accountNumber: accountNumber || undefined,
+    bankName: bankName || undefined,
   });
 
   try {
@@ -57,6 +60,8 @@ const createReferee = async ({ name, email, contactNumber, gender, avatar }) => 
 
 /**
  * Get a paginated list of referees with their referral counts attached.
+ * Counts are derived directly from Tutor.referredByCode so they are accurate
+ * regardless of whether a ReferralReward record was created.
  */
 const queryReferees = async (filter, options) => {
   const { search } = filter;
@@ -69,19 +74,19 @@ const queryReferees = async (filter, options) => {
 
   const referees = await Referee.paginate(mongoFilter, options);
 
-  const refereeIds = referees.results.map((referee) => referee._id);
+  const refCodes = referees.results.map((r) => r.referralCode).filter(Boolean);
   const counts =
-    refereeIds.length > 0
-      ? await ReferralReward.aggregate([
-          { $match: { referrerModel: 'Referee', referrerTutorId: { $in: refereeIds } } },
-          { $group: { _id: '$referrerTutorId', count: { $sum: 1 } } },
+    refCodes.length > 0
+      ? await Tutor.aggregate([
+          { $match: { referredByCode: { $in: refCodes } } },
+          { $group: { _id: '$referredByCode', count: { $sum: 1 } } },
         ])
       : [];
-  const countByRefereeId = new Map(counts.map((c) => [c._id.toString(), c.count]));
+  const countByCode = new Map(counts.map((c) => [c._id, c.count]));
 
   referees.results = referees.results.map((referee) => {
     const serialized = typeof referee.toJSON === 'function' ? referee.toJSON() : referee;
-    serialized.referralCount = countByRefereeId.get(referee._id.toString()) || 0;
+    serialized.referralCount = countByCode.get(referee.referralCode) || 0;
     return serialized;
   });
 

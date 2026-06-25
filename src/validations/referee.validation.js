@@ -8,6 +8,9 @@ const createReferee = {
     contactNumber: Joi.string().required(),
     gender: Joi.string().required().valid('male', 'female'),
     avatar: Joi.string().allow('').optional(),
+    accountName: Joi.string().max(100).allow(null, '').optional(),
+    accountNumber: Joi.string().max(30).allow(null, '').optional(),
+    bankName: Joi.string().max(100).allow(null, '').optional(),
   }),
 };
 
@@ -37,6 +40,9 @@ const updateReferee = {
       contactNumber: Joi.string(),
       gender: Joi.string().valid('male', 'female'),
       avatar: Joi.string().allow(''),
+      accountName: Joi.string().max(100).allow(null, ''),
+      accountNumber: Joi.string().max(30).allow(null, ''),
+      bankName: Joi.string().max(100).allow(null, ''),
     })
     .min(1),
 };

@@ -23,6 +23,10 @@ const referralRewardSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lockedInBatch: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
