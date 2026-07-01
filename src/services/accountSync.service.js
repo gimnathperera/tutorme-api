@@ -131,8 +131,27 @@ const syncUserFromTutor = async (tutor) => {
 
   let user;
   if (existingUser) {
+    // Mirror cleared optional enum fields to the user: when the tutor has no
+    // nationality/race, $unset them on the user instead of keeping the old value
+    // ($set with undefined is dropped by Mongoose and would leave it stale).
+    const userUnsetFields = {};
+    ['nationality', 'race'].forEach((field) => {
+      const value = tutor[field];
+      if (value === undefined || value === null || value === '') {
+        userUnsetFields[field] = 1;
+      }
+    });
+
+    const userSetFields = removeUndefinedValues(userPayload);
+    Object.keys(userUnsetFields).forEach((field) => delete userSetFields[field]);
+
+    const userUpdateOps = { $set: userSetFields };
+    if (Object.keys(userUnsetFields).length > 0) {
+      userUpdateOps.$unset = userUnsetFields;
+    }
+
     Object.assign(existingUser, userPayload);
-    await User.updateOne({ _id: existingUser._id }, { $set: userPayload }, { runValidators: true });
+    await User.updateOne({ _id: existingUser._id }, userUpdateOps, { runValidators: true });
     user = await User.findById(existingUser._id);
   } else {
     user = await User.findOneAndUpdate(
@@ -206,7 +225,25 @@ const syncTutorFromUser = async (user) => {
     availability: user.availability,
   };
 
-  await Tutor.updateOne({ _id: tutor._id }, { $set: removeUndefinedValues(tutorPayload) }, { runValidators: true });
+  // Mirror cleared optional enum fields to the tutor: when the user has no
+  // nationality/race, $unset them on the tutor instead of leaving the old value.
+  const tutorUnsetFields = {};
+  ['nationality', 'race'].forEach((field) => {
+    const value = user[field];
+    if (value === undefined || value === null || value === '') {
+      tutorUnsetFields[field] = 1;
+    }
+  });
+
+  const tutorSetFields = removeUndefinedValues(tutorPayload);
+  Object.keys(tutorUnsetFields).forEach((field) => delete tutorSetFields[field]);
+
+  const tutorUpdateOps = { $set: tutorSetFields };
+  if (Object.keys(tutorUnsetFields).length > 0) {
+    tutorUpdateOps.$unset = tutorUnsetFields;
+  }
+
+  await Tutor.updateOne({ _id: tutor._id }, tutorUpdateOps, { runValidators: true });
 
   if (!user.tutorId || user.tutorId.toString() !== tutor.id) {
     await User.updateOne({ _id: user._id }, { $set: { tutorId: tutor._id } }, { runValidators: true });
