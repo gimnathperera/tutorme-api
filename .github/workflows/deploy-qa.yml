@@ -51,9 +51,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
-
       - name: Log in to Azure
         uses: azure/login@v2
         with:
@@ -64,12 +61,14 @@ jobs:
 
       - name: Build and push Docker image
         run: |
+          SHORT_SHA=${GITHUB_SHA::8}
           docker build \
             -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa \
-            -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${{ env.SHORT_SHA }} \
+            -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${SHORT_SHA} \
             .
           docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa
-          docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${{ env.SHORT_SHA }}
+          docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${SHORT_SHA}
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
 
       - name: Deploy to QA App Service
         run: |
@@ -84,5 +83,5 @@ jobs:
 
       - name: Print deployment summary
         run: |
-          echo "Deployed image: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${{ env.SHORT_SHA }}"
+          echo "Deployed image: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:qa-${SHORT_SHA}"
           echo "App Service: ${{ env.APP_SERVICE_NAME }}"

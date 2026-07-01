@@ -15,12 +15,13 @@ jobs:
   build-and-deploy:
     name: Build & Deploy to Production
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
+        with:
+          fetch-depth: 0
 
       - name: Log in to Azure
         uses: azure/login@v2
@@ -32,12 +33,14 @@ jobs:
 
       - name: Build and push Docker image
         run: |
+          SHORT_SHA=${GITHUB_SHA::8}
           docker build \
             -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${{ env.SHORT_SHA }} \
+            -t ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${SHORT_SHA} \
             .
           docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${{ env.SHORT_SHA }}
+          docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${SHORT_SHA}
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
 
       - name: Deploy to Production App Service
         run: |
@@ -50,7 +53,27 @@ jobs:
             --name ${{ env.APP_SERVICE_NAME }} \
             --resource-group ${{ env.RESOURCE_GROUP }}
 
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+
+          # Skip if this tag already exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping release creation."
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --draft \
+              --generate-notes
+            echo "Draft release created: $TAG"
+          fi
+
       - name: Print deployment summary
         run: |
-          echo "Deployed image: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${{ env.SHORT_SHA }}"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Deployed image: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:prod-${SHORT_SHA}"
           echo "App Service: ${{ env.APP_SERVICE_NAME }}"
+          echo "Release tag: v${VERSION}"
