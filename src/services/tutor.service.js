@@ -42,11 +42,14 @@ const getEmailAvailability = async (email) => {
     if (existingTutor.status === 'pending') {
       return { available: false, message: 'A registration with this email is already pending approval.' };
     }
-    if (existingTutor.status === 'approved') {
-      return { available: false, message: 'Email already exists' };
+    if (existingTutor.status === 'rejected') {
+      // Public resubmission is disabled for rejected tutors. Reconsideration is
+      // handled manually by an administrator contacting the tutor.
+      return { available: false, message: 'A registration with this email already exists. Please contact admin.' };
     }
-    // rejected tutors are allowed to re-register regardless of whether a User record exists
-    return { available: true, message: 'Email is available' };
+    // Any other status (e.g. approved) — the email is already in the system and
+    // cannot be reused for a public registration.
+    return { available: false, message: 'Email already exists' };
   }
 
   if (existingUser) {
@@ -101,11 +104,22 @@ const createTutor = async (tutorBody) => {
     }
   }
 
-  const tutor = await Tutor.create({
-    ...tutorBody,
-    status: 'pending',
-    referredByCode: referredByCode || undefined,
-  });
+  let tutor;
+  try {
+    tutor = await Tutor.create({
+      ...tutorBody,
+      status: 'pending',
+      referredByCode: referredByCode || undefined,
+    });
+  } catch (err) {
+    // The unique email index atomically rejects a concurrent duplicate that
+    // slipped past checkEmailAvailable (a check-then-create race). Convert the
+    // raw duplicate-key error into the same friendly 400 the check would raise.
+    if (err && err.code === 11000) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email already exists');
+    }
+    throw err;
+  }
 
   // Create referral reward entry if a valid referral code was used
   if (referrer) {
