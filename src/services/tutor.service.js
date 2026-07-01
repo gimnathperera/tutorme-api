@@ -242,6 +242,12 @@ const deleteTutorById = async (tutorId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
 
+  // Approved tutor records are locked from deletion to protect referral data — only
+  // rejected, pending, or suspended tutors can be removed from the system.
+  if (tutor.status === 'approved') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Approved tutor records cannot be deleted');
+  }
+
   // Only a still-pending referral never resulted in a completed referral, so only
   // then should the ReferralReward entry be removed (dropping the referrer's count).
   // Once a tutor has been approved, their reward record — and the referrer's count —
