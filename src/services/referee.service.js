@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Referee, Tutor, User } = require('../models');
+const { Referee, Tutor, User, ReferralReward } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
 const emailService = require('./email.service');
@@ -60,8 +60,11 @@ const createReferee = async ({ name, email, contactNumber, gender, avatar, accou
 
 /**
  * Get a paginated list of referees with their referral counts attached.
- * Counts are derived directly from Tutor.referredByCode so they are accurate
- * regardless of whether a ReferralReward record was created.
+ * Counts are derived from ReferralReward records (created once at the referred
+ * tutor's registration and kept for the referral's lifetime) rather than from
+ * live Tutor.referredByCode matches. Tutor.deleteTutorById only removes the
+ * ReferralReward entry for still-pending referrals, so an approved/rewarded
+ * referral's count survives the referred tutor being deleted later.
  */
 const queryReferees = async (filter, options) => {
   const { search } = filter;
@@ -74,19 +77,19 @@ const queryReferees = async (filter, options) => {
 
   const referees = await Referee.paginate(mongoFilter, options);
 
-  const refCodes = referees.results.map((r) => r.referralCode).filter(Boolean);
+  const refereeIds = referees.results.map((r) => r._id);
   const counts =
-    refCodes.length > 0
-      ? await Tutor.aggregate([
-          { $match: { referredByCode: { $in: refCodes } } },
-          { $group: { _id: '$referredByCode', count: { $sum: 1 } } },
+    refereeIds.length > 0
+      ? await ReferralReward.aggregate([
+          { $match: { referrerModel: 'Referee', referrerTutorId: { $in: refereeIds } } },
+          { $group: { _id: '$referrerTutorId', count: { $sum: 1 } } },
         ])
       : [];
-  const countByCode = new Map(counts.map((c) => [c._id, c.count]));
+  const countById = new Map(counts.map((c) => [c._id.toString(), c.count]));
 
   referees.results = referees.results.map((referee) => {
     const serialized = typeof referee.toJSON === 'function' ? referee.toJSON() : referee;
-    serialized.referralCount = countByCode.get(referee.referralCode) || 0;
+    serialized.referralCount = countById.get(referee._id.toString()) || 0;
     return serialized;
   });
 
