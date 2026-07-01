@@ -26,10 +26,13 @@ if (config.env !== 'test') {
 app.use(helmet());
 
 // parse json request body
-app.use(express.json());
+// limit raised from the express default of 100kb: base64-encoded file
+// uploads (e.g. bonus transaction slips) inflate payload size by ~4/3,
+// so a 1mb file needs headroom above 1.34mb to avoid a false PayloadTooLarge
+app.use(express.json({ limit: '2mb' }));
 
 // parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // sanitize request data
 app.use(xss());
