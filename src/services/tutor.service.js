@@ -211,6 +211,17 @@ const updateTutorById = async (tutorId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
   const updatePayload = { ...updateBody };
+
+  // Optional enum fields (nationality, race) can be cleared by an admin. A
+  // null/empty value means "unset": assigning null would fail Mongoose enum
+  // validation, so unset the path directly and drop it from the bulk assign.
+  ['nationality', 'race'].forEach((field) => {
+    if (field in updatePayload && (updatePayload[field] === null || updatePayload[field] === '')) {
+      delete updatePayload[field];
+      tutor.set(field, undefined);
+    }
+  });
+
   if (updateBody.status === 'approved' && tutor.status !== 'approved') {
     updatePayload.approvedAt = new Date();
   }
