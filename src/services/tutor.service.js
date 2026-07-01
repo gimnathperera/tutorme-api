@@ -42,11 +42,14 @@ const getEmailAvailability = async (email) => {
     if (existingTutor.status === 'pending') {
       return { available: false, message: 'A registration with this email is already pending approval.' };
     }
-    if (existingTutor.status === 'approved') {
-      return { available: false, message: 'Email already exists' };
+    if (existingTutor.status === 'rejected') {
+      // Public resubmission is disabled for rejected tutors. Reconsideration is
+      // handled manually by an administrator contacting the tutor.
+      return { available: false, message: 'A registration with this email already exists. Please contact admin.' };
     }
-    // rejected tutors are allowed to re-register regardless of whether a User record exists
-    return { available: true, message: 'Email is available' };
+    // Any other status (e.g. approved) — the email is already in the system and
+    // cannot be reused for a public registration.
+    return { available: false, message: 'Email already exists' };
   }
 
   if (existingUser) {
@@ -101,11 +104,22 @@ const createTutor = async (tutorBody) => {
     }
   }
 
-  const tutor = await Tutor.create({
-    ...tutorBody,
-    status: 'pending',
-    referredByCode: referredByCode || undefined,
-  });
+  let tutor;
+  try {
+    tutor = await Tutor.create({
+      ...tutorBody,
+      status: 'pending',
+      referredByCode: referredByCode || undefined,
+    });
+  } catch (err) {
+    // The unique email index atomically rejects a concurrent duplicate that
+    // slipped past checkEmailAvailable (a check-then-create race). Convert the
+    // raw duplicate-key error into the same friendly 400 the check would raise.
+    if (err && err.code === 11000) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email already exists');
+    }
+    throw err;
+  }
 
   // Create referral reward entry if a valid referral code was used
   if (referrer) {
@@ -197,6 +211,17 @@ const updateTutorById = async (tutorId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
   const updatePayload = { ...updateBody };
+
+  // Optional enum fields (nationality, race) can be cleared by an admin. A
+  // null/empty value means "unset": assigning null would fail Mongoose enum
+  // validation, so unset the path directly and drop it from the bulk assign.
+  ['nationality', 'race'].forEach((field) => {
+    if (field in updatePayload && (updatePayload[field] === null || updatePayload[field] === '')) {
+      delete updatePayload[field];
+      tutor.set(field, undefined);
+    }
+  });
+
   if (updateBody.status === 'approved' && tutor.status !== 'approved') {
     updatePayload.approvedAt = new Date();
   }
@@ -217,10 +242,17 @@ const deleteTutorById = async (tutorId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tutor not found');
   }
 
-  // If the tutor is still pending and was referred, remove their ReferralReward entry.
-  // This keeps totalReferrals accurate — the referrer's count drops because the
-  // registration never reached approval. Approved or rejected tutors are not touched
-  // (their reward record stays, and the referrer keeps their earned entitlement).
+  // Approved tutor records are locked from deletion to protect referral data — only
+  // rejected, pending, or suspended tutors can be removed from the system.
+  if (tutor.status === 'approved') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Approved tutor records cannot be deleted');
+  }
+
+  // Only a still-pending referral never resulted in a completed referral, so only
+  // then should the ReferralReward entry be removed (dropping the referrer's count).
+  // Once a tutor has been approved, their reward record — and the referrer's count —
+  // must survive the tutor being deleted later, regardless of whether the reward has
+  // actually been sent yet.
   if (tutor.status === 'pending' && tutor.referredByCode) {
     try {
       await ReferralReward.deleteOne({ referredTutorId: tutor._id });

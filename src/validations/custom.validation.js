@@ -15,7 +15,17 @@ const password = (value, helpers) => {
   return value;
 };
 
+const base64FileSize = (maxBytes) => (value, helpers) => {
+  const padding = (value.match(/=+$/) || [''])[0].length;
+  const decodedBytes = Math.floor((value.length * 3) / 4) - padding;
+  if (decodedBytes > maxBytes) {
+    return helpers.message(`"{{#label}}" must decode to ${Math.round(maxBytes / (1024 * 1024))}MB or less`);
+  }
+  return value;
+};
+
 module.exports = {
   objectId,
   password,
+  base64FileSize,
 };
