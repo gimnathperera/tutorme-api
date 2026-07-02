@@ -130,14 +130,16 @@ const normalizeUserProfileFields = (payload) => {
     normalizedPayload.availability = parseAvailabilityInput(normalizedPayload.availability);
   }
 
-  // Mongoose 5 fails enum validation when these optional String fields are sent as null or "".
-  // Strip them so the existing DB value is preserved rather than causing a 400 error.
+  // These optional enum String fields can be explicitly cleared. Normalize an
+  // empty value to null so the update layer unsets the field: Mongoose 5 rejects
+  // '' / null against the enum on save(), and the previous behaviour of stripping
+  // them silently preserved the old value instead of clearing it.
   ['nationality', 'race'].forEach((field) => {
     if (
       Object.prototype.hasOwnProperty.call(normalizedPayload, field) &&
       (normalizedPayload[field] === null || normalizedPayload[field] === '')
     ) {
-      delete normalizedPayload[field];
+      normalizedPayload[field] = null;
     }
   });
 

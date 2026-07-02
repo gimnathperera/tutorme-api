@@ -53,6 +53,9 @@ const tutorSchema = mongoose.Schema(
       required: true,
       trim: true,
       lowercase: true,
+      // Unique index guarantees no two tutors share an email, even when two
+      // registration requests race past the availability check concurrently.
+      unique: true,
     },
     password: {
       type: String,
