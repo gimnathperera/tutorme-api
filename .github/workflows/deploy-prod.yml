@@ -7,8 +7,8 @@ on:
 
 env:
   ACR_REGISTRY: tutormebackend.azurecr.io
-  IMAGE_NAME: tutorme-api
-  APP_SERVICE_NAME: tutorme-backend-api
+  IMAGE_NAME: tuitionlanka-api-fork
+  APP_SERVICE_NAME: tuitionlanka-api-fork
   RESOURCE_GROUP: TutorMe
 
 jobs:
